@@ -2,58 +2,63 @@ package com.atycoin;
 
 import redis.clients.jedis.Jedis;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Blockchain implements Iterable<Block> {
-    private static Blockchain instance;
-    private static Jedis dbConnection;
-    private String hashOfLastBlockSerialized;
+    private static final String genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
 
+    private static Blockchain instance = new Blockchain();
+
+    private static Jedis dbConnection;
+    private String tipOfChain;
 
     //TODO: Do manual commit and support rollback (BulkTransaction in DB)
-    public Blockchain() {
+    private Blockchain() {
         dbConnection = new Jedis("localhost");
-        hashOfLastBlockSerialized = dbConnection.get("l");
-
-        if (hashOfLastBlockSerialized == null) {
-            System.out.println("No existing blockchain found. Creating a new one...\n");
-            Block genesisBlock = genesisBlock();
-            hashOfLastBlockSerialized = Util.serializeHash(genesisBlock.hash);
-
-            dbConnection.set(hashOfLastBlockSerialized, genesisBlock.serializeBlock());
-            dbConnection.set("l", hashOfLastBlockSerialized);
-        }
+        tipOfChain = dbConnection.get("l");
     }
 
     public static Blockchain getInstance() {
-        if (instance == null) {
-            instance = new Blockchain();
-        }
-
         return instance;
     }
 
-    public Block genesisBlock() {
-        byte[] merkleRoot = "Genesis block".getBytes();
-        //TODO: Mining the prevHash
-        byte[] prevHash = Util.applySha256("Atycoion".getBytes());
+    //TODO: Check filed connection
+    public void addBlock(ArrayList<Transaction> transactions) {
+        tipOfChain = dbConnection.get("l"); //To store it as prevBlockHash in the new block
 
-        return new Block(merkleRoot, prevHash);
-    }
+        Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
+        //Block newBlock = new Block(transactions, Util.deserializeHash(tipOfChain));
 
-    public void addBlock(byte[] merkleRoot) {
-        hashOfLastBlockSerialized = dbConnection.get("l");
-        Block newBlock = new Block(merkleRoot, Util.deserializeHash(hashOfLastBlockSerialized));
-
-        hashOfLastBlockSerialized = Util.serializeHash(newBlock.hash);
+        tipOfChain = Util.serializeHash(newBlock.hash);
         String newBlockSerialized = newBlock.serializeBlock();
 
-        dbConnection.set(hashOfLastBlockSerialized, newBlockSerialized);
-        dbConnection.set("l", hashOfLastBlockSerialized);
+        //Store new block int database and update hash of last block
+        dbConnection.set(tipOfChain, newBlockSerialized);
+        dbConnection.set("l", tipOfChain);
+    }
+
+    //TODO: Check filed connection
+    public void createBlockchain(String address) {
+        tipOfChain = dbConnection.get("l");
+
+        if (tipOfChain == null) {
+            System.out.println("No existing blockchain found. Creating a new one...\n");
+
+            Transaction newCoinbaseTX = Transaction.newCoinbaseTX(address, genesisCoinbaseData);
+            Block genesisBlock = Block.newGenesisBlock(newCoinbaseTX);
+
+            tipOfChain = Util.serializeHash(genesisBlock.hash);
+
+            dbConnection.set(tipOfChain, genesisBlock.serializeBlock());
+            dbConnection.set("l", tipOfChain);
+        } else {
+            System.out.println("Blockchain already exists.");
+        }
     }
 
     @Override
-    public Iterator iterator() {
-        return new BlockchainIterator(dbConnection, hashOfLastBlockSerialized);
+    public Iterator<Block> iterator() {
+        return new BlockchainIterator(dbConnection);
     }
 }
