@@ -9,9 +9,10 @@ public class BlockchainIterator implements Iterator<Block> {
     private Jedis dbConnection;
     private String currentHashSerialized;
 
-    public BlockchainIterator(Jedis dbConnection, String currentHashSerialized) {
+    //TODO: Check filed connection
+    public BlockchainIterator(Jedis dbConnection) {
         this.dbConnection = dbConnection;
-        this.currentHashSerialized = dbConnection.get("l");
+        currentHashSerialized = dbConnection.get("l");
     }
 
     @Override
@@ -22,6 +23,7 @@ public class BlockchainIterator implements Iterator<Block> {
         return !currentHashSerialized.equals(genesisPrevHash);
     }
 
+    //TODO: Check filed connection
     @Override
     public Block next() {
         String blockSerialized = dbConnection.get(currentHashSerialized);
