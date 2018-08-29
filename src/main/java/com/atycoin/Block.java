@@ -49,44 +49,6 @@ public class Block {
         return block;
     }
 
-//    public void proofOfWork() {
-//        System.out.printf("Mining the block containing \"%s\"\n", new String(hashMerkleRoot));
-//
-//        //TODO: Enhance checking in nonce overflow
-//        while (nonce < Integer.MAX_VALUE) {
-//            byte[] data = concatenateBlockData();
-//
-//            // Double hash
-//            hash = Util.applySha256(Util.applySha256(data));
-//
-//            // Change to Big-endian
-//            hash = Util.changeByteOrderEndianSystem(hash);
-//
-//            if (isValidHash(hash)) {
-//                break;
-//            }
-//
-//            nonce++;
-//        }
-//        System.out.println(Util.bytesToHex(hash));
-//        System.out.println();
-//    }
-
-//    // TODO: Clean isValidProofOFWork
-//    public boolean isValidBlock() {
-//        byte[] data = concatenateBlockData();
-//
-//        byte[] calculatedHash = Util.applySha256(Util.applySha256(data));
-//
-//        calculatedHash = Util.changeByteOrderEndianSystem(calculatedHash);
-//
-//        if (!isValidHash(calculatedHash)) {
-//            return false;
-//        }
-//
-//        return Arrays.equals(hash, calculatedHash);
-//    }
-
     public byte[] concatenateBlockData() {
         //TODO: Consider more efficient way to concatenate byte[] arrays
 
@@ -116,26 +78,6 @@ public class Block {
         return Util.applySha256(buffer.toByteArray());
     }
 
-//    private boolean isValidHash(byte[] hash) {
-//        // TODO: After make target Adjustable move numberOfBytes and bitsInLastByte Outside this function
-//        int numberOfBytes = targetBits / 8;
-//        byte bitsInLastByte = targetBits % 8;
-//
-//        // Check whole bytes
-//        for (int i = 0; i < numberOfBytes; i++) {
-//            if (hash[i] != 0) {
-//                return false;
-//            }
-//        }
-//
-//        int unsignedLastHashByte = hash[numberOfBytes] & 0xff; // convert to unsigned byte
-//
-//        // ex: bitsInLastByte = 5 --->  (1 << 8 - 5) = 0000 1000 --> 00001000 = 00000111
-//        int unsignedTargetInLastByte = (1 << 8 - bitsInLastByte) - 1; // Bitmask
-//
-//        // unsignedTargetInLastByte : Upper Boundary
-//        return unsignedLastHashByte <= unsignedTargetInLastByte;
-//    }
 
     public String serializeBlock() {
         Gson gson = new Gson();
