@@ -32,7 +32,7 @@ public class Commander {
     }
 
     public static String CommanderInput(String msg) {
-        System.out.println("" + msg + ": ");
+        System.out.println(msg + ": ");
         return null;
     }
 
@@ -52,10 +52,10 @@ public class Commander {
     // populates the command arraylist with commands
     public void setup() {
         cmds = new HashMap<>();
-        cmds.put("-hello", new HelloWorldCommand());
         cmds.put("addblock", new AddBlockCommand());
         cmds.put("printchain", new PrintChainCommand());
-        cmds.put("-help", new HelpCommand());
+        cmds.put("createblockchain", new CreateBlockchainCommand());
+        cmds.put("help", new HelpCommand());
         scanner = new Scanner(System.in);
     }
 

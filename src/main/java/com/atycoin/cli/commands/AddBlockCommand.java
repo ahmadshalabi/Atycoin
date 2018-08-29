@@ -1,6 +1,5 @@
 package com.atycoin.cli.commands;
 
-import com.atycoin.Blockchain;
 import com.atycoin.cli.Commander;
 
 import java.util.Arrays;
@@ -9,8 +8,8 @@ public class AddBlockCommand implements Command {
     @Override
     public String getHelp() {
         return "cmd: addblock \n" +
-                "- description: Add new block to the chains. \n" +
-                "- usage: addblock param [situational...] \n" +
+                "- description: add a block to the blockchain \n" +
+                "- usage: addblock -data BLOCK_DATA \n" +
                 "- param: '-help', '-data' \n" +
                 "------------------------------------------------------------------------";
     }
@@ -37,7 +36,8 @@ public class AddBlockCommand implements Command {
                     stringBuilder.append(" ");
                 stringBuilder.append(args[i]);
             }
-            Blockchain.getInstance().addBlock(stringBuilder.toString().getBytes());
+
+            //Blockchain.getInstance().addBlock(stringBuilder.toString());
             Commander.CommanderPrint("Success!");
         } else if (args[0].equals(params[0])) { //help
             Commander.CommanderPrint(getHelp());

@@ -10,9 +10,9 @@ import java.util.Arrays;
 public class PrintChainCommand implements Command {
     @Override
     public String getHelp() {
-        return "cmd: addblock \n" +
-                "- description: Add new block to the chains. \n" +
-                "- usage: addblock param [situational...] \n" +
+        return "cmd: printchain \n" +
+                "- description: print all the blocks of the blockchain. \n" +
+                "- usage: printchain \n" +
                 "- param: '-help' \n" +
                 "------------------------------------------------------------------------";
     }
