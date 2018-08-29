@@ -15,7 +15,7 @@ public class ProofOfWork {
     }
 
     public void proofOfWork() {
-        System.out.printf("Mining the block containing \"%s\"\n", new String(block.hashMerkleRoot));
+        System.out.println("Mining a new block");
         int nonce = 0;
 
         //TODO: Enhance checking in nonce overflow
