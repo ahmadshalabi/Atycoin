@@ -37,7 +37,7 @@ public class Block {
 
         Block block = new Block(transactions, prevHash);
 
-        ProofOfWork.getInstance(block).proofOfWork();
+        ProofOfWork.getInstance(block).runProofOfWork();
 
         return block;
     }
@@ -45,7 +45,7 @@ public class Block {
     // newBlock: creates and returns Block
     public static Block newBlock(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
         Block block = new Block(transactions, hashPrevBlock);
-        ProofOfWork.getInstance(block).proofOfWork();
+        ProofOfWork.getInstance(block).runProofOfWork();
         return block;
     }
 
@@ -78,7 +78,7 @@ public class Block {
         return Util.applySha256(buffer.toByteArray());
     }
 
-
+    // Serialize the block
     public String serializeBlock() {
         Gson gson = new Gson();
 

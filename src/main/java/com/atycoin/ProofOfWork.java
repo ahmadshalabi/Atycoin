@@ -14,7 +14,8 @@ public class ProofOfWork {
         return new ProofOfWork(block);
     }
 
-    public void proofOfWork() {
+    // performs a proof-of-work
+    public void runProofOfWork() {
         System.out.println("Mining a new block");
         int nonce = 0;
 
@@ -64,6 +65,7 @@ public class ProofOfWork {
     }
 
     // TODO: Clean isValidProofOFWork
+    // validates block's PoW
     public boolean isValidProofOFWork() {
         byte[] data = block.concatenateBlockData();
 

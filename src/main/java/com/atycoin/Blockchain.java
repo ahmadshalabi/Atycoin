@@ -5,6 +5,7 @@ import redis.clients.jedis.Jedis;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+//Blockchain implements interaction with a DB
 public class Blockchain implements Iterable<Block> {
     private static final String genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
 
@@ -39,6 +40,7 @@ public class Blockchain implements Iterable<Block> {
     }
 
     //TODO: Check filed connection
+    // creates a new Blockchain with genesis Block
     public void createBlockchain(String address) {
         tipOfChain = dbConnection.get("l");
 
@@ -59,6 +61,7 @@ public class Blockchain implements Iterable<Block> {
         }
     }
 
+    //iterator return BlockchainIterator Used to iterate over blockchain blocks
     @Override
     public Iterator<Block> iterator() {
         return new BlockchainIterator(dbConnection);

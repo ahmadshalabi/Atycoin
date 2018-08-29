@@ -24,6 +24,7 @@ public class BlockchainIterator implements Iterator<Block> {
     }
 
     //TODO: Check filed connection
+    //returns next block starting from the tip
     @Override
     public Block next() {
         String blockSerialized = dbConnection.get(currentHashSerialized);

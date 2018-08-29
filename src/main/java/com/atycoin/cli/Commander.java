@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 //TODO: Add debug command
 
+// responsible for processing command line
 public class Commander {
     public static Commander instance;
     public static boolean debugMode = false;
@@ -59,6 +60,7 @@ public class Commander {
         scanner = new Scanner(System.in);
     }
 
+    // parses command line arguments and processes commands
     public void listen() {
         while (true) {
             //Display input message:
