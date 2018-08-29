@@ -1,24 +1,48 @@
 package com.atycoin;
 
 import com.google.gson.Gson;
-import org.bouncycastle.util.Arrays;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Block {
     private final int targetBits = 8; //TODO: Make it Adjusted to meet some requirements
     public byte[] hashPrevBlock;
     public byte[] hashMerkleRoot;
     public long timestamp;
-    public byte[] hash; // Current Block hash
+    public ArrayList<Transaction> transactions;
     //TODO: separate relevant hashMerkleRoot in BlockHeader
     private int version = 1;
     private int nonce;
+    public byte[] hash; // Current Block hash
 
-    public Block(byte[] hashMerkleRoot, byte[] hashPrevBlock) {
+    private Block(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
-        this.hashMerkleRoot = hashMerkleRoot;
+        this.transactions = transactions;
         this.hashPrevBlock = hashPrevBlock;
 
+        hashMerkleRoot = hashTransaction();
         proofOfWork();
+    }
+
+    // newGenesisBlock: creates and returns genesis Block
+    public static Block newGenesisBlock(Transaction coinbase) {
+        //byte[] merkleRoot = "Genesis block".getBytes();
+        //TODO: Mining the prevHash
+        byte[] prevHash = Util.applySha256("Atycoion".getBytes());
+
+        //add coinbase Transaction
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        transactions.add(coinbase);
+
+        return new Block(transactions, prevHash);
+    }
+
+    // newBlock: creates and returns Block
+    public static Block newBlock(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
+        return new Block(transactions, hashPrevBlock);
     }
 
     public void proofOfWork() {
@@ -44,12 +68,6 @@ public class Block {
         System.out.println();
     }
 
-    public String serializeBlock() {
-        Gson gson = new Gson();
-
-        return gson.toJson(this);
-    }
-
     // TODO: Clean isValidBlock
     public boolean isValidBlock() {
         byte[] data = concatenateBlockData();
@@ -62,23 +80,36 @@ public class Block {
             return false;
         }
 
-        return Arrays.areEqual(hash, calculatedHash);
+        return Arrays.equals(hash, calculatedHash);
     }
 
     private byte[] concatenateBlockData() {
         //TODO: Consider more efficient way to concatenate byte[] arrays
 
-        //Change to little-endian
-        byte[] tmp = Arrays.concatenate(
-                Util.changeByteOrderEndianSystem(Util.intToBytes(version)),
-                Util.changeByteOrderEndianSystem(hashPrevBlock),
-                Util.changeByteOrderEndianSystem(hashMerkleRoot),
-                Util.changeByteOrderEndianSystem(Util.longToBytes(timestamp)));
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(version)));
+            buffer.write(Util.changeByteOrderEndianSystem(hashPrevBlock));
+            buffer.write(Util.changeByteOrderEndianSystem(hashMerkleRoot));
+            buffer.write(Util.changeByteOrderEndianSystem(Util.longToBytes(timestamp)));
+            buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(targetBits)));
+            buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(nonce)));
 
-        return Arrays.concatenate(
-                tmp,
-                Util.changeByteOrderEndianSystem(Util.intToBytes(targetBits)),
-                Util.changeByteOrderEndianSystem(Util.intToBytes(nonce)));
+            return buffer.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // hashTransactions returns a hash of the transactions in the block
+    public byte[] hashTransaction() {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        for (Transaction transaction : transactions) {
+            buffer.write(transaction.transactionId, 0, transaction.transactionId.length);
+        }
+
+        return Util.applySha256(buffer.toByteArray());
     }
 
     private boolean isValidHash(byte[] hash) {
@@ -100,5 +131,11 @@ public class Block {
 
         // unsignedTargetInLastByte : Upper Boundary
         return unsignedLastHashByte <= unsignedTargetInLastByte;
+    }
+
+    public String serializeBlock() {
+        Gson gson = new Gson();
+
+        return gson.toJson(this);
     }
 }
