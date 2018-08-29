@@ -43,7 +43,6 @@ public class CreateBlockchainCommand implements Command {
 
             Blockchain blockchain = Blockchain.getInstance();
             blockchain.createBlockchain(address);
-            Commander.CommanderPrint("Done!");
         } else if (args[0].equals(params[0])) { //-help
             Commander.CommanderPrint(getHelp());
         }

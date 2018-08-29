@@ -52,6 +52,8 @@ public class Blockchain implements Iterable<Block> {
 
             dbConnection.set(tipOfChain, genesisBlock.serializeBlock());
             dbConnection.set("l", tipOfChain);
+
+            System.out.println("Done!");
         } else {
             System.out.println("Blockchain already exists.");
         }

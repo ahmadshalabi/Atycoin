@@ -30,7 +30,6 @@ public class PrintChainCommand implements Command {
                 System.out.printf("Prev. hash: %s%n", Util.bytesToHex(block.hashPrevBlock));
                 System.out.printf("Data: %s%n", Util.bytesToString(block.hashMerkleRoot));
                 System.out.printf("Hash: %s%n", Util.bytesToHex(block.hash));
-                System.out.printf("PoW: %b%n%n", block.isValidBlock());
             }
             return;
         }
