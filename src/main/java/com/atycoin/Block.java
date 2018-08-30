@@ -96,6 +96,11 @@ public class Block {
         return gson.toJson(this);
     }
 
+    public static Block deserializeBlock(String serializedBlock) {
+        Gson gson = new Gson();
+        return gson.fromJson(serializedBlock, Block.class);
+    }
+
     public void setHash(byte[] hash) {
         this.hash = hash;
     }

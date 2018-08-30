@@ -83,11 +83,6 @@ public class Util {
         return Arrays.reverse(input);
     }
 
-    public static Block deserializeBlock(String serializedBlock) {
-        Gson gson = new Gson();
-        return gson.fromJson(serializedBlock, Block.class);
-    }
-
     // Short hand helper to turn Object into a json string
     public static String serializeHash(byte[] hash) {
         return new Gson().toJson(hash);

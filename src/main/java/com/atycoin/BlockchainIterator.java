@@ -31,7 +31,7 @@ public class BlockchainIterator implements Iterator<Block> {
     @Override
     public Block next() {
         String blockSerialized = dbConnection.get(currentHashSerialized);
-        Block block = Util.deserializeBlock(blockSerialized);
+        Block block = Block.deserializeBlock(blockSerialized);
 
         // get next blockHash
         currentHashSerialized = Util.serializeHash(block.hashPrevBlock);
