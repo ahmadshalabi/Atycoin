@@ -73,11 +73,11 @@ public class Blockchain implements Iterable<Block> {
         ArrayList<Transaction> unspentTransactions = new ArrayList<>();
         HashMap<String, ArrayList<Integer>> spentTXOs = new HashMap<>();
 
+        //TODO: Optimize logic in find unspentTransactions
         for (Block block : Blockchain.getInstance()) {
             for (Transaction transaction : block.transactions) {
                 String transactionId = Util.bytesToHex(transaction.id);
 
-                //TODO: fix wrong logic in check output was spent
                 for (TransactionOutput transactionOutput : transaction.outputs) {
                     boolean isTransactionOutputSpent = false;
 
