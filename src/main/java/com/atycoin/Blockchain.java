@@ -3,6 +3,7 @@ package com.atycoin;
 import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 //Blockchain implements interaction with a DB
@@ -47,8 +48,8 @@ public class Blockchain implements Iterable<Block> {
         if (tipOfChain == null) {
             System.out.println("No existing blockchain found. Creating a new one...\n");
 
-            Transaction newCoinbaseTX = Transaction.newCoinbaseTX(address, genesisCoinbaseData);
-            Block genesisBlock = Block.newGenesisBlock(newCoinbaseTX);
+            Transaction coinbaseTransaction = Transaction.newCoinbaseTransaction(address, genesisCoinbaseData);
+            Block genesisBlock = Block.newGenesisBlock(coinbaseTransaction);
 
             tipOfChain = Util.serializeHash(genesisBlock.hash);
 
@@ -65,5 +66,73 @@ public class Blockchain implements Iterable<Block> {
     @Override
     public Iterator<Block> iterator() {
         return new BlockchainIterator(dbConnection);
+    }
+
+    // returns a list of transactions containing unspent outputs belong to address
+    public ArrayList<Transaction> findUnspentTransaction(String address) {
+        ArrayList<Transaction> unspentTransactions = new ArrayList<>();
+        HashMap<String, ArrayList<Integer>> spentTXOs = new HashMap<>();
+
+        for (Block block : Blockchain.getInstance()) {
+            for (Transaction transaction : block.transactions) {
+                String transactionId = Util.bytesToHex(transaction.id);
+
+                //TODO: fix wrong logic in check output was spent
+                for (TransactionOutput transactionOutput : transaction.outputs) {
+                    boolean isTransactionOutputSpent = false;
+
+                    // Was the output spent?
+                    ArrayList<Integer> spentTransactionOutputIndexes = spentTXOs.get(transactionId);
+                    if (spentTransactionOutputIndexes != null) {
+                        for (int spentOutIndex : spentTransactionOutputIndexes) {
+                            if (spentOutIndex == transaction.outputs.indexOf(transactionOutput)) {
+                                isTransactionOutputSpent = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!isTransactionOutputSpent && transactionOutput.canBeUnlockedWith(address)) {
+                        unspentTransactions.add(transaction);
+                    }
+                }
+
+                if (!transaction.isCoinbase()) {
+                    for (TransactionInput transactionInput : transaction.inputs) {
+                        if (transactionInput.canUnlockOutputWith(address)) {
+
+                            String prevTransactionId = Util.bytesToHex(transactionInput.prevTransactionId);
+
+                            ArrayList<Integer> spentTransactionOutputIndexes = spentTXOs.get(prevTransactionId);
+                            if (spentTransactionOutputIndexes == null) {
+                                spentTransactionOutputIndexes = new ArrayList<>();
+                                spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
+
+                                spentTXOs.put(prevTransactionId, spentTransactionOutputIndexes);
+                            } else {
+                                spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return unspentTransactions;
+    }
+
+    public ArrayList<TransactionOutput> findUTXO(String address) {
+        ArrayList<TransactionOutput> UTXOs = new ArrayList<>();
+        ArrayList<Transaction> unspentTransactions = findUnspentTransaction(address);
+
+        for (Transaction transaction : unspentTransactions) {
+            for (TransactionOutput transactionOutput : transaction.outputs) {
+                if (transactionOutput.canBeUnlockedWith(address)) {
+                    UTXOs.add(transactionOutput);
+                }
+            }
+        }
+
+        return UTXOs;
     }
 }
