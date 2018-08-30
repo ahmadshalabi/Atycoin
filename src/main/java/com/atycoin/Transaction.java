@@ -78,10 +78,11 @@ public class Transaction {
                 inputs.get(0).transactionOutputIndex == -1;
     }
 
-//    public static Transaction newUTXOTransaction(String from, String to, int amount, Blockchain blockchain) {
+//    public static Transaction newUTXOTransaction(String from, String to, int amount) {
 //        ArrayList<TransactionInput> inputs;
 //        ArrayList<TransactionOutput> outputs;
 //
+//        Blockchain blockchain = Blockchain.getInstance();
 //        HashMap<String, ArrayList<Integer>> validOutputs = blockchain.findSpendableOutputs(from, amount);
 //
 //    }

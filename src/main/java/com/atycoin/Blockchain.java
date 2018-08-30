@@ -131,4 +131,43 @@ public class Blockchain implements Iterable<Block> {
 
         return UTXOs;
     }
+
+    public HashMap<String, ArrayList<Integer>> findSpendableOutputs(String address, int amount) {
+        HashMap<String, ArrayList<Integer>> unspentOutputs = new HashMap<>();
+        ArrayList<Transaction> unspentTransactions = findUnspentTransaction(address);
+        int accumulated = 0;
+
+        boolean isAmountReached = false;
+
+        for (Transaction unspentTransaction : unspentTransactions) {
+            String txID = Util.bytesToHex(unspentTransaction.id);
+
+            for (TransactionOutput transactionOutput : unspentTransaction.outputs) {
+                if (transactionOutput.canBeUnlockedWith(address) && accumulated < amount) {
+
+                    accumulated += transactionOutput.value;
+
+                    ArrayList<Integer> list = unspentOutputs.get(txID);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
+                        unspentOutputs.put(txID, list);
+                    } else {
+                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
+                    }
+
+                    if (accumulated >= amount) {
+                        isAmountReached = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isAmountReached) {
+                break;
+            }
+        }
+
+        return unspentOutputs;
+    }
 }
