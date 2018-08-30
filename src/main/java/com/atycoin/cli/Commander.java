@@ -34,7 +34,7 @@ public class Commander {
     // populates commands in a map
     public void setup() {
         commands = new HashMap<>();
-        commands.put("addblock", new AddBlockCommand());
+        commands.put("send", new SendCommand());
         commands.put("printchain", new PrintChainCommand());
         commands.put("createblockchain", new CreateBlockchainCommand());
         commands.put("getbalance", new GetBalanceCommand());
