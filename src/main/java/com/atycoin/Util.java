@@ -54,7 +54,7 @@ public class Util {
     }
 
     public static String bytesToHex(byte[] hash) {
-        StringBuilder hexString = new StringBuilder(); // This will contain hash as hexidecimal
+        StringBuilder hexString = new StringBuilder(); // This will contain hash as hexadecimal
         for (byte element : hash) {
             String hex = Integer.toHexString(0xff & element);
             if (hex.length() == 1) hexString.append('0');
