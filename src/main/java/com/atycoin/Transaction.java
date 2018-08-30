@@ -63,7 +63,7 @@ public class Transaction {
                 buffer.write(transactionOutput.concatenateTransactionOutputData());
             }
 
-            id = Util.applySha256(buffer.toByteArray());
+            id = Util.applySHA256(buffer.toByteArray());
 
             // Big-endian
             id = Util.changeByteOrderEndianSystem(id);

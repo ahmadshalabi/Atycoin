@@ -29,7 +29,7 @@ public class Block {
     public static Block newGenesisBlock(Transaction coinbase) {
         //TODO: Mining the prevHash
         byte[] prevHash = Util.changeByteOrderEndianSystem(
-                Util.applySha256(Util.changeByteOrderEndianSystem("Atycoin".getBytes())));
+                Util.applySHA256(Util.changeByteOrderEndianSystem("Atycoin".getBytes())));
 
         //add coinbase Transaction
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -86,7 +86,7 @@ public class Block {
         }
 
         //Big-endian
-        return Util.changeByteOrderEndianSystem(Util.applySha256(buffer.toByteArray()));
+        return Util.changeByteOrderEndianSystem(Util.applySHA256(buffer.toByteArray()));
     }
 
     // Serialize the block

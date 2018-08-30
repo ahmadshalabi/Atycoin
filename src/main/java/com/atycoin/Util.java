@@ -6,6 +6,8 @@ package com.atycoin;
 //TODO: Clean Utility class
 
 import com.google.gson.Gson;
+import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.bouncycastle.util.Arrays;
 
 import java.nio.ByteBuffer;
@@ -14,15 +16,17 @@ import java.security.*;
 import java.util.Base64;
 
 public class Util {
-    public static byte[] applySha256(byte[] input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256", "BC");
+    public static byte[] applySHA256(byte[] input) {
+        MessageDigest digest = new SHA256.Digest();
 
-            //Applies sha256 to our input
-            return digest.digest(input);
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        }
+        //Applies sha256 to our input
+        return digest.digest(input);
+    }
+
+    public static byte[] applayRIPEMP160(byte[] input) {
+        MessageDigest digest = new RIPEMD160.Digest();
+
+        return digest.digest(input);
     }
 
     // Applies ECDSA Signature and returns the result (as bytes)
@@ -92,7 +96,7 @@ public class Util {
         return new Gson().fromJson(serializedHash, byte[].class);
     }
 
-    public static String bytesToString(byte[] input) {
-        return new String(input);
+    public static String publicKeyToHex(byte[] input) {
+        return new String(input, StandardCharsets.UTF_8);
     }
 }

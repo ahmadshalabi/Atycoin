@@ -20,7 +20,7 @@ public class ProofOfWork {
             byte[] data = block.concatenateBlockData();
 
             // Double hash
-            hash = Util.applySha256(Util.applySha256(data));
+            hash = Util.applySHA256(Util.applySHA256(data));
 
             // Change to Big-endian
             hash = Util.changeByteOrderEndianSystem(hash);
@@ -65,7 +65,7 @@ public class ProofOfWork {
     public boolean isValidProofOFWork() {
         byte[] data = block.concatenateBlockData();
 
-        byte[] calculatedHash = Util.applySha256(Util.applySha256(data));
+        byte[] calculatedHash = Util.applySHA256(Util.applySHA256(data));
 
         // Change to Big-endian
         calculatedHash = Util.changeByteOrderEndianSystem(calculatedHash);

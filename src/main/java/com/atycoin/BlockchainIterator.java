@@ -7,7 +7,7 @@ import java.util.Iterator;
 public class BlockchainIterator implements Iterator<Block> {
     // get Big-endian form for genesisPrevHash and serialize it
     private static final String genesisPrevHash = Util.serializeHash(Util.changeByteOrderEndianSystem(
-            Util.applySha256(Util.changeByteOrderEndianSystem("Atycoin".getBytes()))));
+            Util.applySHA256(Util.changeByteOrderEndianSystem("Atycoin".getBytes()))));
 
     private Jedis dbConnection;
     private String currentHashSerialized;
