@@ -26,9 +26,9 @@ public class Blockchain implements Iterable<Block> {
     }
 
     //TODO: Check filed connection
-    public void addBlock(ArrayList<Transaction> transactions) {
+    public void mineBlock(ArrayList<Transaction> transactions) {
+        tipOfChain = dbConnection.get("l");
         Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
-        //Block newBlock = new Block(transactions, Util.deserializeHash(tipOfChain));
 
         tipOfChain = Util.serializeHash(newBlock.hash);
         String newBlockSerialized = newBlock.serializeBlock();
@@ -41,6 +41,7 @@ public class Blockchain implements Iterable<Block> {
     //TODO: Check filed connection
     // creates a new Blockchain with genesis Block
     public void createBlockchain(String address) {
+        instance.tipOfChain = dbConnection.get("l");
         if (tipOfChain == null) {
             System.out.println("No existing blockchain found. Creating a new one...\n");
 
@@ -70,7 +71,8 @@ public class Blockchain implements Iterable<Block> {
         HashMap<String, ArrayList<Integer>> spentTXOs = new HashMap<>();
 
         //TODO: Optimize logic in find unspentTransactions
-        for (Block block : Blockchain.getInstance()) {
+        Blockchain blockchain = Blockchain.getInstance();
+        for (Block block : blockchain) {
             for (Transaction transaction : block.transactions) {
                 String transactionId = Util.bytesToHex(transaction.id);
 
@@ -88,7 +90,11 @@ public class Blockchain implements Iterable<Block> {
                         }
                     }
 
-                    if (!isTransactionOutputSpent && transactionOutput.canBeUnlockedWith(address)) {
+                    if (isTransactionOutputSpent) {
+                        continue;
+                    }
+
+                    if (transactionOutput.canBeUnlockedWith(address)) {
                         unspentTransactions.add(transaction);
                     }
                 }
@@ -130,44 +136,5 @@ public class Blockchain implements Iterable<Block> {
         }
 
         return UTXOs;
-    }
-
-    public HashMap<String, ArrayList<Integer>> findSpendableOutputs(String address, int amount) {
-        HashMap<String, ArrayList<Integer>> unspentOutputs = new HashMap<>();
-        ArrayList<Transaction> unspentTransactions = findUnspentTransaction(address);
-        int accumulated = 0;
-
-        boolean isAmountReached = false;
-
-        for (Transaction unspentTransaction : unspentTransactions) {
-            String txID = Util.bytesToHex(unspentTransaction.id);
-
-            for (TransactionOutput transactionOutput : unspentTransaction.outputs) {
-                if (transactionOutput.canBeUnlockedWith(address) && accumulated < amount) {
-
-                    accumulated += transactionOutput.value;
-
-                    ArrayList<Integer> list = unspentOutputs.get(txID);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
-                        unspentOutputs.put(txID, list);
-                    } else {
-                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
-                    }
-
-                    if (accumulated >= amount) {
-                        isAmountReached = true;
-                        break;
-                    }
-                }
-            }
-
-            if (isAmountReached) {
-                break;
-            }
-        }
-
-        return unspentOutputs;
     }
 }

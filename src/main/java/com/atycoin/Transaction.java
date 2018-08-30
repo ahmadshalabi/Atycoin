@@ -1,8 +1,12 @@
 package com.atycoin;
 
+import org.bouncycastle.util.encoders.Hex;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Transaction {
     public static final int reward = 10;
@@ -78,12 +82,72 @@ public class Transaction {
                 inputs.get(0).transactionOutputIndex == -1;
     }
 
-//    public static Transaction newUTXOTransaction(String from, String to, int amount) {
-//        ArrayList<TransactionInput> inputs;
-//        ArrayList<TransactionOutput> outputs;
-//
-//        Blockchain blockchain = Blockchain.getInstance();
-//        HashMap<String, ArrayList<Integer>> validOutputs = blockchain.findSpendableOutputs(from, amount);
-//
-//    }
+    //TODO: It need a lot of clean ^_^
+    public static Transaction newUTXOTransaction(String from, String to, int amount) {
+        HashMap<String, ArrayList<Integer>> unspentOutputs = new HashMap<>();
+
+        Blockchain blockchain = Blockchain.getInstance();
+        ArrayList<Transaction> unspentTransactions = blockchain.findUnspentTransaction(from);
+        int accumulated = 0;
+
+        boolean isAmountReached = false;
+
+        // find unspentOutputs unlocked by (from)
+        for (Transaction unspentTransaction : unspentTransactions) {
+            String txID = Util.bytesToHex(unspentTransaction.id);
+
+            for (TransactionOutput transactionOutput : unspentTransaction.outputs) {
+                if (transactionOutput.canBeUnlockedWith(from) && accumulated < amount) {
+
+                    accumulated += transactionOutput.value;
+
+                    ArrayList<Integer> list = unspentOutputs.get(txID);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
+                        unspentOutputs.put(txID, list);
+                    } else {
+                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
+                    }
+
+                    if (accumulated >= amount) {
+                        isAmountReached = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isAmountReached) {
+                break;
+            }
+        }
+
+        if (accumulated < amount) {
+            System.out.println("ERROR: Not enough funds");
+            return null;
+        }
+
+        ArrayList<TransactionInput> inputs = new ArrayList<>();
+        ArrayList<TransactionOutput> outputs = new ArrayList<>();
+
+        //Build a list of inputs
+        for (Map.Entry<String, ArrayList<Integer>> entry : unspentOutputs.entrySet()) {
+            byte[] transactionId = Hex.decode(entry.getKey());
+            for (int transactionOutputIndex : entry.getValue()) {
+                inputs.add(new TransactionInput(transactionId, transactionOutputIndex, from));
+            }
+        }
+
+        //Build a list of outputs
+        outputs.add(new TransactionOutput(amount, to));
+        if (accumulated > amount) {
+            int change = accumulated - amount;
+            outputs.add(new TransactionOutput(change, from));
+        }
+
+        Transaction newTransaction = new Transaction(inputs, outputs);
+        newTransaction.setID();
+
+        return newTransaction;
+    }
 }
