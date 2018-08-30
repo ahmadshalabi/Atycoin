@@ -10,21 +10,16 @@ import java.util.Scanner;
 
 // responsible for processing command line
 public class Commander {
-    public static Commander instance;
+    public static Commander instance = new Commander();
     public static boolean debugMode = false;
-    public HashMap<String, Command> cmds;
+    public HashMap<String, Command> commands;
     public Scanner scanner;
 
-    public Commander() {
+    private Commander() {
         setup();
-        instance = this;
     }
 
     public static Commander getInstance() {
-        if (instance != null) {
-            instance = new Commander();
-        }
-
         return instance;
     }
 
@@ -32,31 +27,18 @@ public class Commander {
         System.out.println("- " + msg);
     }
 
-    public static String CommanderInput(String msg) {
+    public static void CommanderInput(String msg) {
         System.out.println(msg + ": ");
-        return null;
     }
 
-    //get command object from cmds and call command.run(args)
-    public void call(String[] rawArgs) {
-        String function = rawArgs[0];
-        String[] args = Arrays.copyOfRange(rawArgs, 1, rawArgs.length);
-
-        Command command = cmds.get(function);
-        if (command == null) {
-            CommanderPrint("command function: '" + function + "' not found. Type -help for a list of functions");
-        } else {
-            command.run(args);
-        }
-    }
-
-    // populates the command arraylist with commands
+    // populates commands in a map
     public void setup() {
-        cmds = new HashMap<>();
-        cmds.put("addblock", new AddBlockCommand());
-        cmds.put("printchain", new PrintChainCommand());
-        cmds.put("createblockchain", new CreateBlockchainCommand());
-        cmds.put("help", new HelpCommand());
+        commands = new HashMap<>();
+        commands.put("addblock", new AddBlockCommand());
+        commands.put("printchain", new PrintChainCommand());
+        commands.put("createblockchain", new CreateBlockchainCommand());
+        commands.put("getbalance", new GetBalanceCommand());
+        commands.put("help", new HelpCommand());
         scanner = new Scanner(System.in);
     }
 
@@ -64,7 +46,7 @@ public class Commander {
     public void listen() {
         while (true) {
             //Display input message:
-            CommanderInput("atycoin-cli");
+            CommanderInput("Atycoin-cli");
 
             //Gather user input
             String rawInput = scanner.nextLine();
@@ -81,7 +63,6 @@ public class Commander {
             if (!rawArgs[0].equals("")) {
                 //check if debug mode is false, if so then run command in try catch
                 // to avoid crashing the application if an error is thrown
-
                 if (!debugMode) {
                     try {
                         call(rawArgs);
@@ -94,6 +75,19 @@ public class Commander {
                     call(rawArgs);
                 }
             }
+        }
+    }
+
+    //get command object from commands and call command.run(args)
+    public void call(String[] rawArgs) {
+        String function = rawArgs[0];
+        String[] args = Arrays.copyOfRange(rawArgs, 1, rawArgs.length);
+
+        Command command = commands.get(function);
+        if (command == null) {
+            CommanderPrint("command function: '" + function + "' not found. Type help for a list of functions");
+        } else {
+            command.run(args);
         }
     }
 }

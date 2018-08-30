@@ -12,7 +12,7 @@ public class PrintChainCommand implements Command {
     public String getHelp() {
         return "cmd: printchain \n" +
                 "- description: print all the blocks of the blockchain. \n" +
-                "- usage: printchain \n" +
+                "- usage: printchain param [situational...] \n" +
                 "- param: '-help' \n" +
                 "------------------------------------------------------------------------";
     }
@@ -24,8 +24,7 @@ public class PrintChainCommand implements Command {
 
     @Override
     public void run(String[] args) {
-        //if No arguments
-        if (args.length == 0) {
+        if (args.length == 0) { //no parameters
             for (Block block : Blockchain.getInstance()) {
                 System.out.printf("Prev. hash: %s%n", Util.bytesToHex(block.hashPrevBlock));
                 System.out.printf("Merkle Root: %s%n", Util.bytesToHex(block.hashMerkleRoot));
@@ -37,7 +36,7 @@ public class PrintChainCommand implements Command {
         //check if command exists in params list
         if (!Arrays.asList(getParams()).contains(args[0])) {
             Commander.CommanderPrint("ERROR ! unknown parameters...");
-            Commander.CommanderPrint(Arrays.toString((getParams())));
+            Commander.CommanderPrint(Arrays.toString(getParams()));
         }
 
         String[] params = getParams();

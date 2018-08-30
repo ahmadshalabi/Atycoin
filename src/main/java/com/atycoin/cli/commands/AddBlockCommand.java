@@ -9,7 +9,7 @@ public class AddBlockCommand implements Command {
     public String getHelp() {
         return "cmd: addblock \n" +
                 "- description: add a block to the blockchain \n" +
-                "- usage: addblock -data BLOCK_DATA \n" +
+                "- usage: addblock param [situational...] \n" +
                 "- param: '-help', '-data' \n" +
                 "------------------------------------------------------------------------";
     }
@@ -24,7 +24,7 @@ public class AddBlockCommand implements Command {
         //check if command exists in params list
         if (!Arrays.asList(getParams()).contains(args[0])) {
             Commander.CommanderPrint("ERROR ! unknown parameters...");
-            Commander.CommanderPrint(Arrays.toString((getParams())));
+            Commander.CommanderPrint(Arrays.toString(getParams()));
         }
 
         String[] params = getParams();

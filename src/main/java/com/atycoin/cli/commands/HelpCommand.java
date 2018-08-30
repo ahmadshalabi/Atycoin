@@ -5,7 +5,7 @@ import com.atycoin.cli.Commander;
 public class HelpCommand implements Command {
     @Override
     public String getHelp() {
-        return "cmd: -help \n" +
+        return "cmd: help \n" +
                 "- description: Displays help for all known command. \n" +
                 "------------------------------------------------------------------------";
     }
@@ -21,8 +21,8 @@ public class HelpCommand implements Command {
                 "-  ATYCOIN HELP\n" +
                 "------------------------------------------------------------------------");
 
-        for (String key : Commander.getInstance().cmds.keySet()) {
-            Commander.CommanderPrint(Commander.getInstance().cmds.get(key).getHelp());
+        for (String key : Commander.getInstance().commands.keySet()) {
+            Commander.CommanderPrint(Commander.getInstance().commands.get(key).getHelp());
         }
     }
 }

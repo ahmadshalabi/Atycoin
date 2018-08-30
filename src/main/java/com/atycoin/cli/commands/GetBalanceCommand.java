@@ -1,17 +1,19 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Blockchain;
+import com.atycoin.TransactionOutput;
 import com.atycoin.cli.Commander;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
-public class CreateBlockchainCommand implements Command {
+public class GetBalanceCommand implements Command {
     @Override
     public String getHelp() {
-        return "cmd: createblockchain \n" +
-                "- description: Create a blockchain and send genesis block reward to ADDRESS \n" +
-                "- usage: createblockchain param [situational...] \n" +
-                "- param: '-address' ADDRESS, '-help'\n" +
+        return "cmd: getbalance \n" +
+                "- description: Get balance of ADDRESS \n" +
+                "- usage: getbalance param [situational...] \n" +
+                "- param: '-address' ADDRESS, '-help' \n" +
                 "------------------------------------------------------------------------";
     }
 
@@ -42,7 +44,14 @@ public class CreateBlockchainCommand implements Command {
             }
 
             Blockchain blockchain = Blockchain.getInstance();
-            blockchain.createBlockchain(address);
+            ArrayList<TransactionOutput> UTXOs = blockchain.findUTXO(address);
+
+            int balance = 0;
+            for (TransactionOutput transactionOutput : UTXOs) {
+                balance += transactionOutput.value;
+            }
+
+            System.out.printf("Balance of '%s': %d\n", address, balance);
         } else if (args[0].equals(params[0])) { //-help
             Commander.CommanderPrint(getHelp());
         } else {

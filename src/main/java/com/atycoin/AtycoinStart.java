@@ -10,7 +10,6 @@ public class AtycoinStart {
         //Setup bouncy castle as security provider
         Security.addProvider(new BouncyCastleProvider());
 
-        Commander commander = new Commander();
-        commander.listen();
+        Commander.getInstance().listen();
     }
 }
