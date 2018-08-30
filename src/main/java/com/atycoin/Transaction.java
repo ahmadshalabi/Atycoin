@@ -5,32 +5,36 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Transaction {
-    public static final int reward = 50;
+    public static final int reward = 10;
 
-    byte[] transactionId;
-    ArrayList<TransactionInput> transactionInputs;
-    ArrayList<TransactionOutput> transactionOutputs;
+    byte[] id;
+    ArrayList<TransactionInput> inputs;
+    ArrayList<TransactionOutput> outputs;
 
-    private Transaction(ArrayList<TransactionInput> transactionInputs, ArrayList<TransactionOutput> transactionOutputs) {
-        this.transactionInputs = transactionInputs;
-        this.transactionOutputs = transactionOutputs;
+    private Transaction(ArrayList<TransactionInput> inputs, ArrayList<TransactionOutput> outputs) {
+        this.inputs = inputs;
+        this.outputs = outputs;
 
-        transactionId = Util.applySha256(concatenateTransactionData());
+        id = Util.applySha256(concatenateTransactionData());
+
+        // Big-endian
+        id = Util.changeByteOrderEndianSystem(id);
     }
 
     // creates a new coinbase transaction
-    public static Transaction newCoinbaseTX(String to, String data) {
+    public static Transaction newCoinbaseTransaction(String to, String data) {
         //Reward after genesis block
         if (data.isEmpty()) {
             data = String.format("Reward to '%s'", to);
         }
 
-        //Only on input, prevTransactionOutputId is empty, transactionOutputs equal to -1
-        //coinbase transaction doesn't store a script in
-        // scriptSig (Arbitrary data is stored there)
+        //Only one input, With this information
+        //  1- prevTransactionId is empty
+        //  2- transactionOutputIndex is -1
+        //  3- Any arbitrary data
         TransactionInput transactionInput = new TransactionInput(new byte[0], -1, data);
 
-        //reward is a reward
+        //Reward to miner
         TransactionOutput transactionOutput = new TransactionOutput(reward, to);
 
         ArrayList<TransactionInput> transactionInputs = new ArrayList<>();
@@ -45,18 +49,39 @@ public class Transaction {
     public byte[] concatenateTransactionData() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
+            //little-endian
             buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(reward)));
 
-            for (TransactionInput transactionInput : transactionInputs) {
-                buffer.write(Util.changeByteOrderEndianSystem(transactionInput.concatenateTransactionInputData()));
+            //Already little-endian from input itself
+            for (TransactionInput transactionInput : inputs) {
+                buffer.write(transactionInput.concatenateTransactionInputData());
             }
 
-            for (TransactionOutput transactionOutput : transactionOutputs) {
-                buffer.write(Util.changeByteOrderEndianSystem(transactionOutput.concatenateTransactionOutputData()));
+            //Already little-endian from output itself
+            for (TransactionOutput transactionOutput : outputs) {
+                buffer.write(transactionOutput.concatenateTransactionOutputData());
             }
             return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public boolean isCoinbase() {
+        // Coinbase have:
+        // 1- One inputs and,
+        // 2- this input have empty previous transaction hash, and
+        // 3- outputIndex of this input is -1
+        return inputs.size() == 1 &&
+                inputs.get(0).prevTransactionId.length == 0 &&
+                inputs.get(0).transactionOutputIndex == -1;
+    }
+
+//    public static Transaction newUTXOTransaction(String from, String to, int amount, Blockchain blockchain) {
+//        ArrayList<TransactionInput> inputs;
+//        ArrayList<TransactionOutput> outputs;
+//
+//        HashMap<String, ArrayList<Integer>> validOutputs = blockchain.findSpendableOutputs(from, amount);
+//
+//    }
 }
