@@ -18,17 +18,15 @@ public class Blockchain implements Iterable<Block> {
     //TODO: Do manual commit and support rollback (BulkTransaction in DB)
     private Blockchain() {
         dbConnection = new Jedis("localhost");
-        tipOfChain = dbConnection.get("l");
     }
 
     public static Blockchain getInstance() {
+        instance.tipOfChain = dbConnection.get("l");
         return instance;
     }
 
     //TODO: Check filed connection
     public void addBlock(ArrayList<Transaction> transactions) {
-        tipOfChain = dbConnection.get("l"); //To store it as prevBlockHash in the new block
-
         Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
         //Block newBlock = new Block(transactions, Util.deserializeHash(tipOfChain));
 
@@ -43,8 +41,6 @@ public class Blockchain implements Iterable<Block> {
     //TODO: Check filed connection
     // creates a new Blockchain with genesis Block
     public void createBlockchain(String address) {
-        tipOfChain = dbConnection.get("l");
-
         if (tipOfChain == null) {
             System.out.println("No existing blockchain found. Creating a new one...\n");
 
