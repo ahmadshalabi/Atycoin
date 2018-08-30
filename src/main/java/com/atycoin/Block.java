@@ -22,14 +22,14 @@ public class Block {
         this.transactions = transactions;
         this.hashPrevBlock = hashPrevBlock;
 
-        hashMerkleRoot = hashTransaction();
+        hashMerkleRoot = hashTransactions();
     }
 
     // newGenesisBlock: creates and returns genesis Block
     public static Block newGenesisBlock(Transaction coinbase) {
-        //byte[] merkleRoot = "Genesis block".getBytes();
         //TODO: Mining the prevHash
-        byte[] prevHash = Util.applySha256("Atycoion".getBytes());
+        byte[] prevHash = Util.changeByteOrderEndianSystem(
+                Util.applySha256(Util.changeByteOrderEndianSystem("Atycoin".getBytes())));
 
         //add coinbase Transaction
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -37,7 +37,8 @@ public class Block {
 
         Block block = new Block(transactions, prevHash);
 
-        ProofOfWork.getInstance(block).runProofOfWork();
+        ProofOfWork proofOfWork = new ProofOfWork(block);
+        proofOfWork.runProofOfWork();
 
         return block;
     }
@@ -45,7 +46,10 @@ public class Block {
     // newBlock: creates and returns Block
     public static Block newBlock(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
         Block block = new Block(transactions, hashPrevBlock);
-        ProofOfWork.getInstance(block).runProofOfWork();
+
+        ProofOfWork proofOfWork = new ProofOfWork(block);
+        proofOfWork.runProofOfWork();
+
         return block;
     }
 
@@ -53,7 +57,9 @@ public class Block {
         //TODO: Consider more efficient way to concatenate byte[] arrays
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
         try {
+            //concatenate data in little-endian order
             buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(version)));
             buffer.write(Util.changeByteOrderEndianSystem(hashPrevBlock));
             buffer.write(Util.changeByteOrderEndianSystem(hashMerkleRoot));
@@ -68,14 +74,19 @@ public class Block {
     }
 
     // hashTransactions returns a hash of the transactions in the block
-    public byte[] hashTransaction() {
+    public byte[] hashTransactions() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
         for (Transaction transaction : transactions) {
-            buffer.write(transaction.transactionId, 0, transaction.transactionId.length);
+            try {
+                //little-endian
+                buffer.write(Util.changeByteOrderEndianSystem(transaction.id));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
-        return Util.applySha256(buffer.toByteArray());
+        //Big-endian
+        return Util.changeByteOrderEndianSystem(Util.applySha256(buffer.toByteArray()));
     }
 
     // Serialize the block
