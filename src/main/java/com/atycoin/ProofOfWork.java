@@ -5,13 +5,9 @@ public class ProofOfWork {
     private int targetBits;
     private byte[] hash;
 
-    private ProofOfWork(Block block) {
+    public ProofOfWork(Block block) {
         this.block = block;
         targetBits = block.targetBits;
-    }
-
-    public static ProofOfWork getInstance(Block block) {
-        return new ProofOfWork(block);
     }
 
     // performs a proof-of-work
