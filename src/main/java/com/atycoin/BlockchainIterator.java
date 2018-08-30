@@ -5,7 +5,10 @@ import redis.clients.jedis.Jedis;
 import java.util.Iterator;
 
 public class BlockchainIterator implements Iterator<Block> {
-    private static String genesisPrevHash = Util.serializeHash(Util.applySha256("Atycoion".getBytes()));
+    // get Big-endian form for genesisPrevHash and serialize it
+    private static final String genesisPrevHash = Util.serializeHash(Util.changeByteOrderEndianSystem(
+            Util.applySha256(Util.changeByteOrderEndianSystem("Atycoin".getBytes()))));
+
     private Jedis dbConnection;
     private String currentHashSerialized;
 
@@ -29,6 +32,8 @@ public class BlockchainIterator implements Iterator<Block> {
     public Block next() {
         String blockSerialized = dbConnection.get(currentHashSerialized);
         Block block = Util.deserializeBlock(blockSerialized);
+
+        // get next blockHash
         currentHashSerialized = Util.serializeHash(block.hashPrevBlock);
         return block;
     }
