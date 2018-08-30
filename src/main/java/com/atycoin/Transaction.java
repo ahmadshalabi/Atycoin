@@ -14,11 +14,6 @@ public class Transaction {
     private Transaction(ArrayList<TransactionInput> inputs, ArrayList<TransactionOutput> outputs) {
         this.inputs = inputs;
         this.outputs = outputs;
-
-        id = Util.applySha256(concatenateTransactionData());
-
-        // Big-endian
-        id = Util.changeByteOrderEndianSystem(id);
     }
 
     // creates a new coinbase transaction
@@ -43,10 +38,12 @@ public class Transaction {
         ArrayList<TransactionOutput> transactionOutputs = new ArrayList<>();
         transactionOutputs.add(transactionOutput);
 
-        return new Transaction(transactionInputs, transactionOutputs);
+        Transaction coinbaseTransaction = new Transaction(transactionInputs, transactionOutputs);
+        coinbaseTransaction.setID();
+        return coinbaseTransaction;
     }
 
-    public byte[] concatenateTransactionData() {
+    public void setID() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             //little-endian
@@ -61,7 +58,11 @@ public class Transaction {
             for (TransactionOutput transactionOutput : outputs) {
                 buffer.write(transactionOutput.concatenateTransactionOutputData());
             }
-            return buffer.toByteArray();
+
+            id = Util.applySha256(buffer.toByteArray());
+
+            // Big-endian
+            id = Util.changeByteOrderEndianSystem(id);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
