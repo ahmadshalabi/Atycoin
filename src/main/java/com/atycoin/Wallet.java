@@ -30,13 +30,6 @@ public class Wallet {
         return wallet;
     }
 
-    public static void main(String[] args) {
-        Wallet wallet = newWallet();
-
-        byte[] address = wallet.getAddress();
-        System.out.println(wallet.validateAddress(address));
-    }
-
     private void generateKeyPair() {
         try {
             KeyPairGenerator keyGen = new KeyPairGeneratorSpi.ECDSA();
@@ -72,9 +65,15 @@ public class Wallet {
         }
     }
 
+    // hashes public key
+    public static byte[] hashPublicKey(byte[] publicKey) {
+        byte[] publicSHA256 = Util.applySHA256(publicKey);
+        return Util.applyRIPEMP160(publicSHA256);
+    }
+
     // returns wallet address
     public byte[] getAddress() {
-        byte[] publicKeyHash = hashPublicKey();
+        byte[] publicKeyHash = hashPublicKey(publicKey);
 
         //VersionedPayload
         ByteArrayOutputStream payload = new ByteArrayOutputStream();
@@ -86,18 +85,13 @@ public class Wallet {
         //fullPayload
         payload.write(checksum, 0, checksum.length);
 
+        //calc Address base on BASE58 encoding
         return Base58.encode(payload.toByteArray());
     }
 
-    // hashes public key
-    public byte[] hashPublicKey() {
-        byte[] publicSHA256 = Util.applySHA256(publicKey);
-        return Util.applayRIPEMP160(publicSHA256);
-    }
-
     // generates a checksum for a public key
-    public byte[] checksum(byte[] payload) {
-        byte[] firstSHA = Util.applySHA256(payload);
+    public byte[] checksum(byte[] versionedPayload) {
+        byte[] firstSHA = Util.applySHA256(versionedPayload);
         byte[] secondSHA = Util.applySHA256(firstSHA);
 
         return Arrays.copyOfRange(secondSHA, 0, CHECKSUM_LEN);
