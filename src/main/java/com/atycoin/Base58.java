@@ -17,20 +17,20 @@ public class Base58 {
         StringBuilder buffer = new StringBuilder();
 
         // SumOf(in * 2^(i*8)
-        BigInteger sumOfInputInBase8 = new BigInteger(POSITIVE_SIGNUM, input);
+        BigInteger sumOfInputInBase58 = new BigInteger(POSITIVE_SIGNUM, input);
 
         BigInteger[] quotientAndRemainder;
-        while (sumOfInputInBase8.compareTo(BigInteger.ZERO) != 0) {
-            quotientAndRemainder = sumOfInputInBase8.divideAndRemainder(BASE58);
-            sumOfInputInBase8 = quotientAndRemainder[0]; // quotient
+        while (sumOfInputInBase58.compareTo(BigInteger.ZERO) != 0) {
+            quotientAndRemainder = sumOfInputInBase58.divideAndRemainder(BASE58);
+            sumOfInputInBase58 = quotientAndRemainder[0]; // quotient
             //Append at beginning of buffer
             buffer.insert(0, ALPHABET[quotientAndRemainder[1].intValue()]); // Map Remainder to Alphabet
         }
 
         // Convert leading zeros
-        for (byte element : input) {
-            if (element == 0x00) {
-                buffer.insert(0, ALPHABET[0]);
+        for (byte digit : input) {
+            if (digit == 0x00) {
+                buffer.insert(0, ALPHABET[0]); // 0x00 in BASE58 == '1'
             } else {
                 break;
             }
@@ -41,20 +41,26 @@ public class Base58 {
 
     // decodes Base58-encoded data
     public static byte[] decode(byte[] input) {
-        BigInteger num = BigInteger.ZERO;
 
-        for (byte elem : input) {
-            num = num.multiply(BASE58);
-
-            num = num.add(BigInteger.valueOf(ALPHABET_String.indexOf(elem)));
+        if (input.length == 0) {
+            return new byte[0];
         }
 
-        // if numBytes length less than 25, there are leading zero
-        byte[] result = new byte[25];
-        byte[] numBytes = num.toByteArray();
-        int numOfLeadingZero = result.length - numBytes.length;
-        System.arraycopy(numBytes, 0, result, numOfLeadingZero, numBytes.length);
+        BigInteger sum = BigInteger.ZERO;
 
-        return result;
+        // sum * 58 + indexOF(digit)
+        for (byte digit : input) {
+            sum = sum.multiply(BASE58);
+
+            sum = sum.add(BigInteger.valueOf(ALPHABET_String.indexOf(digit)));
+        }
+
+        // if incompleteFullPayload length less than 25, there are leading zero
+        byte[] fullPayload = new byte[25];
+        byte[] incompleteFullPayload = sum.toByteArray();
+        int numOfLeadingZero = fullPayload.length - incompleteFullPayload.length;
+        System.arraycopy(incompleteFullPayload, 0, fullPayload, numOfLeadingZero, incompleteFullPayload.length);
+
+        return fullPayload;
     }
 }
