@@ -7,7 +7,6 @@ public class Base58 {
     private static final String ALPHABET_String = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
     private static final BigInteger BASE58 = new BigInteger(String.valueOf(ALPHABET.length));
     private static final int POSITIVE_SIGNUM = 1;
-    String str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
     // encodes a byte array to Base58
     public static byte[] encode(byte[] input) {
@@ -38,5 +37,24 @@ public class Base58 {
         }
 
         return buffer.toString().getBytes();
+    }
+
+    // decodes Base58-encoded data
+    public static byte[] decode(byte[] input) {
+        BigInteger num = BigInteger.ZERO;
+
+        for (byte elem : input) {
+            num = num.multiply(BASE58);
+
+            num = num.add(BigInteger.valueOf(ALPHABET_String.indexOf(elem)));
+        }
+
+        // if numBytes length less than 25, there are leading zero
+        byte[] result = new byte[25];
+        byte[] numBytes = num.toByteArray();
+        int numOfLeadingZero = result.length - numBytes.length;
+        System.arraycopy(numBytes, 0, result, numOfLeadingZero, numBytes.length);
+
+        return result;
     }
 }
