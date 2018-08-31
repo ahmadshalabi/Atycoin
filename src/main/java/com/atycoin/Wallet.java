@@ -90,14 +90,14 @@ public class Wallet {
     }
 
     // generates a checksum for a public key
-    public byte[] checksum(byte[] versionedPayload) {
+    public static byte[] checksum(byte[] versionedPayload) {
         byte[] firstSHA = Util.applySHA256(versionedPayload);
         byte[] secondSHA = Util.applySHA256(firstSHA);
 
         return Arrays.copyOfRange(secondSHA, 0, CHECKSUM_LEN);
     }
 
-    public boolean validateAddress(byte[] address) {
+    public static boolean validateAddress(byte[] address) {
         byte[] fullyPayload = Base58.decode(address);
 
         int checksumPos = fullyPayload.length - CHECKSUM_LEN;
