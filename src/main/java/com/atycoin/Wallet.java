@@ -78,8 +78,8 @@ public class Wallet {
 
         //fullPayload
         payload.write(checksum, 0, checksum.length);
-        //byte[] address = Base58Encode()
-        return payload.toByteArray();
+
+        return Base58.encode(payload.toByteArray());
     }
 
     // hashes public key
