@@ -23,7 +23,7 @@ public class ProofOfWork {
             hash = Util.applySHA256(Util.applySHA256(data));
 
             // Change to Big-endian
-            hash = Util.changeByteOrderEndianSystem(hash);
+            hash = Util.reverseBytesOrder(hash);
 
             if (isHashMeetTarget(hash)) {
                 block.setHash(hash);
@@ -68,7 +68,7 @@ public class ProofOfWork {
         byte[] calculatedHash = Util.applySHA256(Util.applySHA256(data));
 
         // Change to Big-endian
-        calculatedHash = Util.changeByteOrderEndianSystem(calculatedHash);
+        calculatedHash = Util.reverseBytesOrder(calculatedHash);
 
         return isHashMeetTarget(calculatedHash);
     }

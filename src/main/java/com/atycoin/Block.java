@@ -28,8 +28,8 @@ public class Block {
     // newGenesisBlock: creates and returns genesis Block
     public static Block newGenesisBlock(Transaction coinbase) {
         //TODO: Mining the prevHash
-        byte[] prevHash = Util.changeByteOrderEndianSystem(
-                Util.applySHA256(Util.changeByteOrderEndianSystem("Atycoin".getBytes())));
+        byte[] prevHash = Util.reverseBytesOrder(
+                Util.applySHA256(Util.reverseBytesOrder("Atycoin".getBytes())));
 
         //add coinbase Transaction
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -60,12 +60,12 @@ public class Block {
 
         try {
             //concatenate data in little-endian order
-            buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(version)));
-            buffer.write(Util.changeByteOrderEndianSystem(hashPrevBlock));
-            buffer.write(Util.changeByteOrderEndianSystem(hashMerkleRoot));
-            buffer.write(Util.changeByteOrderEndianSystem(Util.longToBytes(timestamp)));
-            buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(targetBits)));
-            buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(nonce)));
+            buffer.write(Util.reverseBytesOrder(Util.intToBytes(version)));
+            buffer.write(Util.reverseBytesOrder(hashPrevBlock));
+            buffer.write(Util.reverseBytesOrder(hashMerkleRoot));
+            buffer.write(Util.reverseBytesOrder(Util.longToBytes(timestamp)));
+            buffer.write(Util.reverseBytesOrder(Util.intToBytes(targetBits)));
+            buffer.write(Util.reverseBytesOrder(Util.intToBytes(nonce)));
 
             return buffer.toByteArray();
         } catch (IOException e) {
@@ -79,14 +79,14 @@ public class Block {
         for (Transaction transaction : transactions) {
             try {
                 //little-endian
-                buffer.write(Util.changeByteOrderEndianSystem(transaction.id));
+                buffer.write(Util.reverseBytesOrder(transaction.id));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
         //Big-endian
-        return Util.changeByteOrderEndianSystem(Util.applySHA256(buffer.toByteArray()));
+        return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
     }
 
     // Serialize the block

@@ -1,8 +1,5 @@
 package com.atycoin;
 
-//TODO: BASE58 Encoding
-//TODO: Convert key to Address
-//TODO: Checksum
 //TODO: Clean Utility class
 
 import com.google.gson.Gson;
@@ -13,34 +10,34 @@ import org.bouncycastle.util.Arrays;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.Base64;
 
 public class Util {
-    public static byte[] applySHA256(byte[] input) {
+    public static byte[] applySHA256(byte[] data) {
         MessageDigest digest = new SHA256.Digest();
 
-        //Applies sha256 to our input
-        return digest.digest(input);
+        //Applies sha256 to our data
+        return digest.digest(data);
     }
 
-    public static byte[] applayRIPEMP160(byte[] input) {
+    public static byte[] applyRIPEMP160(byte[] data) {
         MessageDigest digest = new RIPEMD160.Digest();
 
-        return digest.digest(input);
+        return digest.digest(data);
     }
 
     // Applies ECDSA Signature and returns the result (as bytes)
-    public static byte[] applyECDSASig(PrivateKey privateKey, byte[] input) {
+    public static byte[] applyECDSASig(PrivateKey privateKey, byte[] data) {
         try {
             Signature dsa = Signature.getInstance("ECDSA", "BC");
             dsa.initSign(privateKey);
-            dsa.update(input);
+            dsa.update(data);
             return dsa.sign();
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException | NoSuchProviderException e) {
             throw new RuntimeException(e);
         }
     }
 
+    //TODO: Edit publicKey type like in Wallet
     //Verifies a String signature
     public static boolean verifyECDSASig(PublicKey publicKey, byte[] data, byte[] signature) {
         try {
@@ -53,9 +50,9 @@ public class Util {
         }
     }
 
-    public static String getStringFromKey(Key key) {
-        return Base64.getEncoder().encodeToString(key.getEncoded());
-    }
+//    public static String getStringFromKey(Key key) {
+//        return Base64.getEncoder().encodeToString(key.getEncoded());
+//    }
 
     public static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder(); // This will contain hash as hexadecimal
@@ -83,8 +80,9 @@ public class Util {
         return byteBuffer.array();
     }
 
-    public static byte[] changeByteOrderEndianSystem(byte[] input) {
-        return Arrays.reverse(input);
+    // Convert between Endian Order
+    public static byte[] reverseBytesOrder(byte[] data) {
+        return Arrays.reverse(data);
     }
 
     // Short hand helper to turn Object into a json string
@@ -96,7 +94,7 @@ public class Util {
         return new Gson().fromJson(serializedHash, byte[].class);
     }
 
-    public static String publicKeyToHex(byte[] input) {
-        return new String(input, StandardCharsets.UTF_8);
+    public static String publicKeyToHex(byte[] publicKey) {
+        return new String(publicKey, StandardCharsets.UTF_8);
     }
 }
