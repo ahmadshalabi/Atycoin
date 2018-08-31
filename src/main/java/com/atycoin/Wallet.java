@@ -14,7 +14,7 @@ import java.util.Arrays;
 // Wallet stores private and public keys
 public class Wallet {
     static final byte VERSION = 0x00;
-    static final int ADDRESS_CHECKSUM_LEN = 4;
+    static final int CHECKSUM_LEN = 4;
 
     ECPrivateKey privateKey;
     byte[] publicKey;
@@ -28,6 +28,13 @@ public class Wallet {
         wallet.generateKeyPair();
 
         return wallet;
+    }
+
+    public static void main(String[] args) {
+        Wallet wallet = newWallet();
+
+        byte[] address = wallet.getAddress();
+        System.out.println(wallet.validateAddress(address));
     }
 
     private void generateKeyPair() {
@@ -93,6 +100,20 @@ public class Wallet {
         byte[] firstSHA = Util.applySHA256(payload);
         byte[] secondSHA = Util.applySHA256(firstSHA);
 
-        return Arrays.copyOfRange(secondSHA, 0, ADDRESS_CHECKSUM_LEN);
+        return Arrays.copyOfRange(secondSHA, 0, CHECKSUM_LEN);
+    }
+
+    public boolean validateAddress(byte[] address) {
+        byte[] fullyPayload = Base58.decode(address);
+
+        int checksumPos = fullyPayload.length - CHECKSUM_LEN;
+        byte[] actualChecksum = Arrays.copyOfRange(fullyPayload, checksumPos, fullyPayload.length);
+
+        byte[] versionedPayload = Arrays.copyOfRange(fullyPayload,
+                0, checksumPos);
+
+        byte[] targetChecksum = checksum(versionedPayload);
+
+        return Arrays.equals(actualChecksum, targetChecksum);
     }
 }
