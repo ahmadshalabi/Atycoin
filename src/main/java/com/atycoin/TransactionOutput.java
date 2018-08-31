@@ -40,7 +40,7 @@ public class TransactionOutput {
     }
 
     //checks if the output can be unlocked with the provided data
-    public boolean isLockedWithKey(byte[] publicKeyHased) {
-        return Arrays.equals(this.publicKeyHashed, publicKeyHased);
+    public boolean isLockedWithKey(byte[] publicKeyHashed) {
+        return Arrays.equals(this.publicKeyHashed, publicKeyHashed);
     }
 }
