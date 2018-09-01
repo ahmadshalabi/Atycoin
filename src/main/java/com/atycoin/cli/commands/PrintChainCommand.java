@@ -27,11 +27,11 @@ public class PrintChainCommand implements Command {
         if (args.length == 0) { //no parameters
             for (Block block : Blockchain.getInstance()) {
                 Commander.CommanderPrint(String.format(
-                        "============ Block %s ============%n", Util.bytesToHex(block.hash)));
+                        "============ Block %s ============", Util.bytesToHex(block.hash)));
                 Commander.CommanderPrint(String.format(
-                        "Prev. block: %s%n", Util.bytesToHex(block.hashPrevBlock)));
+                        "Prev. block: %s", Util.bytesToHex(block.hashPrevBlock)));
                 Commander.CommanderPrint(String.format(
-                        "Merkle Root: %s%n%n", Util.bytesToHex(block.hashMerkleRoot)));
+                        "Merkle Root: %s%n", Util.bytesToHex(block.hashMerkleRoot)));
             }
             return;
         }
