@@ -12,7 +12,7 @@ public class Block {
     public byte[] hashMerkleRoot;
     public long timestamp;
     public ArrayList<Transaction> transactions;
-    //TODO: separate relevant hashMerkleRoot in BlockHeader
+    //TODO: separate some data in BlockHeader
     private int version = 1;
     private int nonce;
     public byte[] hash; // Current Block hash
@@ -21,13 +21,12 @@ public class Block {
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
         this.transactions = transactions;
         this.hashPrevBlock = hashPrevBlock;
-
         hashMerkleRoot = hashTransactions();
     }
 
     // newGenesisBlock: creates and returns genesis Block
     public static Block newGenesisBlock(Transaction coinbase) {
-        //TODO: Mining the prevHash
+        //TODO: Find way to Mining the prevHash of Genesis Block
         byte[] prevHash = Util.reverseBytesOrder(
                 Util.applySHA256(Util.reverseBytesOrder("Atycoin".getBytes())));
 
@@ -73,13 +72,18 @@ public class Block {
         }
     }
 
+    public static Block deserializeBlock(String serializedBlock) {
+        Gson decoder = new Gson();
+        return decoder.fromJson(serializedBlock, Block.class);
+    }
+
     // hashTransactions returns a hash of the transactions in the block
     public byte[] hashTransactions() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         for (Transaction transaction : transactions) {
             try {
                 //little-endian
-                buffer.write(Util.reverseBytesOrder(transaction.id));
+                buffer.write(Util.reverseBytesOrder(transaction.transactionId));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -91,14 +95,9 @@ public class Block {
 
     // Serialize the block
     public String serializeBlock() {
-        Gson gson = new Gson();
+        Gson encoder = new Gson();
 
-        return gson.toJson(this);
-    }
-
-    public static Block deserializeBlock(String serializedBlock) {
-        Gson gson = new Gson();
-        return gson.fromJson(serializedBlock, Block.class);
+        return encoder.toJson(this);
     }
 
     public void setHash(byte[] hash) {
