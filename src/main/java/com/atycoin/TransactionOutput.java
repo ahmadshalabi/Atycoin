@@ -20,6 +20,17 @@ public class TransactionOutput {
         return transactionOutput;
     }
 
+    // lock signs the output
+    public void lock(String address) {
+        byte[] fullPayload = Base58.decode(address);
+        publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
+    }
+
+    //checks if the output can be unlocked with the provided data
+    public boolean isLockedWithKey(byte[] publicKeyHashed) {
+        return Arrays.equals(this.publicKeyHashed, publicKeyHashed);
+    }
+
     public byte[] concatenateTransactionOutputData() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
@@ -31,16 +42,5 @@ public class TransactionOutput {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    // lock signs the output
-    public void lock(String address) {
-        byte[] fullPayload = Base58.decode(address);
-        publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
-    }
-
-    //checks if the output can be unlocked with the provided data
-    public boolean isLockedWithKey(byte[] publicKeyHashed) {
-        return Arrays.equals(this.publicKeyHashed, publicKeyHashed);
     }
 }

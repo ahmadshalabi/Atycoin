@@ -37,7 +37,6 @@ public class Util {
         }
     }
 
-    //TODO: Edit publicKey type like in Wallet
     //Verifies a String signature
     public static boolean verifyECDSASig(PublicKey publicKey, byte[] data, byte[] signature) {
         try {
@@ -49,10 +48,6 @@ public class Util {
             throw new RuntimeException();
         }
     }
-
-//    public static String getStringFromKey(Key key) {
-//        return Base64.getEncoder().encodeToString(key.getEncoded());
-//    }
 
     public static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder(); // This will contain hash as hexadecimal

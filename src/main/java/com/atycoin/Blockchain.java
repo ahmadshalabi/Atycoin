@@ -9,7 +9,6 @@ import java.util.Iterator;
 //Blockchain implements interaction with a DB
 public class Blockchain implements Iterable<Block> {
     private static Blockchain instance = new Blockchain();
-
     private static Jedis dbConnection;
     private String tipOfChain;
 
@@ -21,19 +20,6 @@ public class Blockchain implements Iterable<Block> {
     public static Blockchain getInstance() {
         instance.tipOfChain = dbConnection.get("l");
         return instance;
-    }
-
-    //TODO: Check failed connection
-    public void mineBlock(ArrayList<Transaction> transactions) {
-        tipOfChain = dbConnection.get("l");
-        Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
-
-        tipOfChain = Util.serializeHash(newBlock.hash);
-        String newBlockSerialized = newBlock.serializeBlock();
-
-        //Store new block int database and update hash of last block
-        dbConnection.set(tipOfChain, newBlockSerialized);
-        dbConnection.set("l", tipOfChain);
     }
 
     //TODO: Check failed connection
@@ -57,10 +43,17 @@ public class Blockchain implements Iterable<Block> {
         }
     }
 
-    //iterator return BlockchainIterator Used to iterate over blockchain blocks
-    @Override
-    public Iterator<Block> iterator() {
-        return new BlockchainIterator(dbConnection);
+    //TODO: Check failed connection
+    public void mineBlock(ArrayList<Transaction> transactions) {
+        tipOfChain = dbConnection.get("l");
+        Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
+
+        tipOfChain = Util.serializeHash(newBlock.hash);
+        String newBlockSerialized = newBlock.serializeBlock();
+
+        //Store new block int database and update hash of last block
+        dbConnection.set(tipOfChain, newBlockSerialized);
+        dbConnection.set("l", tipOfChain);
     }
 
     // returns a list of transactions containing unspent outputs belong to publicKeyHashed
@@ -97,7 +90,7 @@ public class Blockchain implements Iterable<Block> {
                     }
                 }
 
-                if (!transaction.isCoinbase()) {
+                if (!transaction.isCoinbaseTransaction()) {
                     for (TransactionInput transactionInput : transaction.inputs) {
                         if (transactionInput.usesKey(publicKeyHashed)) {
 
@@ -134,5 +127,11 @@ public class Blockchain implements Iterable<Block> {
         }
 
         return unspentTransactionOutputs;
+    }
+
+    //iterator return BlockchainIterator Used to iterate over blockchain blocks
+    @Override
+    public Iterator<Block> iterator() {
+        return new BlockchainIterator(dbConnection);
     }
 }

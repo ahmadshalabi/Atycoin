@@ -22,7 +22,7 @@ public class Transaction {
 
     // creates a new coinbase transaction (to : address in BASE58)
     public static Transaction newCoinbaseTransaction(String to) {
-        byte[] arbitraryData = Base58.decode(String.format("Reward to '%s'", to));
+        byte[] arbitraryData = Util.applySHA256(String.format("Reward to '%s'", to).getBytes());
 
         //Only one input, With this information
         //  1- prevTransactionId is empty
@@ -54,12 +54,12 @@ public class Transaction {
         WalletsProcessor walletsProcessor = WalletsProcessor.newWalletsProcessor();
 
         //Get wallet rather than decode from address
-        // Because I need publicKey that sored in wallet
+        // Because I need rawPublicKey that sored in wallet
         // when reference transactionInput as spent
         Wallet wallet = walletsProcessor.getWallet(from);
-        byte[] publicKeyFromHashed = Wallet.hashPublicKey(wallet.publicKey);
+        byte[] fromPublicKeyHashed = Wallet.hashPublicKey(wallet.getRawPublicKey());
 
-        ArrayList<Transaction> unspentTransactions = blockchain.findUnspentTransaction(publicKeyFromHashed);
+        ArrayList<Transaction> unspentTransactions = blockchain.findUnspentTransaction(fromPublicKeyHashed);
         int accumulated = 0;
 
         boolean isAmountReached = false;
@@ -69,7 +69,7 @@ public class Transaction {
             String txID = Util.bytesToHex(unspentTransaction.transactionId);
 
             for (TransactionOutput transactionOutput : unspentTransaction.outputs) {
-                if (transactionOutput.isLockedWithKey(publicKeyFromHashed) && accumulated < amount) {
+                if (transactionOutput.isLockedWithKey(fromPublicKeyHashed) && accumulated < amount) {
 
                     accumulated += transactionOutput.value;
 
@@ -99,7 +99,6 @@ public class Transaction {
             return null;
         }
 
-
         ArrayList<TransactionInput> inputs = new ArrayList<>();
         ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
@@ -107,15 +106,15 @@ public class Transaction {
         for (Map.Entry<String, ArrayList<Integer>> entry : unspentOutputs.entrySet()) {
             byte[] transactionId = Hex.decode(entry.getKey());
             for (int transactionOutputIndex : entry.getValue()) {
-                inputs.add(new TransactionInput(transactionId, transactionOutputIndex, wallet.publicKey));
+                inputs.add(new TransactionInput(transactionId, transactionOutputIndex, wallet.getRawPublicKey()));
             }
         }
 
         //Build a list of outputs
-        outputs.add(TransactionOutput.newTXOutput(amount, from));
+        outputs.add(TransactionOutput.newTXOutput(amount, to));
         if (accumulated > amount) {
             int change = accumulated - amount;
-            outputs.add(TransactionOutput.newTXOutput(change, to));
+            outputs.add(TransactionOutput.newTXOutput(change, from));
         }
 
         Transaction newTransaction = new Transaction(inputs, outputs);
@@ -124,15 +123,6 @@ public class Transaction {
         return newTransaction;
     }
 
-    public boolean isCoinbase() {
-        // Coinbase have:
-        // 1- One inputs and,
-        // 2- this input have empty previous transaction hash, and
-        // 3- outputIndex of this input is -1
-        return inputs.size() == 1 &&
-                inputs.get(0).prevTransactionId.length == 0 &&
-                inputs.get(0).transactionOutputIndex == -1;
-    }
 
     public void setTransactionId() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -157,5 +147,15 @@ public class Transaction {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean isCoinbaseTransaction() {
+        // Coinbase have:
+        // 1- One inputs and,
+        // 2- this input have empty previous transaction hash, and
+        // 3- outputIndex of this input is -1
+        return inputs.size() == 1 &&
+                inputs.get(0).prevTransactionId.length == 0 &&
+                inputs.get(0).transactionOutputIndex == -1;
     }
 }

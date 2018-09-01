@@ -9,12 +9,18 @@ public class TransactionInput {
     byte[] prevTransactionId;
     int transactionOutputIndex;
     byte[] signature;
-    byte[] publicKey;
+    byte[] rawPublicKey;
 
-    public TransactionInput(byte[] prevTransactionId, int transactionOutputIndex, byte[] publicKey) {
+    public TransactionInput(byte[] prevTransactionId, int transactionOutputIndex, byte[] rawPublicKey) {
         this.prevTransactionId = prevTransactionId;
         this.transactionOutputIndex = transactionOutputIndex;
-        this.publicKey = publicKey;
+        this.rawPublicKey = rawPublicKey;
+    }
+
+    // checks checks whether the address initiated the transaction
+    public boolean usesKey(byte[] publicKeyHash) {
+        byte[] lockingHash = Wallet.hashPublicKey(rawPublicKey);
+        return Arrays.equals(lockingHash, publicKeyHash);
     }
 
     public byte[] concatenateTransactionInputData() {
@@ -23,17 +29,11 @@ public class TransactionInput {
             // little-endian
             buffer.write(Util.reverseBytesOrder(prevTransactionId));
             buffer.write(Util.reverseBytesOrder(Util.intToBytes(transactionOutputIndex)));
-            buffer.write(Util.reverseBytesOrder(publicKey));
+            buffer.write(Util.reverseBytesOrder(rawPublicKey));
 
             return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    // checks checks whether the address initiated the transaction
-    public boolean usesKey(byte[] publicKeyHash) {
-        byte[] lockingHash = Wallet.hashPublicKey(publicKey);
-        return Arrays.equals(lockingHash, publicKeyHash);
     }
 }

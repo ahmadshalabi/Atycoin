@@ -6,15 +6,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+//TODO: separate some data in BlockHeader
+
 public class Block {
     public final int targetBits = 8; //TODO: Make it Adjusted to meet some requirements
     public byte[] hashPrevBlock;
     public byte[] hashMerkleRoot;
     public long timestamp;
-    public ArrayList<Transaction> transactions;
-    //TODO: separate some data in BlockHeader
     private int version = 1;
     private int nonce;
+
+    public ArrayList<Transaction> transactions;
     public byte[] hash; // Current Block hash
 
     private Block(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
@@ -52,6 +54,22 @@ public class Block {
         return block;
     }
 
+    // hashTransactions returns a hash of the transactions in the block
+    public byte[] hashTransactions() {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        for (Transaction transaction : transactions) {
+            try {
+                //little-endian
+                buffer.write(Util.reverseBytesOrder(transaction.transactionId));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        //Big-endian
+        return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
+    }
+
     public byte[] concatenateBlockData(int nonce) {
         //TODO: Consider more efficient way to concatenate byte[] arrays
 
@@ -75,22 +93,6 @@ public class Block {
     public static Block deserializeBlock(String serializedBlock) {
         Gson decoder = new Gson();
         return decoder.fromJson(serializedBlock, Block.class);
-    }
-
-    // hashTransactions returns a hash of the transactions in the block
-    public byte[] hashTransactions() {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        for (Transaction transaction : transactions) {
-            try {
-                //little-endian
-                buffer.write(Util.reverseBytesOrder(transaction.transactionId));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        //Big-endian
-        return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
     }
 
     // Serialize the block

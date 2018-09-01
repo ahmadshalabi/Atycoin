@@ -1,22 +1,27 @@
 package com.atycoin;
 
-import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi;
+
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.math.ec.ECFieldElement;
+import org.bouncycastle.math.ec.ECPoint;
 
 import java.io.ByteArrayOutputStream;
-import java.math.BigInteger;
 import java.security.*;
-import java.security.interfaces.ECPublicKey;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECPoint;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 // Wallet stores private and public keys
 public class Wallet {
-    static final byte VERSION = 0x00;
-    static final int CHECKSUM_LEN = 4;
+    public static final byte VERSION = 0x00;
+    public static final int CHECKSUM_LEN = 4;
 
-    PrivateKey privateKey;
-    byte[] publicKey;
+    private byte[] privateKeyEncoded;
+    private byte[] publicKeyEncoded;
 
     private Wallet() {
     }
@@ -25,8 +30,21 @@ public class Wallet {
     public static Wallet newWallet() {
         Wallet wallet = new Wallet();
         wallet.generateKeyPair();
-
         return wallet;
+    }
+
+    // hashes public key
+    public static byte[] hashPublicKey(byte[] rawPublicKey) {
+        byte[] publicSHA256 = Util.applySHA256(rawPublicKey);
+        return Util.applyRIPEMP160(publicSHA256);
+    }
+
+    // generates a checksum for a public key
+    public static byte[] checksum(byte[] versionedPayload) {
+        byte[] firstSHA256 = Util.applySHA256(versionedPayload);
+        byte[] secondSHA256 = Util.applySHA256(firstSHA256);
+
+        return Arrays.copyOfRange(secondSHA256, 0, CHECKSUM_LEN);
     }
 
     public static boolean validateAddress(String address) {
@@ -42,58 +60,43 @@ public class Wallet {
         return Arrays.equals(actualChecksum, targetChecksum);
     }
 
-    // hashes public key
-    public static byte[] hashPublicKey(byte[] publicKey) {
-        byte[] publicSHA256 = Util.applySHA256(publicKey);
-        return Util.applyRIPEMP160(publicSHA256);
-    }
-
     private void generateKeyPair() {
         try {
-            KeyPairGenerator keyGen = new KeyPairGeneratorSpi.ECDSA();
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256k1");
+            ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
+            keyPairGenerator.initialize(ecSpec, new SecureRandom());
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-            // Initialize the key generator and generate a KeyPair
-            keyGen.initialize(ecSpec, random);
+            privateKeyEncoded = keyPair.getPrivate().getEncoded();
+            publicKeyEncoded = keyPair.getPublic().getEncoded();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        }
+    }
 
-            //Generate private and public keys
-            KeyPair keyPair = keyGen.generateKeyPair();
-
-            // Get ECPrivateKey from keyPair
-            privateKey = keyPair.getPrivate();
-
-            //Get ECPublicKey form keyPair
-            ECPublicKey ecPublicKey = (ECPublicKey) keyPair.getPublic();
-
-            //Get X and Y Coordinate of ecPublicKey
-            ECPoint ecPoint = ecPublicKey.getW();
-            BigInteger xCoordinate = ecPoint.getAffineX();
-            BigInteger yCoordinate = ecPoint.getAffineY();
-
-            // concatenate X and Y
-            String buffer = xCoordinate.toString(16) +
-                    yCoordinate.toString(16);
-
-            // publicKey in byte[] form
-            publicKey = buffer.getBytes();
-
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+    public ECPrivateKey getPrivateKey() {
+        try {
+            PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyEncoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
+            return (ECPrivateKey) keyFactory.generatePublic(privateKeySpec);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }
     }
 
-    // generates a checksum for a public key
-    public static byte[] checksum(byte[] versionedPayload) {
-        byte[] firstSHA = Util.applySHA256(versionedPayload);
-        byte[] secondSHA = Util.applySHA256(firstSHA);
-
-        return Arrays.copyOfRange(secondSHA, 0, CHECKSUM_LEN);
+    public ECPublicKey getPublicKey() {
+        try {
+            X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyEncoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
+            return (ECPublicKey) keyFactory.generatePublic(pubKeySpec);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // returns wallet address
     public String getAddress() {
-        byte[] publicKeyHash = hashPublicKey(publicKey);
+        byte[] publicKeyHash = hashPublicKey(getRawPublicKey());
 
         //VersionedPayload
         ByteArrayOutputStream payload = new ByteArrayOutputStream();
@@ -107,5 +110,22 @@ public class Wallet {
 
         //calc Address base on BASE58 encoding
         return Base58.encode(payload.toByteArray());
+    }
+
+    // Get X and Y Coordinate of public key
+    public byte[] getRawPublicKey() {
+        //Get ECPublicKey form keyPair
+        ECPublicKey ecPublicKey = getPublicKey();
+
+        //Get X and Y Coordinate of ecPublicKey
+        ECPoint pointBefore = ecPublicKey.getQ();
+        ECFieldElement affineXCoordination = pointBefore.getAffineXCoord();
+        ECFieldElement affineYCoordination = pointBefore.getAffineYCoord();
+
+        // concatenate X and Y
+        String pubKeyBufferBefore = affineXCoordination.toString() + affineYCoordination.toString();
+
+        // rawPublicKey in byte[] form
+        return pubKeyBufferBefore.getBytes();
     }
 }
