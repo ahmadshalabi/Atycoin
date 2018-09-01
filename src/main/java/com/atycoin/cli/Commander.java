@@ -34,10 +34,11 @@ public class Commander {
     // populates commands in a map
     public void setup() {
         commands = new HashMap<>();
-        commands.put("send", new SendCommand());
-        commands.put("printchain", new PrintChainCommand());
         commands.put("createblockchain", new CreateBlockchainCommand());
+        commands.put("createwallet", new CreateWalletCommand());
         commands.put("getbalance", new GetBalanceCommand());
+        commands.put("printchain", new PrintChainCommand());
+        commands.put("send", new SendCommand());
         commands.put("help", new HelpCommand());
         scanner = new Scanner(System.in);
     }
@@ -70,6 +71,7 @@ public class Commander {
                         CommanderPrint("command couldn't execute, perhaps not enough arguments? try: " + rawArgs[0] + " -help");
                     } catch (Exception e) {
                         CommanderPrint("command failed to execute.");
+                        e.printStackTrace();
                     }
                 } else { //Otherwise run the command with no safety net.
                     call(rawArgs);

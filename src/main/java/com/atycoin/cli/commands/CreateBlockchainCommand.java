@@ -1,6 +1,7 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Blockchain;
+import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 
 import java.util.Arrays;
@@ -36,8 +37,8 @@ public class CreateBlockchainCommand implements Command {
             if (address == null) {
                 Commander.CommanderPrint("ERROR ! no address entered.");
                 return;
-            } else if (args.length > 2) {
-                Commander.CommanderPrint("ERROR ! Invalid address entered.");
+            } else if (!Wallet.validateAddress(address)) { //Test it Well
+                Commander.CommanderPrint("ERROR ! Address in not valid.");
                 return;
             }
 

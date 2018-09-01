@@ -26,9 +26,9 @@ public class PrintChainCommand implements Command {
     public void run(String[] args) {
         if (args.length == 0) { //no parameters
             for (Block block : Blockchain.getInstance()) {
-                System.out.printf("Prev. hash: %s%n", Util.bytesToHex(block.hashPrevBlock));
-                System.out.printf("Merkle Root: %s%n", Util.bytesToHex(block.hashMerkleRoot));
-                System.out.printf("Hash: %s%n", Util.bytesToHex(block.hash));
+                System.out.printf("============ Block %s ============%n", Util.bytesToHex(block.hash));
+                System.out.printf("Prev. block: %s%n", Util.bytesToHex(block.hashPrevBlock));
+                System.out.printf("Merkle Root: %s%n%n", Util.bytesToHex(block.hashMerkleRoot));
             }
             return;
         }

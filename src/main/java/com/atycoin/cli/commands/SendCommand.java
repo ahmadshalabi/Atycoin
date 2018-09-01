@@ -2,6 +2,7 @@ package com.atycoin.cli.commands;
 
 import com.atycoin.Blockchain;
 import com.atycoin.Transaction;
+import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 
 import java.util.ArrayList;
@@ -37,9 +38,20 @@ public class SendCommand implements Command {
             String to = args[3];
             int amount = Integer.parseInt(args[5]);
 
+            if (!Wallet.validateAddress(from)) {
+                System.out.println("ERROR: Sender address is not valid");
+                return;
+            }
+
+            if (!Wallet.validateAddress(to)) {
+                System.out.println("ERROR: Recipient address is not valid");
+                return;
+            }
+
             Transaction newUTXOTransaction = Transaction.newUTXOTransaction(from, to, amount);
 
             if (newUTXOTransaction == null) {
+                System.out.println("ERROR: Invalid Transaction");
                 return;
             }
 
