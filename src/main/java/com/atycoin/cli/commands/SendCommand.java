@@ -48,6 +48,16 @@ public class SendCommand implements Command {
                 return;
             }
 
+            if (from.equals(to)) {
+                System.out.println("ERROR: You are try to send to your account");
+                return;
+            }
+
+            if (amount < 0) {
+                System.out.println("ERROR: You are try send negative coin");
+                return;
+            }
+
             Transaction newUTXOTransaction = Transaction.newUTXOTransaction(from, to, amount);
 
             if (newUTXOTransaction == null) {
