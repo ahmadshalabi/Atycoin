@@ -12,7 +12,7 @@ public class BlockchainIterator implements Iterator<Block> {
     private Jedis dbConnection;
     private String currentHashSerialized;
 
-    //TODO: Check filed connection
+    //TODO: Check failed connection
     public BlockchainIterator(Jedis dbConnection) {
         this.dbConnection = dbConnection;
         currentHashSerialized = dbConnection.get("l");
@@ -26,7 +26,7 @@ public class BlockchainIterator implements Iterator<Block> {
         return !currentHashSerialized.equals(genesisPrevHash);
     }
 
-    //TODO: Check filed connection
+    //TODO: Check failed connection
     //returns next block starting from the tip
     @Override
     public Block next() {
