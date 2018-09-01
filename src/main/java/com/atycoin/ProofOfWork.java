@@ -17,7 +17,7 @@ public class ProofOfWork {
 
         //TODO: Enhance checking in nonce overflow
         while (nonce < Integer.MAX_VALUE) {
-            byte[] blockData = this.block.concatenateBlockData();
+            byte[] blockData = this.block.concatenateBlockData(nonce);
 
             // Double hash
             hash = Util.applySHA256(Util.applySHA256(blockData));
@@ -63,7 +63,7 @@ public class ProofOfWork {
     // TODO: Clean isValidProofOFWork
     // validates block's PoW
     public boolean isValidProofOFWork() {
-        byte[] blockData = block.concatenateBlockData();
+        byte[] blockData = block.concatenateBlockData(nonce);
 
         byte[] calculatedHash = Util.applySHA256(Util.applySHA256(blockData));
 

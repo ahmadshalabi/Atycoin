@@ -52,7 +52,7 @@ public class Block {
         return block;
     }
 
-    public byte[] concatenateBlockData() {
+    public byte[] concatenateBlockData(int nonce) {
         //TODO: Consider more efficient way to concatenate byte[] arrays
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
