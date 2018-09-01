@@ -4,6 +4,7 @@ public class ProofOfWork {
     private Block block;
     private int targetBits;
     private byte[] hash;
+    private int nonce;
 
     public ProofOfWork(Block block) {
         this.block = block;
@@ -13,27 +14,26 @@ public class ProofOfWork {
     // performs a proof-of-work
     public void runProofOfWork() {
         System.out.println("Mining a new block");
-        int nonce = 0;
 
         //TODO: Enhance checking in nonce overflow
         while (nonce < Integer.MAX_VALUE) {
-            byte[] data = block.concatenateBlockData();
+            byte[] blockData = this.block.concatenateBlockData();
 
             // Double hash
-            hash = Util.applySHA256(Util.applySHA256(data));
+            hash = Util.applySHA256(Util.applySHA256(blockData));
 
             // Change to Big-endian
             hash = Util.reverseBytesOrder(hash);
 
             if (isHashMeetTarget(hash)) {
-                block.setHash(hash);
                 break;
             }
 
             nonce++;
-            //TODO: convert nonce to unsigned like byte (byte & 0xff)
-            block.setNonce(nonce);
         }
+
+        block.setHash(hash);
+        block.setNonce(nonce);
 
         System.out.println(Util.bytesToHex(hash));
         System.out.println();
@@ -63,9 +63,9 @@ public class ProofOfWork {
     // TODO: Clean isValidProofOFWork
     // validates block's PoW
     public boolean isValidProofOFWork() {
-        byte[] data = block.concatenateBlockData();
+        byte[] blockData = block.concatenateBlockData();
 
-        byte[] calculatedHash = Util.applySHA256(Util.applySHA256(data));
+        byte[] calculatedHash = Util.applySHA256(Util.applySHA256(blockData));
 
         // Change to Big-endian
         calculatedHash = Util.reverseBytesOrder(calculatedHash);
