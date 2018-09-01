@@ -1,7 +1,5 @@
 package com.atycoin;
 
-import org.bouncycastle.util.encoders.Hex;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,7 +9,7 @@ import java.util.Map;
 public class Transaction {
     public static final int reward = 10;
 
-    byte[] transactionId;
+    byte[] id;
     ArrayList<TransactionInput> inputs;
     ArrayList<TransactionOutput> outputs;
 
@@ -19,6 +17,17 @@ public class Transaction {
         this.inputs = inputs;
         this.outputs = outputs;
     }
+
+//    public void sign(ECPrivateKey privateKey, HashMap<String, Transaction> previousTransactions) {
+//        if (isCoinbaseTransaction()) {
+//            return;
+//        }
+//
+//        for (TransactionInput input : inputs) {
+//            String id = Util.
+//            if (previousTransactions.get())
+//        }
+//    }
 
     // creates a new coinbase transaction (to : address in BASE58)
     public static Transaction newCoinbaseTransaction(String to) {
@@ -40,7 +49,7 @@ public class Transaction {
         transactionOutputs.add(transactionOutput);
 
         Transaction coinbaseTransaction = new Transaction(transactionInputs, transactionOutputs);
-        coinbaseTransaction.setTransactionId();
+        coinbaseTransaction.hash();
         return coinbaseTransaction;
     }
 
@@ -66,7 +75,7 @@ public class Transaction {
 
         // find unspentOutputs unlocked by (from)
         for (Transaction unspentTransaction : unspentTransactions) {
-            String txID = Util.bytesToHex(unspentTransaction.transactionId);
+            String txID = Util.serializeHash(unspentTransaction.id);
 
             for (TransactionOutput transactionOutput : unspentTransaction.outputs) {
                 if (transactionOutput.isLockedWithKey(fromPublicKeyHashed) && accumulated < amount) {
@@ -104,7 +113,7 @@ public class Transaction {
 
         //Build a list of inputs
         for (Map.Entry<String, ArrayList<Integer>> entry : unspentOutputs.entrySet()) {
-            byte[] transactionId = Hex.decode(entry.getKey());
+            byte[] transactionId = Util.deserializeHash(entry.getKey());
             for (int transactionOutputIndex : entry.getValue()) {
                 inputs.add(new TransactionInput(transactionId, transactionOutputIndex, wallet.getRawPublicKey()));
             }
@@ -118,13 +127,12 @@ public class Transaction {
         }
 
         Transaction newTransaction = new Transaction(inputs, outputs);
-        newTransaction.setTransactionId();
+        newTransaction.hash();
 
         return newTransaction;
     }
 
-
-    public void setTransactionId() {
+    public void hash() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             //little-endian
@@ -140,10 +148,10 @@ public class Transaction {
                 buffer.write(transactionOutput.concatenateTransactionOutputData());
             }
 
-            transactionId = Util.applySHA256(buffer.toByteArray());
+            id = Util.applySHA256(buffer.toByteArray());
 
             // Big-endian
-            transactionId = Util.reverseBytesOrder(transactionId);
+            id = Util.reverseBytesOrder(id);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

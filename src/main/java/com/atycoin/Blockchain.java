@@ -65,7 +65,7 @@ public class Blockchain implements Iterable<Block> {
         Blockchain blockchain = Blockchain.getInstance();
         for (Block block : blockchain) {
             for (Transaction transaction : block.transactions) {
-                String transactionId = Util.bytesToHex(transaction.transactionId);
+                String transactionId = Util.serializeHash(transaction.id);
 
                 for (TransactionOutput transactionOutput : transaction.outputs) {
                     boolean isTransactionOutputSpent = false;
@@ -94,7 +94,7 @@ public class Blockchain implements Iterable<Block> {
                     for (TransactionInput transactionInput : transaction.inputs) {
                         if (transactionInput.usesKey(publicKeyHashed)) {
 
-                            String prevTransactionId = Util.bytesToHex(transactionInput.prevTransactionId);
+                            String prevTransactionId = Util.serializeHash(transactionInput.prevTransactionId);
 
                             ArrayList<Integer> spentTransactionOutputIndexes = spentTransactionOutputs.get(prevTransactionId);
                             if (spentTransactionOutputIndexes == null) {

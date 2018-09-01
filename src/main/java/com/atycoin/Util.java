@@ -8,7 +8,6 @@ import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.bouncycastle.util.Arrays;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 
 public class Util {
@@ -49,6 +48,7 @@ public class Util {
         }
     }
 
+    // Just for printing on CLI
     public static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder(); // This will contain hash as hexadecimal
         for (byte element : hash) {
@@ -57,10 +57,6 @@ public class Util {
             hexString.append(hex);
         }
         return hexString.toString();
-    }
-
-    public static byte[] stringToBytes(String input) {
-        return input.getBytes(StandardCharsets.UTF_8);
     }
 
     public static byte[] longToBytes(long input) {
@@ -80,16 +76,12 @@ public class Util {
         return Arrays.reverse(data);
     }
 
-    // Short hand helper to turn Object into a json string
+    // To store and retrieve form Map and Database
     public static String serializeHash(byte[] hash) {
         return new Gson().toJson(hash);
     }
 
     public static byte[] deserializeHash(String serializedHash) {
         return new Gson().fromJson(serializedHash, byte[].class);
-    }
-
-    public static String publicKeyToHex(byte[] publicKey) {
-        return new String(publicKey, StandardCharsets.UTF_8);
     }
 }

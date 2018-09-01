@@ -60,7 +60,7 @@ public class Block {
         for (Transaction transaction : transactions) {
             try {
                 //little-endian
-                buffer.write(Util.reverseBytesOrder(transaction.transactionId));
+                buffer.write(Util.reverseBytesOrder(transaction.id));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
