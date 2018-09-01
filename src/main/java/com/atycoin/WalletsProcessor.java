@@ -21,6 +21,7 @@ public class WalletsProcessor {
     // creates Wallets and fills it from a file if it exists
     public static WalletsProcessor newWalletsProcessor() {
         WalletsProcessor newWalletsProcessor = new WalletsProcessor();
+
         newWalletsProcessor.loadFromFile();
 
         return newWalletsProcessor;
@@ -29,23 +30,28 @@ public class WalletsProcessor {
     // adds a Wallet to Wallets
     public String createWallet() {
         Wallet wallet = Wallet.newWallet();
-        String address = Util.bytesToHex(wallet.getAddress());
-        wallets.wallets.put(address, wallet);
+        String address = wallet.getAddress();
+        wallets.walletHashMap.put(address, wallet);
         return address;
     }
 
     // returns a list of addresses stored in the wallet file
     public ArrayList<String> getAddresses() {
-        return new ArrayList<>(wallets.wallets.keySet());
+        return new ArrayList<>(wallets.walletHashMap.keySet());
     }
 
     // returns a Wallet by its address
     public Wallet getWallet(String address) {
-        return wallets.wallets.get(address); // Check null
+        return wallets.walletHashMap.get(address); // Check null
     }
 
-    // loads wallets from the file
+    // loads walletHashMap from the file
     public void loadFromFile() {
+        if (!Files.exists(Paths.get(directory, WALLETS_FILE))) {
+            wallets = new Wallets();
+            return;
+        }
+
         try (BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(directory, WALLETS_FILE))) {
             String deserializeWallets = bufferedReader.readLine();
 
@@ -60,7 +66,7 @@ public class WalletsProcessor {
         }
     }
 
-    // saves wallets to a file
+    // saves walletHashMap to a file
     public void saveToFile() {
         Gson encoder = new Gson();
         String serializedWallets = encoder.toJson(wallets);

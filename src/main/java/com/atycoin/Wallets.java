@@ -3,9 +3,9 @@ package com.atycoin;
 import java.util.HashMap;
 
 public class Wallets {
-    public HashMap<String, Wallet> wallets;
+    public HashMap<String, Wallet> walletHashMap;
 
     public Wallets() {
-        wallets = new HashMap<>();
+        walletHashMap = new HashMap<>();
     }
 }

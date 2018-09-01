@@ -11,7 +11,7 @@ import java.util.Map;
 public class Transaction {
     public static final int reward = 10;
 
-    byte[] id;
+    byte[] transactionId;
     ArrayList<TransactionInput> inputs;
     ArrayList<TransactionOutput> outputs;
 
@@ -20,21 +20,18 @@ public class Transaction {
         this.outputs = outputs;
     }
 
-    // creates a new coinbase transaction
-    public static Transaction newCoinbaseTransaction(String to, String data) {
-        //Reward after genesis block
-        if (data.isEmpty()) {
-            data = String.format("Reward to '%s'", to);
-        }
+    // creates a new coinbase transaction (to : address in BASE58)
+    public static Transaction newCoinbaseTransaction(String to) {
+        byte[] arbitraryData = Base58.decode(String.format("Reward to '%s'", to));
 
         //Only one input, With this information
         //  1- prevTransactionId is empty
         //  2- transactionOutputIndex is -1
         //  3- Any arbitrary data
-        TransactionInput transactionInput = new TransactionInput(new byte[0], -1, data);
+        TransactionInput transactionInput = new TransactionInput(new byte[0], -1, arbitraryData);
 
         //Reward to miner
-        TransactionOutput transactionOutput = new TransactionOutput(reward, to);
+        TransactionOutput transactionOutput = TransactionOutput.newTXOutput(reward, to);
 
         ArrayList<TransactionInput> transactionInputs = new ArrayList<>();
         transactionInputs.add(transactionInput);
@@ -43,61 +40,36 @@ public class Transaction {
         transactionOutputs.add(transactionOutput);
 
         Transaction coinbaseTransaction = new Transaction(transactionInputs, transactionOutputs);
-        coinbaseTransaction.setID();
+        coinbaseTransaction.setTransactionId();
         return coinbaseTransaction;
     }
 
-    public void setID() {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        try {
-            //little-endian
-            buffer.write(Util.changeByteOrderEndianSystem(Util.intToBytes(reward)));
-
-            //Already little-endian from input itself
-            for (TransactionInput transactionInput : inputs) {
-                buffer.write(transactionInput.concatenateTransactionInputData());
-            }
-
-            //Already little-endian from output itself
-            for (TransactionOutput transactionOutput : outputs) {
-                buffer.write(transactionOutput.concatenateTransactionOutputData());
-            }
-
-            id = Util.applySHA256(buffer.toByteArray());
-
-            // Big-endian
-            id = Util.changeByteOrderEndianSystem(id);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean isCoinbase() {
-        // Coinbase have:
-        // 1- One inputs and,
-        // 2- this input have empty previous transaction hash, and
-        // 3- outputIndex of this input is -1
-        return inputs.size() == 1 &&
-                inputs.get(0).prevTransactionId.length == 0 &&
-                inputs.get(0).transactionOutputIndex == -1;
-    }
-
     //TODO: It need a lot of clean ^_^
+    //from and to (Address in BASE58)
     public static Transaction newUTXOTransaction(String from, String to, int amount) {
         HashMap<String, ArrayList<Integer>> unspentOutputs = new HashMap<>();
 
         Blockchain blockchain = Blockchain.getInstance();
-        ArrayList<Transaction> unspentTransactions = blockchain.findUnspentTransaction(from);
+
+        WalletsProcessor walletsProcessor = WalletsProcessor.newWalletsProcessor();
+
+        //Get wallet rather than decode from address
+        // Because I need publicKey that sored in wallet
+        // when reference transactionInput as spent
+        Wallet wallet = walletsProcessor.getWallet(from);
+        byte[] publicKeyFromHashed = Wallet.hashPublicKey(wallet.publicKey);
+
+        ArrayList<Transaction> unspentTransactions = blockchain.findUnspentTransaction(publicKeyFromHashed);
         int accumulated = 0;
 
         boolean isAmountReached = false;
 
         // find unspentOutputs unlocked by (from)
         for (Transaction unspentTransaction : unspentTransactions) {
-            String txID = Util.bytesToHex(unspentTransaction.id);
+            String txID = Util.bytesToHex(unspentTransaction.transactionId);
 
             for (TransactionOutput transactionOutput : unspentTransaction.outputs) {
-                if (transactionOutput.canBeUnlockedWith(from) && accumulated < amount) {
+                if (transactionOutput.isLockedWithKey(publicKeyFromHashed) && accumulated < amount) {
 
                     accumulated += transactionOutput.value;
 
@@ -127,6 +99,7 @@ public class Transaction {
             return null;
         }
 
+
         ArrayList<TransactionInput> inputs = new ArrayList<>();
         ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
@@ -134,20 +107,55 @@ public class Transaction {
         for (Map.Entry<String, ArrayList<Integer>> entry : unspentOutputs.entrySet()) {
             byte[] transactionId = Hex.decode(entry.getKey());
             for (int transactionOutputIndex : entry.getValue()) {
-                inputs.add(new TransactionInput(transactionId, transactionOutputIndex, from));
+                inputs.add(new TransactionInput(transactionId, transactionOutputIndex, wallet.publicKey));
             }
         }
 
         //Build a list of outputs
-        outputs.add(new TransactionOutput(amount, to));
+        outputs.add(TransactionOutput.newTXOutput(amount, from));
         if (accumulated > amount) {
             int change = accumulated - amount;
-            outputs.add(new TransactionOutput(change, from));
+            outputs.add(TransactionOutput.newTXOutput(change, to));
         }
 
         Transaction newTransaction = new Transaction(inputs, outputs);
-        newTransaction.setID();
+        newTransaction.setTransactionId();
 
         return newTransaction;
+    }
+
+    public boolean isCoinbase() {
+        // Coinbase have:
+        // 1- One inputs and,
+        // 2- this input have empty previous transaction hash, and
+        // 3- outputIndex of this input is -1
+        return inputs.size() == 1 &&
+                inputs.get(0).prevTransactionId.length == 0 &&
+                inputs.get(0).transactionOutputIndex == -1;
+    }
+
+    public void setTransactionId() {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            //little-endian
+            buffer.write(Util.reverseBytesOrder(Util.intToBytes(reward)));
+
+            //Already little-endian from input itself
+            for (TransactionInput transactionInput : inputs) {
+                buffer.write(transactionInput.concatenateTransactionInputData());
+            }
+
+            //Already little-endian from output itself
+            for (TransactionOutput transactionOutput : outputs) {
+                buffer.write(transactionOutput.concatenateTransactionOutputData());
+            }
+
+            transactionId = Util.applySHA256(buffer.toByteArray());
+
+            // Big-endian
+            transactionId = Util.reverseBytesOrder(transactionId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

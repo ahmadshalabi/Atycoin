@@ -13,11 +13,11 @@ public class TransactionOutput {
         this.value = value;
     }
 
-    public static TransactionOutput newTXOutput(int value, byte[] address) {
-        TransactionOutput newTXO = new TransactionOutput(value);
-        newTXO.lock(address);
+    public static TransactionOutput newTXOutput(int value, String address) {
+        TransactionOutput transactionOutput = new TransactionOutput(value);
+        transactionOutput.lock(address);
 
-        return newTXO;
+        return transactionOutput;
     }
 
     public byte[] concatenateTransactionOutputData() {
@@ -34,7 +34,7 @@ public class TransactionOutput {
     }
 
     // lock signs the output
-    public void lock(byte[] address) {
+    public void lock(String address) {
         byte[] fullPayload = Base58.decode(address);
         publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
     }
