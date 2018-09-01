@@ -33,35 +33,36 @@ public class SendCommand implements Command {
 
         String[] params = getParams();
 
-        if (args[0].equals(params[1]) && args[2].equals("-to") && args[4].equals("-amount")) { //-from FROM -to TO -amount AMOUNT
+        //-from FROM -to TO -amount AMOUNT
+        if (args[0].equals(params[1]) && args[2].equals("-to") && args[4].equals("-amount")) {
             String from = args[1];
             String to = args[3];
             int amount = Integer.parseInt(args[5]);
 
             if (!Wallet.validateAddress(from)) {
-                System.out.println("ERROR: Sender address is not valid");
+                Commander.CommanderPrint("ERROR: Sender address is not valid");
                 return;
             }
 
             if (!Wallet.validateAddress(to)) {
-                System.out.println("ERROR: Recipient address is not valid");
+                Commander.CommanderPrint("ERROR: Recipient address is not valid");
                 return;
             }
 
             if (from.equals(to)) {
-                System.out.println("ERROR: You are try to send to your account");
+                Commander.CommanderPrint("ERROR: You are try to send to your account");
                 return;
             }
 
             if (amount < 0) {
-                System.out.println("ERROR: You are try send negative coin");
+                Commander.CommanderPrint("ERROR: You are try send negative coin");
                 return;
             }
 
             Transaction newUTXOTransaction = Transaction.newUTXOTransaction(from, to, amount);
 
             if (newUTXOTransaction == null) {
-                System.out.println("ERROR: Invalid Transaction");
+                Commander.CommanderPrint("ERROR: Invalid Transaction");
                 return;
             }
 

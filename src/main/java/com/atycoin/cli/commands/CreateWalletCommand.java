@@ -27,7 +27,7 @@ public class CreateWalletCommand implements Command {
             String address = walletsProcessor.createWallet();
             walletsProcessor.saveToFile();
 
-            System.out.printf("Your new address: %s\n", address);
+            Commander.CommanderPrint(String.format("Your new address: %s\n", address));
             return;
         }
 

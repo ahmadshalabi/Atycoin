@@ -1,6 +1,9 @@
 package com.atycoin.cli.commands;
 
-import com.atycoin.*;
+import com.atycoin.Base58;
+import com.atycoin.Blockchain;
+import com.atycoin.TransactionOutput;
+import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 
 import java.util.ArrayList;
@@ -40,9 +43,7 @@ public class GetBalanceCommand implements Command {
             } else if (args.length > 2) {
                 Commander.CommanderPrint("ERROR ! Invalid address entered.");
                 return;
-            } else if (!Wallet.validateAddress(address)) { //Test it Well
-                System.out.println(Util.bytesToHex(Util.stringToBytes(address)));
-                System.out.println(Util.bytesToHex(Util.stringToBytes(address)));
+            } else if (!Wallet.validateAddress(address)) {
                 Commander.CommanderPrint("ERROR ! Address in not valid.");
                 return;
             }
