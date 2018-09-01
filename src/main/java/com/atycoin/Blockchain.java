@@ -8,8 +8,6 @@ import java.util.Iterator;
 
 //Blockchain implements interaction with a DB
 public class Blockchain implements Iterable<Block> {
-    private static final String genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
-
     private static Blockchain instance = new Blockchain();
 
     private static Jedis dbConnection;
@@ -25,7 +23,7 @@ public class Blockchain implements Iterable<Block> {
         return instance;
     }
 
-    //TODO: Check filed connection
+    //TODO: Check failed connection
     public void mineBlock(ArrayList<Transaction> transactions) {
         tipOfChain = dbConnection.get("l");
         Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
@@ -38,14 +36,14 @@ public class Blockchain implements Iterable<Block> {
         dbConnection.set("l", tipOfChain);
     }
 
-    //TODO: Check filed connection
+    //TODO: Check failed connection
     // creates a new Blockchain with genesis Block
     public void createBlockchain(String address) {
         instance.tipOfChain = dbConnection.get("l");
         if (tipOfChain == null) {
             System.out.println("No existing blockchain found. Creating a new one...\n");
 
-            Transaction coinbaseTransaction = Transaction.newCoinbaseTransaction(address, genesisCoinbaseData);
+            Transaction coinbaseTransaction = Transaction.newCoinbaseTransaction(address);
             Block genesisBlock = Block.newGenesisBlock(coinbaseTransaction);
 
             tipOfChain = Util.serializeHash(genesisBlock.hash);
@@ -65,22 +63,22 @@ public class Blockchain implements Iterable<Block> {
         return new BlockchainIterator(dbConnection);
     }
 
-    // returns a list of transactions containing unspent outputs belong to address
-    public ArrayList<Transaction> findUnspentTransaction(String address) {
+    // returns a list of transactions containing unspent outputs belong to publicKeyHashed
+    public ArrayList<Transaction> findUnspentTransaction(byte[] publicKeyHashed) {
         ArrayList<Transaction> unspentTransactions = new ArrayList<>();
-        HashMap<String, ArrayList<Integer>> spentTXOs = new HashMap<>();
+        HashMap<String, ArrayList<Integer>> spentTransactionOutputs = new HashMap<>();
 
         //TODO: Optimize logic in find unspentTransactions
         Blockchain blockchain = Blockchain.getInstance();
         for (Block block : blockchain) {
             for (Transaction transaction : block.transactions) {
-                String transactionId = Util.bytesToHex(transaction.id);
+                String transactionId = Util.bytesToHex(transaction.transactionId);
 
                 for (TransactionOutput transactionOutput : transaction.outputs) {
                     boolean isTransactionOutputSpent = false;
 
                     // Was the output spent?
-                    ArrayList<Integer> spentTransactionOutputIndexes = spentTXOs.get(transactionId);
+                    ArrayList<Integer> spentTransactionOutputIndexes = spentTransactionOutputs.get(transactionId);
                     if (spentTransactionOutputIndexes != null) {
                         for (int spentOutIndex : spentTransactionOutputIndexes) {
                             if (spentOutIndex == transaction.outputs.indexOf(transactionOutput)) {
@@ -94,23 +92,23 @@ public class Blockchain implements Iterable<Block> {
                         continue;
                     }
 
-                    if (transactionOutput.canBeUnlockedWith(address)) {
+                    if (transactionOutput.isLockedWithKey(publicKeyHashed)) {
                         unspentTransactions.add(transaction);
                     }
                 }
 
                 if (!transaction.isCoinbase()) {
                     for (TransactionInput transactionInput : transaction.inputs) {
-                        if (transactionInput.canUnlockOutputWith(address)) {
+                        if (transactionInput.usesKey(publicKeyHashed)) {
 
                             String prevTransactionId = Util.bytesToHex(transactionInput.prevTransactionId);
 
-                            ArrayList<Integer> spentTransactionOutputIndexes = spentTXOs.get(prevTransactionId);
+                            ArrayList<Integer> spentTransactionOutputIndexes = spentTransactionOutputs.get(prevTransactionId);
                             if (spentTransactionOutputIndexes == null) {
                                 spentTransactionOutputIndexes = new ArrayList<>();
                                 spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
 
-                                spentTXOs.put(prevTransactionId, spentTransactionOutputIndexes);
+                                spentTransactionOutputs.put(prevTransactionId, spentTransactionOutputIndexes);
                             } else {
                                 spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
                             }
@@ -123,18 +121,18 @@ public class Blockchain implements Iterable<Block> {
         return unspentTransactions;
     }
 
-    public ArrayList<TransactionOutput> findUTXO(String address) {
-        ArrayList<TransactionOutput> UTXOs = new ArrayList<>();
-        ArrayList<Transaction> unspentTransactions = findUnspentTransaction(address);
+    public ArrayList<TransactionOutput> findUnspentTransactionOutputs(byte[] publicKeyHashed) {
+        ArrayList<TransactionOutput> unspentTransactionOutputs = new ArrayList<>();
+        ArrayList<Transaction> unspentTransactions = findUnspentTransaction(publicKeyHashed);
 
         for (Transaction transaction : unspentTransactions) {
             for (TransactionOutput transactionOutput : transaction.outputs) {
-                if (transactionOutput.canBeUnlockedWith(address)) {
-                    UTXOs.add(transactionOutput);
+                if (transactionOutput.isLockedWithKey(publicKeyHashed)) {
+                    unspentTransactionOutputs.add(transactionOutput);
                 }
             }
         }
 
-        return UTXOs;
+        return unspentTransactionOutputs;
     }
 }
