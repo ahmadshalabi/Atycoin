@@ -4,6 +4,7 @@ import redis.clients.jedis.Jedis;
 
 import java.util.Iterator;
 
+// BlockchainIterator is used to iterate over blockchain blocks
 public class BlockchainIterator implements Iterator<Block> {
     // get Big-endian form for genesisPrevHash and serialize it
     private static final String genesisPrevHash = Util.serializeHash(Util.reverseBytesOrder(
