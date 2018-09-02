@@ -1,6 +1,6 @@
 package com.atycoin.cli.commands;
 
-import com.atycoin.WalletsProcessor;
+import com.atycoin.Wallets;
 import com.atycoin.cli.Commander;
 
 import java.util.Arrays;
@@ -23,9 +23,9 @@ public class CreateWalletCommand implements Command {
     @Override
     public void run(String[] args) {
         if (args.length == 0) {
-            WalletsProcessor walletsProcessor = WalletsProcessor.newWalletsProcessor();
-            String address = walletsProcessor.createWallet();
-            walletsProcessor.saveToFile();
+            Wallets wallets = Wallets.newWallets();
+            String address = wallets.createWallet();
+            wallets.saveToFile();
 
             Commander.CommanderPrint(String.format("Your new address: %s\n", address));
             return;
