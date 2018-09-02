@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 //TODO: separate some data in BlockHeader
-
+// Block represents a block in the blockchain
 public class Block {
-    public final int targetBits = 8; //TODO: Make it Adjusted to meet some requirements
+    public final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
     public byte[] hashPrevBlock;
     public byte[] hashMerkleRoot;
     public long timestamp;
@@ -56,21 +56,24 @@ public class Block {
 
     // hashTransactions returns a hash of the transactions in the block
     public byte[] hashTransactions() {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        for (Transaction transaction : transactions) {
-            try {
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+            for (Transaction transaction : transactions) {
                 //little-endian
                 buffer.write(Util.reverseBytesOrder(transaction.id));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
-        }
 
-        //Big-endian
-        return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
+            //Big-endian
+            return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+
+        }
     }
 
-    public byte[] concatenateBlockData(int nonce) {
+    // serializes the block header in bytes form
+    public byte[] serializeBlockHeader(int nonce) {
         //TODO: Consider more efficient way to concatenate byte[] arrays
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
