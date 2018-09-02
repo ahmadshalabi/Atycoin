@@ -1,8 +1,10 @@
 package com.atycoin;
 
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -44,8 +46,17 @@ public class Blockchain implements Iterable<Block> {
     }
 
     //TODO: Check failed connection
+    // mines a new block with the provided transactions
     public void mineBlock(ArrayList<Transaction> transactions) {
         tipOfChain = dbConnection.get("l");
+
+        for (Transaction transaction : transactions) {
+            if (!verifyTransaction(transaction)) {
+                System.out.println("ERROR: Invalid transactions");
+                return;
+            }
+        }
+
         Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
 
         tipOfChain = Util.serializeHash(newBlock.hash);
@@ -56,7 +67,7 @@ public class Blockchain implements Iterable<Block> {
         dbConnection.set("l", tipOfChain);
     }
 
-    // returns a list of transactions containing unspent outputs belong to publicKeyHashed
+    // returns a list of transactions containing unspent outputs
     public ArrayList<Transaction> findUnspentTransaction(byte[] publicKeyHashed) {
         ArrayList<Transaction> unspentTransactions = new ArrayList<>();
         HashMap<String, ArrayList<Integer>> spentTransactionOutputs = new HashMap<>();
@@ -114,6 +125,7 @@ public class Blockchain implements Iterable<Block> {
         return unspentTransactions;
     }
 
+    // finds and returns all unspent transaction outputs
     public ArrayList<TransactionOutput> findUnspentTransactionOutputs(byte[] publicKeyHashed) {
         ArrayList<TransactionOutput> unspentTransactionOutputs = new ArrayList<>();
         ArrayList<Transaction> unspentTransactions = findUnspentTransaction(publicKeyHashed);
@@ -129,9 +141,55 @@ public class Blockchain implements Iterable<Block> {
         return unspentTransactionOutputs;
     }
 
-    //iterator return BlockchainIterator Used to iterate over blockchain blocks
+    //return BlockchainIterator to iterate over blockchain in DB
     @Override
     public Iterator<Block> iterator() {
         return new BlockchainIterator(dbConnection);
+    }
+
+    // finds a transaction by its ID
+    public Transaction findTransaction(byte[] id) {
+
+        for (Block block : this) {
+            for (Transaction tx : block.transactions) {
+                if (Arrays.equals(id, tx.id)) {
+                    return tx;
+                }
+            }
+        }
+
+        return null; // Transaction is not found
+    }
+
+    // signs inputs of a Transaction
+    public void signTransaction(Transaction tx, ECPrivateKey privateKey) {
+        HashMap<String, Transaction> prevTXs = new HashMap<>();
+
+        for (TransactionInput input : tx.inputs) {
+            Transaction prevTX = findTransaction(input.prevTransactionId);
+            if (prevTX == null) {
+                System.out.println("Transaction is not Found");
+                return;
+            }
+            prevTXs.put(Util.serializeHash(prevTX.id), prevTX);
+        }
+
+        tx.sign(privateKey, prevTXs);
+    }
+
+    // verifies transaction input signatures
+    public boolean verifyTransaction(Transaction tx) {
+        HashMap<String, Transaction> prevTXs = new HashMap<>();
+
+        for (TransactionInput input : tx.inputs) {
+            Transaction prevTX = findTransaction(input.prevTransactionId);
+            if (prevTX == null) {
+                System.out.println("Transaction is not Found");
+                return false;
+            }
+            prevTXs.put(Util.serializeHash(prevTX.id), prevTX);
+        }
+
+        return tx.verify(prevTXs);
     }
 }
