@@ -3,12 +3,22 @@ package com.atycoin;
 //TODO: Clean Utility class
 
 import com.google.gson.Gson;
+import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import org.bouncycastle.jcajce.provider.digest.SHA256;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.ECPointUtil;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.encoders.Hex;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.security.*;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.*;
 
 public class Util {
     public static byte[] applySHA256(byte[] data) {
@@ -25,28 +35,55 @@ public class Util {
     }
 
     // Applies ECDSA Signature and returns the result (as bytes)
-    public static byte[] applyECDSASig(PrivateKey privateKey, byte[] data) {
+    public static byte[] applyECDSASig(ECPrivateKey privateKey, byte[] data) {
         try {
-            Signature dsa = Signature.getInstance("ECDSA", "BC");
-            dsa.initSign(privateKey);
-            dsa.update(data);
-            return dsa.sign();
+            Signature signature = Signature.getInstance("ECDSA", "BC");
+            signature.initSign(privateKey);
+            signature.update(data);
+            return signature.sign();
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException | NoSuchProviderException e) {
             throw new RuntimeException(e);
         }
     }
 
     //Verifies a String signature
-    public static boolean verifyECDSASig(PublicKey publicKey, byte[] data, byte[] signature) {
+    public static boolean verifyECDSASig(ECPublicKey publicKey, byte[] data, byte[] signature) {
         try {
             Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
             ecdsaVerify.initVerify(publicKey);
             ecdsaVerify.update(data);
             return ecdsaVerify.verify(signature);
         } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ECPublicKey decodeKey(byte[] encoded) {
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        // Get RawPublicKey (0x04 + xAffineCoord + yAffineCoord)
+        buffer.write(0x04);
+        encoded = Hex.decode(encoded);
+        buffer.write(encoded, 0, encoded.length);
+
+        try {
+            ECNamedCurveParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
+
+            ECCurve curve = params.getCurve();
+            EllipticCurve ellipticCurve = EC5Util.convertCurve(curve, params.getSeed());
+            ECPoint point = ECPointUtil.decodePoint(ellipticCurve, buffer.toByteArray());
+            ECParameterSpec params2 = EC5Util.convertSpec(ellipticCurve, params);
+            ECPublicKeySpec keySpec = new ECPublicKeySpec(point, params2);
+
+            KeyFactory fact = KeyFactory.getInstance("ECDSA", "BC");
+            return (ECPublicKey) fact.generatePublic(keySpec);
+
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
             throw new RuntimeException();
         }
     }
+
 
     // Just for printing on CLI
     public static String bytesToHex(byte[] hash) {
