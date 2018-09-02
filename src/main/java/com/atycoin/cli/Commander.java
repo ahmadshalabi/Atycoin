@@ -38,6 +38,7 @@ public class Commander {
         commands.put("createwallet", new CreateWalletCommand());
         commands.put("getbalance", new GetBalanceCommand());
         commands.put("printchain", new PrintChainCommand());
+        commands.put("listaddresses", new ListAddressesCommand());
         commands.put("send", new SendCommand());
         commands.put("help", new HelpCommand());
         scanner = new Scanner(System.in);
