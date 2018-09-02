@@ -22,13 +22,15 @@ public class Transaction {
 
     // creates a new coinbase transaction (to : address in BASE58)
     public static Transaction newCoinbaseTransaction(String to) {
-        byte[] arbitraryData = Util.applySHA256(String.format("Reward to '%s'", to).getBytes());
+        //byte[] arbitraryData = Util.applySHA256(String.format("Reward to '%s'", to).getBytes());
+
 
         //Only one input, With this information
         //  1- prevTransactionId is empty
         //  2- transactionOutputIndex is -1
         //  3- Any arbitrary data
-        TransactionInput transactionInput = new TransactionInput(new byte[0], -1, arbitraryData);
+        TransactionInput transactionInput = new TransactionInput(new byte[0], -1,
+                Wallets.newWallets().getWallet(to).getRawPublicKey());
 
         //Reward to miner
         TransactionOutput transactionOutput = TransactionOutput.newTXOutput(reward, to);
@@ -180,8 +182,8 @@ public class Transaction {
             txCopy.id = txCopy.hash();
             txCopy.inputs.get(inputIndex).rawPublicKey = new byte[0];
 
-            isValidTransaction = Util.verifyECDSASig(Util.decodeKey(inputs.get(inputIndex).rawPublicKey),
-                    txCopy.id, inputs.get(inputIndex).signature);
+            isValidTransaction = Util.verifyECDSASig(Util.decodeKey(input.rawPublicKey),
+                    txCopy.id, input.signature);
 
             if (!isValidTransaction) {
                 break;

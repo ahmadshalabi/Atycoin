@@ -54,7 +54,7 @@ public class SendCommand implements Command {
                 return;
             }
 
-            if (amount < 0) {
+            if (amount <= 0) {
                 Commander.CommanderPrint("ERROR: You are try send negative coin");
                 return;
             }
@@ -67,6 +67,9 @@ public class SendCommand implements Command {
             }
 
             ArrayList<Transaction> transactions = new ArrayList<>();
+            //Reward concept
+            //TODO: Make real rewards in Peer2Peer
+            transactions.add(Transaction.newCoinbaseTransaction(from));
             transactions.add(newUTXOTransaction);
 
             Blockchain.getInstance().mineBlock(transactions);

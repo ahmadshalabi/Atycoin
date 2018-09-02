@@ -51,6 +51,10 @@ public class Blockchain implements Iterable<Block> {
         tipOfChain = dbConnection.get("l");
 
         for (Transaction transaction : transactions) {
+            if (transaction.isCoinbaseTransaction()) {
+                continue;
+            }
+
             if (!verifyTransaction(transaction)) {
                 System.out.println("ERROR: Invalid transactions");
                 return;
@@ -180,6 +184,10 @@ public class Blockchain implements Iterable<Block> {
     // verifies transaction input signatures
     public boolean verifyTransaction(Transaction tx) {
         HashMap<String, Transaction> prevTXs = new HashMap<>();
+
+        if (tx.isCoinbaseTransaction()) {
+            return true;
+        }
 
         for (TransactionInput input : tx.inputs) {
             Transaction prevTX = findTransaction(input.prevTransactionId);
