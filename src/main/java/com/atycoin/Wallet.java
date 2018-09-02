@@ -63,8 +63,9 @@ public class Wallet {
     private void generateKeyPair() {
         try {
             ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
-            keyPairGenerator.initialize(ecSpec, new SecureRandom());
+            keyPairGenerator.initialize(ecSpec, random);
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
             privateKeyEncoded = keyPair.getPrivate().getEncoded();
@@ -78,7 +79,7 @@ public class Wallet {
         try {
             PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyEncoded);
             KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
-            return (ECPrivateKey) keyFactory.generatePublic(privateKeySpec);
+            return (ECPrivateKey) keyFactory.generatePrivate(privateKeySpec);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }
