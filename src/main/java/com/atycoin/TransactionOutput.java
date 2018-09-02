@@ -13,6 +13,11 @@ public class TransactionOutput {
         this.value = value;
     }
 
+    public TransactionOutput(int value, byte[] publicKeyHashed) {
+        this.value = value;
+        this.publicKeyHashed = publicKeyHashed;
+    }
+
     public static TransactionOutput newTXOutput(int value, String address) {
         TransactionOutput transactionOutput = new TransactionOutput(value);
         transactionOutput.lock(address);
@@ -31,7 +36,7 @@ public class TransactionOutput {
         return Arrays.equals(this.publicKeyHashed, publicKeyHashed);
     }
 
-    public byte[] concatenateTransactionOutputData() {
+    public byte[] concatenateData() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             //little-endian

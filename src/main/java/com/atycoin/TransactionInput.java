@@ -15,6 +15,14 @@ public class TransactionInput {
         this.prevTransactionId = prevTransactionId;
         this.transactionOutputIndex = transactionOutputIndex;
         this.rawPublicKey = rawPublicKey;
+        signature = new byte[0];
+    }
+
+    public TransactionInput(byte[] prevTransactionId, int transactionOutputIndex,
+                            byte[] signature, byte[] rawPublicKey) {
+
+        this(prevTransactionId, transactionOutputIndex, rawPublicKey);
+        this.signature = signature;
     }
 
     // checks checks whether the address initiated the transaction
@@ -23,7 +31,7 @@ public class TransactionInput {
         return Arrays.equals(lockingHash, publicKeyHash);
     }
 
-    public byte[] concatenateTransactionInputData() {
+    public byte[] concatenateData() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             // little-endian
