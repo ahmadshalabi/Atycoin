@@ -1,6 +1,5 @@
 package com.atycoin;
 
-
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
@@ -9,6 +8,7 @@ import org.bouncycastle.math.ec.ECFieldElement;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -63,9 +63,8 @@ public class Wallet {
     private void generateKeyPair() {
         try {
             ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
-            keyPairGenerator.initialize(ecSpec, random);
+            keyPairGenerator.initialize(ecSpec, new SecureRandom());
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
             privateKeyEncoded = keyPair.getPrivate().getEncoded();
@@ -127,6 +126,6 @@ public class Wallet {
         String pubKeyBufferBefore = affineXCoordination.toString() + affineYCoordination.toString();
 
         // rawPublicKey in byte[] form
-        return pubKeyBufferBefore.getBytes();
+        return pubKeyBufferBefore.getBytes(StandardCharsets.UTF_8);
     }
 }
