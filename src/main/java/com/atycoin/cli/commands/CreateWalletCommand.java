@@ -23,9 +23,8 @@ public class CreateWalletCommand implements Command {
     @Override
     public void run(String[] args) {
         if (args.length == 0) {
-            Wallets wallets = Wallets.newWallets();
+            Wallets wallets = Wallets.getInstance();
             String address = wallets.createWallet();
-            wallets.saveToFile();
 
             Commander.CommanderPrint(String.format("Your new address: %s\n", address));
             return;

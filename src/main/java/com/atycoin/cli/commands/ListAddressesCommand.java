@@ -24,7 +24,7 @@ public class ListAddressesCommand implements Command {
     @Override
     public void run(String[] args) {
         if (args.length == 0) {
-            Wallets wallets = Wallets.newWallets();
+            Wallets wallets = Wallets.getInstance();
             ArrayList<String> addresses = wallets.getAddresses();
 
             for (String address : addresses) {

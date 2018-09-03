@@ -1,6 +1,7 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Blockchain;
+import com.atycoin.UTXOSet;
 import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 
@@ -44,6 +45,9 @@ public class CreateBlockchainCommand implements Command {
 
             Blockchain blockchain = Blockchain.getInstance();
             blockchain.createBlockchain(address);
+
+            UTXOSet utxoSet = UTXOSet.getInstance();
+            utxoSet.reIndex();
         } else if (args[0].equals(params[0])) { //-help
             Commander.CommanderPrint(getHelp());
         } else {
