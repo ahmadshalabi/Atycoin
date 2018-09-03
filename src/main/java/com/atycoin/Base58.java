@@ -26,13 +26,9 @@ public class Base58 {
             address.insert(0, ALPHABET.charAt(quotientAndRemainder[1].intValue())); // Map Remainder to Alphabet
         }
 
-        // Convert leading zeros
-        for (byte digit : fullPayload) {
-            if (digit == 0x00) {
-                address.insert(0, ALPHABET.charAt(0)); // 0x00 in BASE58 == '1'
-            } else {
-                break;
-            }
+        //Version byte [Leading Zero]
+        if (fullPayload[0] == 0x00) {
+            address.insert(0, ALPHABET.charAt(0));
         }
 
         return address.toString();
