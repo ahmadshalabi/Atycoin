@@ -13,13 +13,14 @@ public class Block {
     public byte[] hashPrevBlock;
     public byte[] hashMerkleRoot;
     public long timestamp;
-    private int version = 1;
+    private int version;
     private int nonce;
 
     public ArrayList<Transaction> transactions;
     public byte[] hash; // Current Block hash
 
     private Block(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
+        version = 1;
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
         this.transactions = transactions;
         this.hashPrevBlock = hashPrevBlock;
@@ -29,14 +30,14 @@ public class Block {
     // newGenesisBlock: creates and returns genesis Block
     public static Block newGenesisBlock(Transaction coinbase) {
         //TODO: Find way to Mining the prevHash of Genesis Block
-        byte[] prevHash = Util.reverseBytesOrder(
-                Util.applySHA256(Util.reverseBytesOrder("Atycoin".getBytes())));
+//        byte[] prevHash = Util.reverseBytesOrder(
+//                Util.applySHA256(Util.reverseBytesOrder("Atycoin".getBytes())));
 
         //add coinbase Transaction
         ArrayList<Transaction> transactions = new ArrayList<>();
         transactions.add(coinbase);
 
-        Block block = new Block(transactions, prevHash);
+        Block block = new Block(transactions, new byte[0]);
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
         proofOfWork.runProofOfWork();
