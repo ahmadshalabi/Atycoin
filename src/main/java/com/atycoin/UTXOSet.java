@@ -40,6 +40,7 @@ public class UTXOSet {
         }
     }
 
+    //updates the UTXO set with transactions from the newly mined Block
     public void update(Block block) {
         for (Transaction tx : block.transactions) {
             // Remove inputs
@@ -65,6 +66,12 @@ public class UTXOSet {
         }
     }
 
+    //returns the number of transactions in the UTXO set
+    public long countTransactions() {
+        return dbConnection.dbSize();
+    }
+
+    // finds and returns unspent outputs to reference in input
     public HashMap<String, ArrayList<Integer>> findSpendableOutputs(byte[] publicKeyHashed, int amount) {
         HashMap<String, ArrayList<Integer>> unspentOutputs = new HashMap<>();
         int accumulated = 0;
@@ -100,6 +107,7 @@ public class UTXOSet {
         return unspentOutputs;
     }
 
+    // finds UTXO for a public key hash
     public ArrayList<TransactionOutput> findUTXO(byte[] publicKeyHashed) {
         ArrayList<TransactionOutput> UTXOs = new ArrayList<>();
 
