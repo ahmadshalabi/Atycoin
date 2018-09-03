@@ -2,6 +2,7 @@ package com.atycoin.cli.commands;
 
 import com.atycoin.Block;
 import com.atycoin.Blockchain;
+import com.atycoin.Transaction;
 import com.atycoin.Util;
 import com.atycoin.cli.Commander;
 
@@ -32,6 +33,9 @@ public class PrintChainCommand implements Command {
                         "Prev. block: %s", Util.bytesToHex(block.hashPrevBlock)));
                 Commander.CommanderPrint(String.format(
                         "Merkle Root: %s%n", Util.bytesToHex(block.hashMerkleRoot)));
+                for (Transaction transaction : block.transactions) {
+                    System.out.println(transaction);
+                }
             }
             return;
         }
