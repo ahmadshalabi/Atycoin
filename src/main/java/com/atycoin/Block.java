@@ -57,20 +57,15 @@ public class Block {
 
     // hashTransactions returns a hash of the transactions in the block
     public byte[] hashTransactions() {
-        try {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            for (Transaction transaction : transactions) {
-                //little-endian
-                buffer.write(Util.reverseBytesOrder(transaction.id));
-            }
-
-            //Big-endian
-            return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-
+        ArrayList<ArrayList<Byte>> transactions = new ArrayList<>();
+        for (Transaction transaction : this.transactions) {
+            //little-endian
+            ArrayList<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.id));
+            transactions.add(transactionId);
         }
+
+        MerkleTree mTree = MerkleTree.newMerkleTree(transactions);
+        return mTree.rootNode.data;
     }
 
     // serializes the block header in bytes form

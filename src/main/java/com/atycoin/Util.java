@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.*;
+import java.util.ArrayList;
 
 public class Util {
     public static byte[] applySHA256(byte[] data) {
@@ -106,6 +107,25 @@ public class Util {
         ByteBuffer byteBuffer = ByteBuffer.allocate(Integer.BYTES);
         byteBuffer.putInt(input);
         return byteBuffer.array();
+    }
+
+    public static byte[] listToBytes(ArrayList<Byte> list) {
+        int listLength = list.size();
+        byte[] data = new byte[listLength];
+        for (int i = 0; i < listLength - 1; i++) {
+            data[i] = list.get(i);
+        }
+
+        return data;
+    }
+
+    public static ArrayList<Byte> BytesToList(byte[] data) {
+        ArrayList<Byte> list = new ArrayList<>();
+        for (byte element : data) {
+            list.add(element);
+        }
+
+        return list;
     }
 
     // Convert between Endian Order

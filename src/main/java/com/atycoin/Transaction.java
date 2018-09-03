@@ -132,8 +132,6 @@ public class Transaction {
 
         boolean isValidTransaction = true;
         for (TransactionInput input : inputs) {
-            System.out.println(input.rawPublicKey.length);
-
             Transaction prevTX = prevTXs.get(Util.serializeHash(input.prevTransactionId));
 
             int inputIndex = inputs.indexOf(input);
