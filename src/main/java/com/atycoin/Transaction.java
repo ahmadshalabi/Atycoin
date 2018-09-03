@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class Transaction {
     private static final int reward = 10;
@@ -24,14 +25,12 @@ public class Transaction {
 
     // creates a new coinbase transaction (to : address in BASE58)
     public static Transaction newCoinbaseTransaction(String to) {
-        //byte[] arbitraryData = Util.applySHA256(String.format("Reward to '%s'", to).getBytes());
+        byte[] arbitraryData = new byte[20];
 
-        //Only one input, With this information
-        //  1- prevTransactionId is empty
-        //  2- transactionOutputIndex is -1
-        //  3- Any arbitrary data
-        TransactionInput transactionInput = new TransactionInput(new byte[0], -1,
-                Wallets.getInstance().getWallet(to).getRawPublicKey());
+        Random random = new Random();
+        random.nextBytes(arbitraryData);
+        //Coinbase: One inputs, empty prevTransactionHash and -1 index
+        TransactionInput transactionInput = new TransactionInput(new byte[0], -1, arbitraryData);
 
         //Reward to miner
         TransactionOutput transactionOutput = TransactionOutput.newTXOutput(reward, to);
@@ -51,13 +50,10 @@ public class Transaction {
     public static Transaction newUTXOTransaction(String from, String to, int amount) {
         Wallets wallets = Wallets.getInstance();
 
-        //Get wallet rather than decode from address
-        // Because I need rawPublicKey that sored in wallet
-        // when reference transactionInput as spent
+        // Get wallet
         Wallet wallet = wallets.getWallet(from);
         byte[] fromPublicKeyHashed = Wallet.hashPublicKey(wallet.getRawPublicKey());
 
-        Blockchain blockchain = Blockchain.getInstance();
         UTXOSet utxoSet = UTXOSet.getInstance();
 
         // finds and returns unspent outputs to reference in inputs
@@ -97,7 +93,13 @@ public class Transaction {
 
         Transaction newTransaction = new Transaction(inputs, outputs);
         newTransaction.id = newTransaction.hash();
-        blockchain.signTransaction(newTransaction, wallet.getPrivateKey());
+
+        Blockchain blockchain = Blockchain.getInstance();
+        boolean isSigningCorrectly = blockchain.signTransaction(newTransaction, wallet.getPrivateKey());
+
+        if (!isSigningCorrectly) {
+            return null;
+        }
 
         return newTransaction;
     }
@@ -106,13 +108,6 @@ public class Transaction {
     public void sign(ECPrivateKey privateKey, HashMap<String, Transaction> prevTXs) {
         if (isCoinbaseTransaction()) {
             return;
-        }
-
-        for (TransactionInput input : inputs) {
-            if (prevTXs.get(Util.serializeHash(input.prevTransactionId)).id == null) {
-                System.out.println("ERROR: Previous transaction is not correct");
-                return;
-            }
         }
 
         Transaction txCopy = trimmedCopy();
@@ -133,16 +128,12 @@ public class Transaction {
 
     // verifies signatures of Transaction inputs
     public boolean verify(Map<String, Transaction> prevTXs) {
-        for (TransactionInput input : inputs) {
-            if (prevTXs.get(Util.serializeHash(input.prevTransactionId)).id == null) {
-                System.out.println("ERROR: Previous transaction is not correct");
-                return false;
-            }
-        }
         Transaction txCopy = trimmedCopy();
 
         boolean isValidTransaction = true;
         for (TransactionInput input : inputs) {
+            System.out.println(input.rawPublicKey.length);
+
             Transaction prevTX = prevTXs.get(Util.serializeHash(input.prevTransactionId));
 
             int inputIndex = inputs.indexOf(input);
@@ -181,6 +172,7 @@ public class Transaction {
         return new Transaction(inputs, outputs);
     }
 
+    // returns the hash of the Transaction
     public byte[] hash() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
@@ -205,11 +197,8 @@ public class Transaction {
         }
     }
 
+    //Coinbase: One inputs, empty prevTransactionHash and -1 index
     public boolean isCoinbaseTransaction() {
-        // Coinbase have:
-        // 1- One inputs and,
-        // 2- this input have empty previous transaction hash, and
-        // 3- outputIndex of this input is -1
         return inputs.size() == 1 &&
                 inputs.get(0).prevTransactionId.length == 0 &&
                 inputs.get(0).transactionOutputIndex == -1;
@@ -219,24 +208,24 @@ public class Transaction {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("--- Transaction %s:", Util.bytesToHex(id)));
+        builder.append(String.format("--- Transaction %s:%n", Util.bytesToHex(id)));
 
         TransactionInput input;
         for (int i = 0, size = inputs.size(); i < size; i++) {
             input = inputs.get(i);
-            builder.append(String.format("     Input %d%n:", i));
-            builder.append(String.format("       TXID:      %s%n", Util.bytesToHex(input.prevTransactionId)));
-            builder.append(String.format("       OutIndex:  %d%n", input.transactionOutputIndex));
-            builder.append(String.format("       Signature: %s%n", Util.bytesToHex(input.signature)));
-            builder.append(String.format("       PubKey:    %s%n:", Util.bytesToHex(input.rawPublicKey)));
+            builder.append(String.format("\tInput %d:%n", i));
+            builder.append(String.format("\t\tTXID:      %s%n", Util.bytesToHex(input.prevTransactionId)));
+            builder.append(String.format("\t\tOutIndex:  %d%n", input.transactionOutputIndex));
+            builder.append(String.format("\t\tSignature: %s%n", Util.bytesToHex(input.signature)));
+            builder.append(String.format("\t\tPubKey:    %s%n", Util.bytesToHex(input.rawPublicKey)));
         }
 
         TransactionOutput output;
         for (int i = 0, size = outputs.size(); i < size; i++) {
             output = outputs.get(i);
-            builder.append(String.format("     Output %d%n:", i));
-            builder.append(String.format("       Value:  %d%n", output.value));
-            builder.append(String.format("       Script: %s%n", Util.bytesToHex(output.publicKeyHashed)));
+            builder.append(String.format("\tOutput %d:%n", i));
+            builder.append(String.format("\t\tValue:  %d%n", output.value));
+            builder.append(String.format("\t\tScript: %s%n", Util.bytesToHex(output.publicKeyHashed)));
         }
         return builder.toString();
     }

@@ -27,7 +27,6 @@ public class Blockchain implements Iterable<Block> {
     //TODO: Check failed connection
     // creates a new Blockchain with genesis Block
     public void createBlockchain(String address) {
-//        instance.tipOfChain = dbConnection.get("l");
         if (tipOfChain == null) {
             System.out.println("No existing blockchain found. Creating a new one...\n");
 
@@ -58,7 +57,7 @@ public class Blockchain implements Iterable<Block> {
         return null; // Transaction is not found
     }
 
-    // finds all unspent transaction outputs and returns transactions with spent outputs removed
+    // finds all unspent transaction outputs and returns transactions with unspent outputs
     public HashMap<String, ArrayList<TransactionOutput>> findUTXO() {
         HashMap<String, ArrayList<TransactionOutput>> UTXO = new HashMap<>();
         HashMap<String, ArrayList<Integer>> spentTXOs = new HashMap<>();
@@ -124,7 +123,7 @@ public class Blockchain implements Iterable<Block> {
         tipOfChain = Util.serializeHash(newBlock.hash);
         String newBlockSerialized = newBlock.serializeBlock();
 
-        //Store new block int database and update hash of last block
+        //Store new block in database and update hash of last block
         dbConnection.set(tipOfChain, newBlockSerialized);
         dbConnection.set("l", tipOfChain);
 
@@ -132,19 +131,20 @@ public class Blockchain implements Iterable<Block> {
     }
 
     // signs inputs of a Transaction
-    public void signTransaction(Transaction tx, ECPrivateKey privateKey) {
+    public boolean signTransaction(Transaction tx, ECPrivateKey privateKey) {
         HashMap<String, Transaction> prevTXs = new HashMap<>();
 
         for (TransactionInput input : tx.inputs) {
             Transaction prevTX = findTransaction(input.prevTransactionId);
             if (prevTX == null) {
                 System.out.println("Transaction is not Found");
-                return;
+                return false;
             }
             prevTXs.put(Util.serializeHash(prevTX.id), prevTX);
         }
 
         tx.sign(privateKey, prevTXs);
+        return true;
     }
 
     // verifies transaction input signatures
