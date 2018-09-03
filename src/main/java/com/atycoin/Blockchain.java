@@ -27,7 +27,7 @@ public class Blockchain implements Iterable<Block> {
     //TODO: Check failed connection
     // creates a new Blockchain with genesis Block
     public void createBlockchain(String address) {
-        instance.tipOfChain = dbConnection.get("l");
+//        instance.tipOfChain = dbConnection.get("l");
         if (tipOfChain == null) {
             System.out.println("No existing blockchain found. Creating a new one...\n");
 
@@ -45,19 +45,77 @@ public class Blockchain implements Iterable<Block> {
         }
     }
 
+    //TODO: Check if you can replace it using UTXOSet
+    // finds a transaction by its ID
+    public Transaction findTransaction(byte[] id) {
+        for (Block block : this) {
+            for (Transaction tx : block.transactions) {
+                if (Arrays.equals(id, tx.id)) {
+                    return tx;
+                }
+            }
+        }
+        return null; // Transaction is not found
+    }
+
+    // finds all unspent transaction outputs and returns transactions with spent outputs removed
+    public HashMap<String, ArrayList<TransactionOutput>> findUTXO() {
+        HashMap<String, ArrayList<TransactionOutput>> UTXO = new HashMap<>();
+        HashMap<String, ArrayList<Integer>> spentTXOs = new HashMap<>();
+
+        //TODO: Optimize logic in find unspentTransactions
+        for (Block block : this) {
+            for (Transaction transaction : block.transactions) {
+                String transactionId = Util.serializeHash(transaction.id);
+
+                for (TransactionOutput transactionOutput : transaction.outputs) {
+                    boolean isTransactionOutputSpent = false;
+                    int outIdx = transaction.outputs.indexOf(transactionOutput);
+
+                    // Was the output spent?
+                    ArrayList<Integer> spentTransactionOutputIndexes = spentTXOs.get(transactionId);
+                    if (spentTransactionOutputIndexes != null) {
+                        for (int spentOutIndex : spentTransactionOutputIndexes) {
+                            if (spentOutIndex == outIdx) {
+                                isTransactionOutputSpent = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isTransactionOutputSpent) {
+                        continue;
+                    }
+
+                    ArrayList<TransactionOutput> outs = UTXO.computeIfAbsent(transactionId, k -> new ArrayList<>());
+                    outs.add(transactionOutput);
+                }
+
+                for (TransactionInput transactionInput : transaction.inputs) {
+                    String prevTransactionId = Util.serializeHash(transactionInput.prevTransactionId);
+
+                    ArrayList<Integer> spentTransactionOutputIndexes =
+                            spentTXOs.computeIfAbsent(prevTransactionId, k -> new ArrayList<>());
+                    spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
+                }
+            }
+        }
+        return UTXO;
+    }
+
+    //return BlockchainIterator to iterate over blockchain in DB
+    @Override
+    public Iterator<Block> iterator() {
+        return new BlockchainIterator(dbConnection);
+    }
+
     //TODO: Check failed connection
     // mines a new block with the provided transactions
-    public void mineBlock(ArrayList<Transaction> transactions) {
-        tipOfChain = dbConnection.get("l");
-
+    public Block mineBlock(ArrayList<Transaction> transactions) {
         for (Transaction transaction : transactions) {
-            if (transaction.isCoinbaseTransaction()) {
-                continue;
-            }
-
             if (!verifyTransaction(transaction)) {
                 System.out.println("ERROR: Invalid transactions");
-                return;
+                return null;
             }
         }
 
@@ -69,100 +127,8 @@ public class Blockchain implements Iterable<Block> {
         //Store new block int database and update hash of last block
         dbConnection.set(tipOfChain, newBlockSerialized);
         dbConnection.set("l", tipOfChain);
-    }
 
-    // returns a list of transactions containing unspent outputs
-    public ArrayList<Transaction> findUnspentTransaction(byte[] publicKeyHashed) {
-        ArrayList<Transaction> unspentTransactions = new ArrayList<>();
-        HashMap<String, ArrayList<Integer>> spentTransactionOutputs = new HashMap<>();
-
-        //TODO: Optimize logic in find unspentTransactions
-        Blockchain blockchain = Blockchain.getInstance();
-        for (Block block : blockchain) {
-            for (Transaction transaction : block.transactions) {
-                String transactionId = Util.serializeHash(transaction.id);
-
-                for (TransactionOutput transactionOutput : transaction.outputs) {
-                    boolean isTransactionOutputSpent = false;
-
-                    // Was the output spent?
-                    ArrayList<Integer> spentTransactionOutputIndexes = spentTransactionOutputs.get(transactionId);
-                    if (spentTransactionOutputIndexes != null) {
-                        for (int spentOutIndex : spentTransactionOutputIndexes) {
-                            if (spentOutIndex == transaction.outputs.indexOf(transactionOutput)) {
-                                isTransactionOutputSpent = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (isTransactionOutputSpent) {
-                        continue;
-                    }
-
-                    if (transactionOutput.isLockedWithKey(publicKeyHashed)) {
-                        unspentTransactions.add(transaction);
-                    }
-                }
-
-                if (!transaction.isCoinbaseTransaction()) {
-                    for (TransactionInput transactionInput : transaction.inputs) {
-                        if (transactionInput.usesKey(publicKeyHashed)) {
-
-                            String prevTransactionId = Util.serializeHash(transactionInput.prevTransactionId);
-
-                            ArrayList<Integer> spentTransactionOutputIndexes = spentTransactionOutputs.get(prevTransactionId);
-                            if (spentTransactionOutputIndexes == null) {
-                                spentTransactionOutputIndexes = new ArrayList<>();
-                                spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
-
-                                spentTransactionOutputs.put(prevTransactionId, spentTransactionOutputIndexes);
-                            } else {
-                                spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return unspentTransactions;
-    }
-
-    // finds and returns all unspent transaction outputs
-    public ArrayList<TransactionOutput> findUnspentTransactionOutputs(byte[] publicKeyHashed) {
-        ArrayList<TransactionOutput> unspentTransactionOutputs = new ArrayList<>();
-        ArrayList<Transaction> unspentTransactions = findUnspentTransaction(publicKeyHashed);
-
-        for (Transaction transaction : unspentTransactions) {
-            for (TransactionOutput transactionOutput : transaction.outputs) {
-                if (transactionOutput.isLockedWithKey(publicKeyHashed)) {
-                    unspentTransactionOutputs.add(transactionOutput);
-                }
-            }
-        }
-
-        return unspentTransactionOutputs;
-    }
-
-    //return BlockchainIterator to iterate over blockchain in DB
-    @Override
-    public Iterator<Block> iterator() {
-        return new BlockchainIterator(dbConnection);
-    }
-
-    // finds a transaction by its ID
-    public Transaction findTransaction(byte[] id) {
-
-        for (Block block : this) {
-            for (Transaction tx : block.transactions) {
-                if (Arrays.equals(id, tx.id)) {
-                    return tx;
-                }
-            }
-        }
-
-        return null; // Transaction is not found
+        return newBlock;
     }
 
     // signs inputs of a Transaction
@@ -183,11 +149,11 @@ public class Blockchain implements Iterable<Block> {
 
     // verifies transaction input signatures
     public boolean verifyTransaction(Transaction tx) {
-        HashMap<String, Transaction> prevTXs = new HashMap<>();
-
         if (tx.isCoinbaseTransaction()) {
             return true;
         }
+
+        HashMap<String, Transaction> prevTXs = new HashMap<>();
 
         for (TransactionInput input : tx.inputs) {
             Transaction prevTX = findTransaction(input.prevTransactionId);

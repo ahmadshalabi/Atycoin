@@ -1,8 +1,8 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Base58;
-import com.atycoin.Blockchain;
 import com.atycoin.TransactionOutput;
+import com.atycoin.UTXOSet;
 import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 
@@ -48,11 +48,12 @@ public class GetBalanceCommand implements Command {
                 return;
             }
 
-            Blockchain blockchain = Blockchain.getInstance();
-
             byte[] fullPayload = Base58.decode(address);
             byte[] publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
-            ArrayList<TransactionOutput> UTXOs = blockchain.findUnspentTransactionOutputs(publicKeyHashed);
+
+
+            UTXOSet utxoSet = UTXOSet.getInstance();
+            ArrayList<TransactionOutput> UTXOs = utxoSet.findUTXO(publicKeyHashed);
 
             int balance = 0;
             for (TransactionOutput transactionOutput : UTXOs) {

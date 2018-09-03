@@ -9,28 +9,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Transaction {
-    public static final int reward = 10;
+    private static final int reward = 10;
 
     byte[] id;
     ArrayList<TransactionInput> inputs;
     ArrayList<TransactionOutput> outputs;
+    private long timestamp;
 
     private Transaction(ArrayList<TransactionInput> inputs, ArrayList<TransactionOutput> outputs) {
         this.inputs = inputs;
         this.outputs = outputs;
+        timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
     }
 
     // creates a new coinbase transaction (to : address in BASE58)
     public static Transaction newCoinbaseTransaction(String to) {
         //byte[] arbitraryData = Util.applySHA256(String.format("Reward to '%s'", to).getBytes());
 
-
         //Only one input, With this information
         //  1- prevTransactionId is empty
         //  2- transactionOutputIndex is -1
         //  3- Any arbitrary data
         TransactionInput transactionInput = new TransactionInput(new byte[0], -1,
-                Wallets.newWallets().getWallet(to).getRawPublicKey());
+                Wallets.getInstance().getWallet(to).getRawPublicKey());
 
         //Reward to miner
         TransactionOutput transactionOutput = TransactionOutput.newTXOutput(reward, to);
@@ -46,14 +47,9 @@ public class Transaction {
         return coinbaseTransaction;
     }
 
-    //TODO: It need a lot of clean ^_^
     //from and to (Address in BASE58)
     public static Transaction newUTXOTransaction(String from, String to, int amount) {
-        HashMap<String, ArrayList<Integer>> unspentOutputs = new HashMap<>();
-
-        Blockchain blockchain = Blockchain.getInstance();
-
-        Wallets wallets = Wallets.newWallets();
+        Wallets wallets = Wallets.getInstance();
 
         //Get wallet rather than decode from address
         // Because I need rawPublicKey that sored in wallet
@@ -61,39 +57,18 @@ public class Transaction {
         Wallet wallet = wallets.getWallet(from);
         byte[] fromPublicKeyHashed = Wallet.hashPublicKey(wallet.getRawPublicKey());
 
+        Blockchain blockchain = Blockchain.getInstance();
+        UTXOSet utxoSet = UTXOSet.getInstance();
+
         // finds and returns unspent outputs to reference in inputs
-        ArrayList<Transaction> unspentTransactions = blockchain.findUnspentTransaction(fromPublicKeyHashed);
+        HashMap<String, ArrayList<Integer>> UTXO = utxoSet.findSpendableOutputs(fromPublicKeyHashed, amount);
+
         int accumulated = 0;
-
-        boolean isAmountReached = false;
-
-        // find unspentOutputs unlocked by (from)
-        for (Transaction unspentTransaction : unspentTransactions) {
-            String txID = Util.serializeHash(unspentTransaction.id);
-
-            for (TransactionOutput transactionOutput : unspentTransaction.outputs) {
-                if (transactionOutput.isLockedWithKey(fromPublicKeyHashed) && accumulated < amount) {
-
-                    accumulated += transactionOutput.value;
-
-                    ArrayList<Integer> list = unspentOutputs.get(txID);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
-                        unspentOutputs.put(txID, list);
-                    } else {
-                        list.add(unspentTransaction.outputs.indexOf(transactionOutput));
-                    }
-
-                    if (accumulated >= amount) {
-                        isAmountReached = true;
-                        break;
-                    }
-                }
-            }
-
-            if (isAmountReached) {
-                break;
+        //TODO: Solve recalculated accumulated balance of SpendableOutputs
+        for (Map.Entry<String, ArrayList<Integer>> entry : UTXO.entrySet()) {
+            ArrayList<TransactionOutput> outputs = utxoSet.getTxOutputs(entry.getKey());
+            for (int index : entry.getValue()) {
+                accumulated += outputs.get(index).value;
             }
         }
 
@@ -106,7 +81,7 @@ public class Transaction {
         ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
         //Build a list of inputs
-        for (Map.Entry<String, ArrayList<Integer>> entry : unspentOutputs.entrySet()) {
+        for (Map.Entry<String, ArrayList<Integer>> entry : UTXO.entrySet()) {
             byte[] transactionId = Util.deserializeHash(entry.getKey());
             for (int transactionOutputIndex : entry.getValue()) {
                 inputs.add(new TransactionInput(transactionId, transactionOutputIndex, wallet.getRawPublicKey()));
@@ -127,7 +102,7 @@ public class Transaction {
         return newTransaction;
     }
 
-    //    signs each input of a Transaction
+    // signs each input of a Transaction
     public void sign(ECPrivateKey privateKey, HashMap<String, Transaction> prevTXs) {
         if (isCoinbaseTransaction()) {
             return;
@@ -158,10 +133,6 @@ public class Transaction {
 
     // verifies signatures of Transaction inputs
     public boolean verify(Map<String, Transaction> prevTXs) {
-        if (isCoinbaseTransaction()) {
-            return true;
-        }
-
         for (TransactionInput input : inputs) {
             if (prevTXs.get(Util.serializeHash(input.prevTransactionId)).id == null) {
                 System.out.println("ERROR: Previous transaction is not correct");
@@ -226,6 +197,7 @@ public class Transaction {
                 buffer.write(transactionOutput.concatenateData());
             }
 
+            buffer.write(Util.reverseBytesOrder(Util.longToBytes(timestamp)));
             // Big-endian
             return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
         } catch (IOException e) {

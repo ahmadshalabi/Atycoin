@@ -1,8 +1,6 @@
 package com.atycoin.cli.commands;
 
-import com.atycoin.Blockchain;
-import com.atycoin.Transaction;
-import com.atycoin.Wallet;
+import com.atycoin.*;
 import com.atycoin.cli.Commander;
 
 import java.util.ArrayList;
@@ -72,7 +70,11 @@ public class SendCommand implements Command {
             transactions.add(Transaction.newCoinbaseTransaction(from));
             transactions.add(newUTXOTransaction);
 
-            Blockchain.getInstance().mineBlock(transactions);
+            Blockchain blockchain = Blockchain.getInstance();
+            Block newBlock = blockchain.mineBlock(transactions);
+            UTXOSet utxoSet = UTXOSet.getInstance();
+            utxoSet.update(newBlock);
+
             Commander.CommanderPrint("Success!");
         } else if (args[0].equals(params[0])) { //help
             Commander.CommanderPrint(getHelp());
