@@ -14,20 +14,17 @@ import java.util.HashMap;
 
 public class Wallets {
     private static final String WALLETS_FILE = "wallets.txt";
-    public transient final String directory;
-    public HashMap<String, Wallet> wallets;
+    private static Wallets instance = new Wallets();
+    private final String directory;
+    private HashMap<String, Wallet> wallets;
 
     private Wallets() {
         directory = getClass().getResource("").getPath();
+        loadFromFile();
     }
 
-    // creates Wallets and fills it from a file if it exists
-    public static Wallets newWallets() {
-        Wallets newWallets = new Wallets();
-
-        newWallets.loadFromFile();
-
-        return newWallets;
+    public static Wallets getInstance() {
+        return instance;
     }
 
     // adds a Wallet to Wallets
@@ -35,6 +32,7 @@ public class Wallets {
         Wallet wallet = Wallet.newWallet();
         String address = wallet.getAddress();
         wallets.put(address, wallet);
+        saveToFile();
         return address;
     }
 
