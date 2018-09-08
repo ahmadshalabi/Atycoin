@@ -87,7 +87,7 @@ public class UTXOSet {
 
             for (TransactionOutput output : outputs) {
                 if (output.isLockedWithKey(publicKeyHashed) && accumulated < amount) {
-                    accumulated += output.value;
+                    accumulated += output.getValue();
 
                     ArrayList<Integer> indexes =
                             unspentOutputs.computeIfAbsent(transactionID, k -> new ArrayList<>());

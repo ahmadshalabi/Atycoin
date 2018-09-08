@@ -6,8 +6,8 @@ import java.util.Arrays;
 
 // represents a transaction output
 public class TransactionOutput {
-    public int value;
-    byte[] publicKeyHashed;
+    private int value;
+    private byte[] publicKeyHashed;
 
     private TransactionOutput(int value) {
         this.value = value;
@@ -47,5 +47,13 @@ public class TransactionOutput {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public byte[] getPublicKeyHashed() {
+        return publicKeyHashed;
     }
 }

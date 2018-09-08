@@ -56,7 +56,7 @@ public class GetBalanceCommand implements Command {
 
             int balance = 0;
             for (TransactionOutput transactionOutput : UTXOs) {
-                balance += transactionOutput.value;
+                balance += transactionOutput.getValue();
             }
 
             System.out.printf("Balance of '%s': %d\n", address, balance);

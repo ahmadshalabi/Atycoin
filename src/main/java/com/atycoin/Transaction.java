@@ -60,7 +60,8 @@ public class Transaction {
         for (Map.Entry<String, ArrayList<Integer>> entry : UTXO.entrySet()) {
             ArrayList<TransactionOutput> outputs = utxoSet.getTxOutputs(entry.getKey());
             for (int index : entry.getValue()) {
-                accumulated += outputs.get(index).value;
+                TransactionOutput transactionOutput = outputs.get(index);
+                accumulated += transactionOutput.getValue();
             }
         }
 
@@ -115,7 +116,11 @@ public class Transaction {
 
             input.setSignature(new byte[0]);
 
-            byte[] rawPublicKey = previousTransaction.outputs.get(input.getOutputIndex()).publicKeyHashed;
+            ArrayList<TransactionOutput> previousTransactionOutputs = previousTransaction.getOutputs();
+            TransactionOutput transactionOutput = previousTransactionOutputs.get(input.getOutputIndex());
+            transactionOutput.getPublicKeyHashed();
+
+            byte[] rawPublicKey = transactionOutput.getPublicKeyHashed();
             input.setRawPublicKey(rawPublicKey);
 
             trimmedCopy.id = trimmedCopy.hash();
@@ -129,19 +134,21 @@ public class Transaction {
     }
 
     // verifies signatures of Transaction inputs
-    public boolean verify(Map<String, Transaction> prevTXs) {
+    public boolean verify(Map<String, Transaction> previousTransactions) {
         Transaction trimmedCopy = trimmedCopy();
 
         boolean isValidTransaction = true;
         for (TransactionInput input : inputs) {
-            Transaction prevTX = prevTXs.get(Util.serializeHash(input.getTransactionID()));
+            Transaction previousTransaction = previousTransactions.get(Util.serializeHash(input.getTransactionID()));
 
             int inputIndex = inputs.indexOf(input);
 
             TransactionInput trimmedCopyInput = trimmedCopy.inputs.get(inputIndex);
             trimmedCopyInput.setSignature(new byte[0]);
 
-            trimmedCopyInput.setRawPublicKey(prevTX.outputs.get(input.getOutputIndex()).publicKeyHashed);
+            ArrayList<TransactionOutput> transactionOutputs = previousTransaction.getOutputs();
+            TransactionOutput transactionOutput = transactionOutputs.get(input.getOutputIndex());
+            trimmedCopyInput.setRawPublicKey(transactionOutput.getPublicKeyHashed());
 
             trimmedCopy.id = trimmedCopy.hash();
             trimmedCopyInput.setRawPublicKey(new byte[0]);
@@ -168,7 +175,7 @@ public class Transaction {
         }
 
         for (TransactionOutput output : this.outputs) {
-            outputs.add(new TransactionOutput(output.value, output.publicKeyHashed));
+            outputs.add(new TransactionOutput(output.getValue(), output.getPublicKeyHashed()));
         }
 
         return new Transaction(inputs, outputs);
@@ -227,8 +234,8 @@ public class Transaction {
         for (int i = 0, size = outputs.size(); i < size; i++) {
             output = outputs.get(i);
             builder.append(String.format("\tOutput %d:%n", i));
-            builder.append(String.format("\t\tValue:  %d%n", output.value));
-            builder.append(String.format("\t\tScript: %s%n", Util.bytesToHex(output.publicKeyHashed)));
+            builder.append(String.format("\t\tValue:  %d%n", output.getValue()));
+            builder.append(String.format("\t\tScript: %s%n", Util.bytesToHex(output.getPublicKeyHashed())));
         }
         return builder.toString();
     }
