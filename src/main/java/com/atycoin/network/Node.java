@@ -41,7 +41,7 @@ public class Node implements Runnable {
 
     public static Node getInstance() {
         if (instance == null) {
-            instance = new Node(AtycoinStart.nodeID, "");
+            instance = new Node(AtycoinStart.getNodeID(), "");
         }
 
         return instance;

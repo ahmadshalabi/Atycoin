@@ -76,7 +76,7 @@ public class SendCommand implements Command {
 
             if (args.length == 6) {
                 try (Socket connection = new Socket(InetAddress.getLocalHost(), Node.getKnownNodes().get(0))) {
-                    NetworkMessage message = new TransactionMessage(AtycoinStart.nodeID, newUTXOTransaction);
+                    NetworkMessage message = new TransactionMessage(AtycoinStart.getNodeID(), newUTXOTransaction);
                     BufferedWriter output = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
                     output.flush();
 

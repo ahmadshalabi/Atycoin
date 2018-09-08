@@ -20,7 +20,7 @@ public class Blockchain implements Iterable<Block> {
     }
 
     public static Blockchain getInstance() {
-        int nodeID = AtycoinStart.nodeID;
+        int nodeID = AtycoinStart.getNodeID();
         if (instance == null) {
             instance = new Blockchain(nodeID + 3379);
         }

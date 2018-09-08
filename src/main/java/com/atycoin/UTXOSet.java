@@ -16,7 +16,7 @@ public class UTXOSet {
     private Jedis dbConnection;
 
     private UTXOSet(Blockchain blockchain) {
-        int nodeId = AtycoinStart.nodeID;
+        int nodeId = AtycoinStart.getNodeID();
         this.blockchain = blockchain;
         dbConnection = new Jedis("localhost", nodeId + 3379);
         dbConnection.select(1); // chainstates db
