@@ -17,8 +17,8 @@ import java.util.Arrays;
 
 // Wallet stores private and public keys
 public class Wallet {
-    public static final byte VERSION = 0x00;
-    public static final int CHECKSUM_LEN = 4;
+    private static final byte VERSION = 0x00;
+    private static final int CHECKSUM_LEN = 4;
 
     private byte[] privateKeyEncoded;
     private byte[] publicKeyEncoded;
