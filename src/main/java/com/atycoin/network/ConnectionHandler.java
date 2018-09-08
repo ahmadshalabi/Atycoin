@@ -3,13 +3,14 @@ package com.atycoin.network;
 import com.atycoin.network.commands.NetworkCommand;
 import com.atycoin.network.commands.NetworkCommandFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class ConnectionHandler implements Runnable {
     private Socket receivingConnection;
     private BufferedReader input;
-    private BufferedWriter output;
     private int nodeAddress;
 
     public ConnectionHandler(Socket receivingConnection, int nodeAddress) {
@@ -32,15 +33,11 @@ public class ConnectionHandler implements Runnable {
 
             networkCommand.execute(message, nodeAddress);
         } catch (IOException e) {
+            stopConnection();
             throw new RuntimeException(e);
         } finally {
             stopConnection();
         }
-    }
-
-    private void getStreamOutput() throws IOException {
-        output = new BufferedWriter(new OutputStreamWriter(receivingConnection.getOutputStream()));
-        output.flush();
     }
 
     private void getStreamInput() throws IOException {
@@ -52,7 +49,8 @@ public class ConnectionHandler implements Runnable {
             input.close();
             receivingConnection.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
     }
 }
