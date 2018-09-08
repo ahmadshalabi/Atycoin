@@ -12,33 +12,33 @@ public class CreateBlockchainCommand implements Command {
         return "cmd: createblockchain \n" +
                 "- description: Create a blockchain and send genesis block reward to ADDRESS \n" +
                 "- usage: createblockchain param [situational...] \n" +
-                "- param: '-address ADDRESS', '-help'\n" +
+                "- param: '-address ADDRESS', '-params', '-help' \n" +
                 "------------------------------------------------------------------------";
     }
 
     @Override
     public String[] getParams() {
-        return new String[]{"-help", "-address"};
+        return new String[]{"-help", "-params", "-address"};
     }
 
     @Override
     public void run(String[] args) {
+
+        String[] params = getParams();
         //check if command exists in params list
-        if (!Arrays.asList(getParams()).contains(args[0])) {
+        if (!Arrays.asList(params).contains(args[0])) {
             Commander.CommanderPrint("ERROR ! unknown parameters...");
-            Commander.CommanderPrint(Arrays.toString(getParams()));
+            Commander.CommanderPrint(Arrays.toString(params));
             return;
         }
 
-        String[] params = getParams();
-
-        if (args[0].equals(params[1])) { //-address
+        if (args[0].equals(params[2])) { //-address
             String address = args[1];
             if (address == null) {
-                Commander.CommanderPrint("ERROR ! no address entered.");
+                Commander.CommanderPrint("ERROR ! Address is not entered.");
                 return;
             } else if (!Wallet.validateAddress(address)) {
-                Commander.CommanderPrint("ERROR ! Address in not valid.");
+                Commander.CommanderPrint("ERROR ! Address is not valid.");
                 return;
             }
 
@@ -46,8 +46,10 @@ public class CreateBlockchainCommand implements Command {
             blockchain.createBlockchain(address);
         } else if (args[0].equals(params[0])) { //-help
             Commander.CommanderPrint(getHelp());
+        } else if (args[0].equals(params[1])) { //-params
+            Commander.CommanderPrint(Arrays.toString(params));
         } else {
-            Commander.CommanderPrint("Sorry param not yet implemented");
+            Commander.CommanderPrint("Invalid parameter. Enter 'createblockchain -help'");
         }
     }
 }

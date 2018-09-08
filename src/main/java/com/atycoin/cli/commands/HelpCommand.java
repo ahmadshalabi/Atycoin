@@ -14,7 +14,7 @@ public class HelpCommand implements Command {
 
     @Override
     public String[] getParams() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not Supported");
     }
 
     @Override

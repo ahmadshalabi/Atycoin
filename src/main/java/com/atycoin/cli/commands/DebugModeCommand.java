@@ -10,7 +10,8 @@ public class DebugModeCommand implements Command {
         return "cmd: debug \n" +
                 "- description: Toggle debug mode on the cli. " +
                 "Causing the application to potentially crash if an error is thrown. \n" +
-                "- usage: debug true/false \n" +
+                "- usage: debug param [situational...], \n" +
+                "- param: 'true/false', '-params', '-help' \n" +
                 "------------------------------------------------------------------------";
     }
 
@@ -26,13 +27,13 @@ public class DebugModeCommand implements Command {
             return;
         }
 
-        if (!Arrays.asList(getParams()).contains(args[0])) {
-            Commander.CommanderPrint("ERROR! unknown parameters...");
-            Commander.CommanderPrint(Arrays.toString(getParams()));
+        String[] params = getParams();
+
+        if (!Arrays.asList(params).contains(args[0])) {
+            Commander.CommanderPrint("ERROR ! unknown parameters...");
+            Commander.CommanderPrint(Arrays.toString(params));
             return;
         }
-
-        String[] params = getParams();
 
         if (args[0].equals(params[2])) { //true
             Commander.getInstance().setDebugMode(true);
@@ -44,12 +45,12 @@ public class DebugModeCommand implements Command {
             Commander.CommanderPrint("Setting Debug mode to false...");
             Commander.CommanderPrint("Application will not crash if an error is thrown.");
             Commander.CommanderPrint("Debug mode active: " + Commander.getInstance().getDebugMode());
-        } else if (args[0].equals(params[0])) { //help
+        } else if (args[0].equals(params[0])) { //-help
             Commander.CommanderPrint(getHelp());
-        } else if (args[0].equals(params[1])) { //params
-            Commander.CommanderPrint(Arrays.toString(getParams()));
+        } else if (args[0].equals(params[1])) { //-params
+            Commander.CommanderPrint(Arrays.toString(params));
         } else {
-            Commander.CommanderPrint("Sorry param not implemented. debug-cli -help");
+            Commander.CommanderPrint("Invalid parameter. Enter 'debug -help'");
         }
     }
 }

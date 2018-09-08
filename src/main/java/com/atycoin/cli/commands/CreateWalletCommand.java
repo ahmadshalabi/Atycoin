@@ -11,18 +11,18 @@ public class CreateWalletCommand implements Command {
         return "cmd: createwallet \n" +
                 "- description: Generates a new key-pair and saves it into the wallet file \n" +
                 "- usage: createwallet param [situational...] \n" +
-                "- param: '-help' \n" +
+                "- param: '-help', '-params' \n" +
                 "------------------------------------------------------------------------";
     }
 
     @Override
     public String[] getParams() {
-        return new String[]{"-help"};
+        return new String[]{"-help", "-params"};
     }
 
     @Override
     public void run(String[] args) {
-        if (args.length == 0) {
+        if (args.length < 1) {
             Wallets wallets = Wallets.getInstance();
             String address = wallets.createWallet();
 
@@ -30,19 +30,21 @@ public class CreateWalletCommand implements Command {
             return;
         }
 
+        String[] params = getParams();
+
         //check if command exists in params list
-        if (!Arrays.asList(getParams()).contains(args[0])) {
+        if (!Arrays.asList(params).contains(args[0])) {
             Commander.CommanderPrint("ERROR ! unknown parameters...");
-            Commander.CommanderPrint(Arrays.toString(getParams()));
+            Commander.CommanderPrint(Arrays.toString(params));
             return;
         }
 
-        String[] params = getParams();
-
         if (args[0].equals(params[0])) { //-help
             Commander.CommanderPrint(getHelp());
+        } else if (args[0].equals(params[1])) { //-params
+            Commander.CommanderPrint(Arrays.toString(params));
         } else {
-            Commander.CommanderPrint("Sorry param not yet implemented");
+            Commander.CommanderPrint("Invalid parameter. Enter 'createwallet -help'");
         }
     }
 }

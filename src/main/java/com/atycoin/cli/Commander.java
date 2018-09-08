@@ -35,14 +35,14 @@ public class Commander {
         commands = new HashMap<>();
         commands.put("createblockchain", new CreateBlockchainCommand());
         commands.put("createwallet", new CreateWalletCommand());
-        commands.put("getbalance", new GetBalanceCommand());
-        commands.put("printchain", new PrintChainCommand());
-        commands.put("listaddresses", new ListAddressesCommand());
-        commands.put("send", new SendCommand());
-        commands.put("reindexutxo", new ReIndexUTXOCommand());
-        commands.put("startnode", new StartNodeCommand());
-        commands.put("help", new HelpCommand());
         commands.put("debug", new DebugModeCommand());
+        commands.put("getbalance", new GetBalanceCommand());
+        commands.put("help", new HelpCommand());
+        commands.put("listaddresses", new ListAddressesCommand());
+        commands.put("printchain", new PrintChainCommand());
+        commands.put("reindexutxo", new ReIndexUTXOCommand());
+        commands.put("send", new SendCommand());
+        commands.put("startnode", new StartNodeCommand());
         scanner = new Scanner(System.in);
     }
 
@@ -53,15 +53,15 @@ public class Commander {
             CommanderInput("Atycoin-cli");
 
             //Gather user input
-            String userInput = scanner.nextLine();
+            String rawInput = scanner.nextLine();
 
             //check if the users wishes to quit
-            if (userInput.equals("quit") || userInput.equals("exit")) {
+            if (rawInput.equals("quit") || rawInput.equals("exit")) {
                 break;
             }
 
             //Gather the raw arguments entered by the user
-            String[] rawArgs = userInput.split("\\s+");
+            String[] rawArgs = rawInput.split("\\s+");
 
             //check any command or argument was entered
             if (!rawArgs[0].equals("")) {

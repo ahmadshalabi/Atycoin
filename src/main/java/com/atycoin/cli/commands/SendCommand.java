@@ -19,24 +19,25 @@ public class SendCommand implements Command {
         return "cmd: send \n" +
                 "- description: Send AMOUNT of coins FROM address to TO. Mine on the same node, when -mine is set.\n" +
                 "- usage: send param [situational...] \n" +
-                "- param: '-help', '-from FROM -to TO -amount AMOUNT', '-from FROM -to TO -amount AMOUNT -mine' \n" +
+                "- param: '-help', '-params', '-from FROM -to TO -amount AMOUNT', " +
+                "'-from FROM -to TO -amount AMOUNT -mine' \n" +
                 "------------------------------------------------------------------------";
     }
 
     @Override
     public String[] getParams() {
-        return new String[]{"-help", "-from"};
+        return new String[]{"-help", "-params", "-from"};
     }
 
     @Override
     public void run(String[] args) {
-        //check if command exists in params list
-        if (!Arrays.asList(getParams()).contains(args[0])) {
-            Commander.CommanderPrint("ERROR ! unknown parameters...");
-            Commander.CommanderPrint(Arrays.toString(getParams()));
-        }
-
         String[] params = getParams();
+
+        //check if command exists in params list
+        if (!Arrays.asList(params).contains(args[0])) {
+            Commander.CommanderPrint("ERROR ! unknown parameters...");
+            Commander.CommanderPrint(Arrays.toString(params));
+        }
 
         //-from FROM -to TO -amount AMOUNT
         if (args[0].equals(params[1]) && args[2].equals("-to") && args[4].equals("-amount")) {
@@ -107,8 +108,10 @@ public class SendCommand implements Command {
             Commander.CommanderPrint("Success!");
         } else if (args[0].equals(params[0])) { //help
             Commander.CommanderPrint(getHelp());
+        } else if (args[0].equals(params[1])) { //-params
+            Commander.CommanderPrint(Arrays.toString(params));
         } else {
-            Commander.CommanderPrint("Sorry param not yet implemented");
+            Commander.CommanderPrint("Invalid parameter. Enter 'send -help'");
         }
     }
 }
