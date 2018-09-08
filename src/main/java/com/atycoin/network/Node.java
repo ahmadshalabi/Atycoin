@@ -1,5 +1,6 @@
 package com.atycoin.network;
 
+import com.atycoin.AtycoinStart;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.VersionMessage;
 
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Node implements Runnable {
+    private static final int NODE_VERSION = 1;
     private static String miningAddress;
     private static ArrayList<Integer> knownNodes; // To simulate DNS Seed
 
@@ -22,28 +24,34 @@ public class Node implements Runnable {
         knownNodes.add(3000);
     }
 
-    private final int NODE_VERSION = 1;
+    private static Node instance;
     private final ExecutorService pool;
     private int nodeAddress;
-    private String minerAddress;
+
     private Socket connection;
     private BufferedWriter output;
 
     public Node(int nodeAddress, String minerAddress) {
         this.nodeAddress = nodeAddress;
-        this.minerAddress = minerAddress;
-
         miningAddress = minerAddress;
 
-
         pool = Executors.newFixedThreadPool(8);
+        instance = this;
+    }
+
+    public static Node getInstance() {
+        if (instance == null) {
+            instance = new Node(AtycoinStart.nodeID, "");
+        }
+
+        return instance;
     }
 
     public static ArrayList<Integer> getKnownNodes() {
         return knownNodes;
     }
 
-    public static String getMinerAddress() {
+    public static String getMiningAddress() {
         return miningAddress;
     }
 
@@ -67,8 +75,8 @@ public class Node implements Runnable {
                 connection = server.accept();
                 handleConnection(connection, nodeAddress);
             }
-
         } catch (IOException e) {
+            pool.shutdown();
             throw new RuntimeException(e);
         }
     }
