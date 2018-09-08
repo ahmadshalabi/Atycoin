@@ -7,12 +7,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Scanner;
 
-//TODO: Add debug command
-
 // responsible for processing command line
 public class Commander {
     private static Commander instance = new Commander();
-    private static boolean debugMode = false;
+    private boolean debugMode = false;
     private HashMap<String, Command> commands;
     private Scanner scanner;
 
@@ -44,6 +42,7 @@ public class Commander {
         commands.put("reindexutxo", new ReIndexUTXOCommand());
         commands.put("startnode", new StartNodeCommand());
         commands.put("help", new HelpCommand());
+        commands.put("debug", new DebugModeCommand());
         scanner = new Scanner(System.in);
     }
 
@@ -75,7 +74,6 @@ public class Commander {
                         CommanderPrint("command couldn't execute, perhaps not enough arguments? try: " + rawArgs[0] + " -help");
                     } catch (Exception e) {
                         CommanderPrint("command failed to execute.");
-                        e.printStackTrace();
                     }
                 } else { //Otherwise run the command with no safety net.
                     call(rawArgs);
@@ -99,5 +97,13 @@ public class Commander {
 
     public Collection<Command> getCommands() {
         return commands.values();
+    }
+
+    public boolean getDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 }
