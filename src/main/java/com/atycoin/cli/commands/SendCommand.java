@@ -37,10 +37,11 @@ public class SendCommand implements Command {
         if (!Arrays.asList(params).contains(args[0])) {
             Commander.CommanderPrint("ERROR ! unknown parameters...");
             Commander.CommanderPrint(Arrays.toString(params));
+            return;
         }
 
         //-from FROM -to TO -amount AMOUNT
-        if (args[0].equals(params[1]) && args[2].equals("-to") && args[4].equals("-amount")) {
+        if (args[0].equals(params[2]) && args[2].equals("-to") && args[4].equals("-amount")) {
             String from = args[1];
             String to = args[3];
             int amount = Integer.parseInt(args[5]);
