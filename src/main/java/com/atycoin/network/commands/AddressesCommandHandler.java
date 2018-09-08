@@ -39,7 +39,7 @@ public class AddressesCommandHandler implements NetworkCommand {
                 output.write(inventoryMessage.makeRequest());
                 output.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
     }
