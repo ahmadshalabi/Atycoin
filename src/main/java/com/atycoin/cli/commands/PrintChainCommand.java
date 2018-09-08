@@ -32,7 +32,7 @@ public class PrintChainCommand implements Command {
                 Commander.CommanderPrint(String.format(
                         "Prev. block: %s", Util.bytesToHex(block.hashPrevBlock)));
                 Commander.CommanderPrint(String.format(
-                        "Merkle Root: %s%n", Util.bytesToHex(block.hashMerkleRoot)));
+                        "Merkle Root: %s%n", Util.bytesToHex(block.merkleRoot)));
                 for (Transaction transaction : block.transactions) {
                     System.out.println(transaction);
                 }

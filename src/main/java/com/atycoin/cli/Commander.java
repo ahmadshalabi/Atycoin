@@ -41,6 +41,7 @@ public class Commander {
         commands.put("listaddresses", new ListAddressesCommand());
         commands.put("send", new SendCommand());
         commands.put("reindexutxo", new ReIndexUTXOCommand());
+        commands.put("startnode", new StartNodeCommand());
         commands.put("help", new HelpCommand());
         scanner = new Scanner(System.in);
     }

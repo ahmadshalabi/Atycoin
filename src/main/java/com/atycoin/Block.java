@@ -11,20 +11,22 @@ import java.util.ArrayList;
 public class Block {
     public final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
     public byte[] hashPrevBlock;
-    public byte[] hashMerkleRoot;
+    public byte[] merkleRoot;
     public long timestamp;
     private int version;
     private int nonce;
+    private int height;
 
     public ArrayList<Transaction> transactions;
     public byte[] hash; // Current Block hash
 
-    private Block(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
+    private Block(ArrayList<Transaction> transactions, byte[] hashPrevBlock, int height) {
         version = 1;
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
         this.transactions = transactions;
         this.hashPrevBlock = hashPrevBlock;
-        hashMerkleRoot = hashTransactions();
+        this.height = height;
+        merkleRoot = hashTransactions();
     }
 
     // newGenesisBlock: creates and returns genesis Block
@@ -37,7 +39,7 @@ public class Block {
         ArrayList<Transaction> transactions = new ArrayList<>();
         transactions.add(coinbase);
 
-        Block block = new Block(transactions, new byte[0]);
+        Block block = new Block(transactions, new byte[0], 0);
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
         proofOfWork.runProofOfWork();
@@ -46,8 +48,8 @@ public class Block {
     }
 
     // newBlock: creates and returns Block
-    public static Block newBlock(ArrayList<Transaction> transactions, byte[] hashPrevBlock) {
-        Block block = new Block(transactions, hashPrevBlock);
+    public static Block newBlock(ArrayList<Transaction> transactions, byte[] hashPrevBlock, int height) {
+        Block block = new Block(transactions, hashPrevBlock, height);
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
         proofOfWork.runProofOfWork();
@@ -78,7 +80,7 @@ public class Block {
             //concatenate data in little-endian order
             buffer.write(Util.reverseBytesOrder(Util.intToBytes(version)));
             buffer.write(Util.reverseBytesOrder(hashPrevBlock));
-            buffer.write(Util.reverseBytesOrder(hashMerkleRoot));
+            buffer.write(Util.reverseBytesOrder(merkleRoot));
             buffer.write(Util.reverseBytesOrder(Util.longToBytes(timestamp)));
             buffer.write(Util.reverseBytesOrder(Util.intToBytes(targetBits)));
             buffer.write(Util.reverseBytesOrder(Util.intToBytes(nonce)));
@@ -107,5 +109,13 @@ public class Block {
 
     public void setNonce(int nonce) {
         this.nonce = nonce;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public byte[] getHash() {
+        return hash;
     }
 }

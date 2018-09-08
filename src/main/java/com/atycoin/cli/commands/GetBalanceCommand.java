@@ -51,7 +51,6 @@ public class GetBalanceCommand implements Command {
             byte[] fullPayload = Base58.decode(address);
             byte[] publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
 
-
             UTXOSet utxoSet = UTXOSet.getInstance();
             ArrayList<TransactionOutput> UTXOs = utxoSet.findUTXO(publicKeyHashed);
 

@@ -46,18 +46,14 @@ public class Transaction {
         return coinbaseTransaction;
     }
 
-    //from and to (Address in BASE58)
-    public static Transaction newUTXOTransaction(String from, String to, int amount) {
-        Wallets wallets = Wallets.getInstance();
-
-        // Get wallet
-        Wallet wallet = wallets.getWallet(from);
-        byte[] fromPublicKeyHashed = Wallet.hashPublicKey(wallet.getRawPublicKey());
+    //from : wallet, to : Base58 Address
+    public static Transaction newUTXOTransaction(Wallet wallet, String to, int amount) {
+        byte[] senderPublicKeyHashed = Wallet.hashPublicKey(wallet.getRawPublicKey());
 
         UTXOSet utxoSet = UTXOSet.getInstance();
 
         // finds and returns unspent outputs to reference in inputs
-        HashMap<String, ArrayList<Integer>> UTXO = utxoSet.findSpendableOutputs(fromPublicKeyHashed, amount);
+        HashMap<String, ArrayList<Integer>> UTXO = utxoSet.findSpendableOutputs(senderPublicKeyHashed, amount);
 
         int accumulated = 0;
         //TODO: Solve recalculated accumulated balance of SpendableOutputs
@@ -88,7 +84,7 @@ public class Transaction {
         outputs.add(TransactionOutput.newTXOutput(amount, to));
         if (accumulated > amount) {
             int change = accumulated - amount;
-            outputs.add(TransactionOutput.newTXOutput(change, from));
+            outputs.add(TransactionOutput.newTXOutput(change, wallet.getAddress()));
         }
 
         Transaction newTransaction = new Transaction(inputs, outputs);
@@ -226,5 +222,9 @@ public class Transaction {
             builder.append(String.format("\t\tScript: %s%n", Util.bytesToHex(output.publicKeyHashed)));
         }
         return builder.toString();
+    }
+
+    public byte[] getId() {
+        return id;
     }
 }

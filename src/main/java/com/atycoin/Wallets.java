@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Wallets {
-    private static final String WALLETS_FILE = "wallets.txt";
+    private static String WALLETS_FILE = String.format("wallets%d.txt", AtycoinStart.nodeID);
     private static Wallets instance = new Wallets();
     private final String directory;
     private HashMap<String, Wallet> wallets;

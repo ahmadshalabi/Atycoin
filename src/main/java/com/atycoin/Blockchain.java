@@ -10,16 +10,20 @@ import java.util.Iterator;
 
 //Blockchain implements interaction with a DB
 public class Blockchain implements Iterable<Block> {
-    private static Blockchain instance = new Blockchain();
+    private static Blockchain instance;
     private static Jedis dbConnection;
     private String tipOfChain;
 
     //TODO: Do manual commit and support rollback (BulkTransaction in DB)
-    private Blockchain() {
-        dbConnection = new Jedis("localhost");
+    private Blockchain(int port) {
+        dbConnection = new Jedis("localhost", port);
     }
 
     public static Blockchain getInstance() {
+        int nodeID = AtycoinStart.nodeID;
+        if (instance == null) {
+            instance = new Blockchain(nodeID + 3379);
+        }
         instance.tipOfChain = dbConnection.get("l");
         return instance;
     }
@@ -33,7 +37,10 @@ public class Blockchain implements Iterable<Block> {
             Transaction coinbaseTransaction = Transaction.newCoinbaseTransaction(address);
             Block genesisBlock = Block.newGenesisBlock(coinbaseTransaction);
 
-            tipOfChain = Util.serializeHash(genesisBlock.hash);
+            UTXOSet utxoSet = UTXOSet.getInstance();
+            utxoSet.update(genesisBlock);
+
+            tipOfChain = Util.serializeHash(genesisBlock.getHash());
 
             dbConnection.set(tipOfChain, genesisBlock.serializeBlock());
             dbConnection.set("l", tipOfChain);
@@ -42,6 +49,41 @@ public class Blockchain implements Iterable<Block> {
         } else {
             System.out.println("Blockchain already exists.");
         }
+    }
+
+    //saves the block into the blockchain
+    public boolean addBlock(Block block) {
+        String blockHashSerialized = Util.serializeHash(block.getHash());
+        String blockInDb = dbConnection.get(blockHashSerialized);
+
+        // block already exist
+        if (blockInDb != null) {
+            return false;
+        }
+
+        String blockSerialized = block.serializeBlock();
+
+        String lastHashSerialized = dbConnection.get("l");
+
+        if (lastHashSerialized == null) {
+            dbConnection.set(blockHashSerialized, blockSerialized);
+            dbConnection.set("l", blockHashSerialized);
+            tipOfChain = blockHashSerialized;
+            return true;
+        }
+
+        String lastBlockSerialized = dbConnection.get(lastHashSerialized);
+
+        Block lastBlock = Block.deserializeBlock(lastBlockSerialized);
+
+        if (block.getHeight() > lastBlock.getHeight()) {
+            dbConnection.set(blockHashSerialized, blockSerialized);
+            dbConnection.set("l", blockHashSerialized);
+            tipOfChain = blockHashSerialized;
+            return true;
+        }
+
+        return false;
     }
 
     //TODO: Check if you can replace it using UTXOSet
@@ -102,25 +144,68 @@ public class Blockchain implements Iterable<Block> {
         return UTXO;
     }
 
-    //return BlockchainIterator to iterate over blockchain in DB
     @Override
+    //return BlockchainIterator to iterate over blockchain in DB
     public Iterator<Block> iterator() {
         return new BlockchainIterator(dbConnection);
+    }
+
+    // returns the height of the latest block
+    public int getBestHeight() {
+        String lastHash = dbConnection.get("l");
+
+        if (lastHash == null) {
+            return 0;
+        }
+
+        String blockData = dbConnection.get(lastHash);
+
+        Block lastBlock = Block.deserializeBlock(blockData);
+
+        return lastBlock.getHeight();
+    }
+
+    // finds a block by its hash and returns it
+    public Block getBlock(String blockHash) {
+        String blockSerialized = dbConnection.get(blockHash);
+
+        if (blockSerialized == null) {
+            System.out.println("Block is not found");
+        }
+        return Block.deserializeBlock(blockSerialized);
+    }
+
+    // returns a list of required block hashes from the chain
+    public ArrayList<String> getBlockHashes(int requiredHeight) {
+        ArrayList<String> blockHashes = new ArrayList<>();
+        for (Block block : this) {
+            if (requiredHeight != 0 && block.getHeight() <= requiredHeight) {
+                break;
+            }
+
+            blockHashes.add(Util.serializeHash(block.getHash()));
+        }
+
+        return blockHashes;
     }
 
     //TODO: Check failed connection
     // mines a new block with the provided transactions
     public Block mineBlock(ArrayList<Transaction> transactions) {
-        for (Transaction transaction : transactions) {
-            if (!verifyTransaction(transaction)) {
+        for (int i = 0, size = transactions.size(); i < size; i++) {
+            if (!verifyTransaction(transactions.get(0))) {
                 System.out.println("ERROR: Invalid transactions");
-                return null;
+                transactions.remove(transactions.get(0));
             }
         }
 
-        Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain));
+        String lastBlock = dbConnection.get(tipOfChain);
+        Block block = Block.deserializeBlock(lastBlock);
+        int lastHeight = block.getHeight();
 
-        tipOfChain = Util.serializeHash(newBlock.hash);
+        Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain), lastHeight + 1);
+
+        tipOfChain = Util.serializeHash(newBlock.getHash());
         String newBlockSerialized = newBlock.serializeBlock();
 
         //Store new block in database and update hash of last block
