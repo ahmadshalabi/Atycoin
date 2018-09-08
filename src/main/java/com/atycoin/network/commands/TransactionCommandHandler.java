@@ -50,12 +50,12 @@ public class TransactionCommandHandler implements NetworkCommand {
                 }
             }
         } else {
-            if (Mempool.size() >= 2 && Node.getMinerAddress().length() > 0) {
+            if (Mempool.size() >= 2 && Node.getMiningAddress().length() > 0) {
                 while (Mempool.size() > 0) {
                     Blockchain blockchain = Blockchain.getInstance();
 
                     ArrayList<Transaction> validTransactions = new ArrayList<>();
-                    Transaction coinbaseTx = Transaction.newCoinbaseTransaction(Node.getMinerAddress());
+                    Transaction coinbaseTx = Transaction.newCoinbaseTransaction(Node.getMiningAddress());
                     validTransactions.add(coinbaseTx);
                     validTransactions.addAll(Mempool.values());
 
