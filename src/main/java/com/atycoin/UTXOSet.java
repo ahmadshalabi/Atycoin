@@ -49,12 +49,11 @@ public class UTXOSet {
             if (!transaction.isCoinbaseTransaction()) {
                 ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
                 for (TransactionInput input : transactionInputs) {
-                    //ArrayList<TransactionOutput> updatedOuts = new ArrayList<>();
-                    String serialisedTxInputID = Util.serializeHash(input.prevTransactionId);
+                    String serialisedTxInputID = Util.serializeHash(input.getTransactionID());
                     String serializedOuts = dbConnection.get(serialisedTxInputID);
                     ArrayList<TransactionOutput> outs = deserializeOutputs(serializedOuts);
 
-                    outs.remove(input.transactionOutputIndex);
+                    outs.remove(input.getOutputIndex());
 
                     if (outs.size() == 0) {
                         dbConnection.del(serialisedTxInputID);

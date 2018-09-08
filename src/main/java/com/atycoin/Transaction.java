@@ -101,45 +101,53 @@ public class Transaction {
     }
 
     // signs each input of a Transaction
-    public void sign(ECPrivateKey privateKey, HashMap<String, Transaction> prevTXs) {
+    public void sign(ECPrivateKey privateKey, HashMap<String, Transaction> previousTransactions) {
         if (isCoinbaseTransaction()) {
             return;
         }
 
-        Transaction txCopy = trimmedCopy();
+        Transaction trimmedCopy = trimmedCopy();
 
-        for (TransactionInput input : txCopy.inputs) {
-            Transaction prevTx = prevTXs.get(Util.serializeHash(input.prevTransactionId));
+        ArrayList<TransactionInput> trimmedCopyInputs = trimmedCopy.getInputs();
 
-            input.signature = new byte[0];
-            input.rawPublicKey = prevTx.outputs.get(input.transactionOutputIndex).publicKeyHashed;
+        for (TransactionInput input : trimmedCopyInputs) {
+            Transaction previousTransaction = previousTransactions.get(Util.serializeHash(input.getTransactionID()));
 
-            txCopy.id = txCopy.hash();
-            input.rawPublicKey = new byte[0];
+            input.setSignature(new byte[0]);
 
-            int txCopyIndex = txCopy.inputs.indexOf(input);
-            inputs.get(txCopyIndex).signature = Util.applyECDSASig(privateKey, txCopy.id);
+            byte[] rawPublicKey = previousTransaction.outputs.get(input.getOutputIndex()).publicKeyHashed;
+            input.setRawPublicKey(rawPublicKey);
+
+            trimmedCopy.id = trimmedCopy.hash();
+            input.setRawPublicKey(new byte[0]);
+
+            int txCopyIndex = trimmedCopy.inputs.indexOf(input);
+
+            TransactionInput transactionInput = inputs.get(txCopyIndex);
+            transactionInput.setSignature(Util.applyECDSASig(privateKey, trimmedCopy.getId()));
         }
     }
 
     // verifies signatures of Transaction inputs
     public boolean verify(Map<String, Transaction> prevTXs) {
-        Transaction txCopy = trimmedCopy();
+        Transaction trimmedCopy = trimmedCopy();
 
         boolean isValidTransaction = true;
         for (TransactionInput input : inputs) {
-            Transaction prevTX = prevTXs.get(Util.serializeHash(input.prevTransactionId));
+            Transaction prevTX = prevTXs.get(Util.serializeHash(input.getTransactionID()));
 
             int inputIndex = inputs.indexOf(input);
-            txCopy.inputs.get(inputIndex).signature = new byte[0];
-            txCopy.inputs.get(inputIndex).rawPublicKey =
-                    prevTX.outputs.get(input.transactionOutputIndex).publicKeyHashed;
 
-            txCopy.id = txCopy.hash();
-            txCopy.inputs.get(inputIndex).rawPublicKey = new byte[0];
+            TransactionInput trimmedCopyInput = trimmedCopy.inputs.get(inputIndex);
+            trimmedCopyInput.setSignature(new byte[0]);
 
-            isValidTransaction = Util.verifyECDSASig(Util.decodeKey(input.rawPublicKey),
-                    txCopy.id, input.signature);
+            trimmedCopyInput.setRawPublicKey(prevTX.outputs.get(input.getOutputIndex()).publicKeyHashed);
+
+            trimmedCopy.id = trimmedCopy.hash();
+            trimmedCopyInput.setRawPublicKey(new byte[0]);
+
+            isValidTransaction = Util.verifyECDSASig(Util.decodeKey(input.getRawPublicKey()),
+                    trimmedCopy.id, input.getSignature());
 
             if (!isValidTransaction) {
                 break;
@@ -156,7 +164,7 @@ public class Transaction {
 
         for (TransactionInput input : this.inputs) {
             inputs.add(new TransactionInput(
-                    input.prevTransactionId, input.transactionOutputIndex, new byte[0], new byte[0]));
+                    input.getTransactionID(), input.getOutputIndex(), new byte[0], new byte[0]));
         }
 
         for (TransactionOutput output : this.outputs) {
@@ -193,9 +201,10 @@ public class Transaction {
 
     //Coinbase: One inputs, empty prevTransactionHash and -1 index
     public boolean isCoinbaseTransaction() {
+        TransactionInput transactionInput = inputs.get(0);
         return inputs.size() == 1 &&
-                inputs.get(0).prevTransactionId.length == 0 &&
-                inputs.get(0).transactionOutputIndex == -1;
+                transactionInput.getTransactionID().length == 0 &&
+                transactionInput.getOutputIndex() == -1;
     }
 
     // returns a human-readable representation of a transaction
@@ -208,10 +217,10 @@ public class Transaction {
         for (int i = 0, size = inputs.size(); i < size; i++) {
             input = inputs.get(i);
             builder.append(String.format("\tInput %d:%n", i));
-            builder.append(String.format("\t\tTXID:      %s%n", Util.bytesToHex(input.prevTransactionId)));
-            builder.append(String.format("\t\tOutIndex:  %d%n", input.transactionOutputIndex));
-            builder.append(String.format("\t\tSignature: %s%n", Util.bytesToHex(input.signature)));
-            builder.append(String.format("\t\tPubKey:    %s%n", Util.bytesToHex(input.rawPublicKey)));
+            builder.append(String.format("\t\tTXID:      %s%n", Util.bytesToHex(input.getTransactionID())));
+            builder.append(String.format("\t\tOutIndex:  %d%n", input.getOutputIndex()));
+            builder.append(String.format("\t\tSignature: %s%n", Util.bytesToHex(input.getSignature())));
+            builder.append(String.format("\t\tPubKey:    %s%n", Util.bytesToHex(input.getRawPublicKey())));
         }
 
         TransactionOutput output;

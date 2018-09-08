@@ -137,11 +137,11 @@ public class Blockchain implements Iterable<Block> {
 
                 ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
                 for (TransactionInput transactionInput : transactionInputs) {
-                    String prevTransactionId = Util.serializeHash(transactionInput.prevTransactionId);
+                    String prevTransactionId = Util.serializeHash(transactionInput.getTransactionID());
 
                     ArrayList<Integer> spentTransactionOutputIndexes =
                             spentTXOs.computeIfAbsent(prevTransactionId, k -> new ArrayList<>());
-                    spentTransactionOutputIndexes.add(transactionInput.transactionOutputIndex);
+                    spentTransactionOutputIndexes.add(transactionInput.getOutputIndex());
                 }
             }
         }
@@ -225,7 +225,7 @@ public class Blockchain implements Iterable<Block> {
 
         ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
         for (TransactionInput input : transactionInputs) {
-            Transaction previousTransaction = findTransaction(input.prevTransactionId);
+            Transaction previousTransaction = findTransaction(input.getTransactionID());
             if (previousTransaction == null) {
                 System.out.println("Transaction is not Found");
                 return false;
@@ -247,7 +247,7 @@ public class Blockchain implements Iterable<Block> {
 
         ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
         for (TransactionInput input : transactionInputs) {
-            Transaction previousTransaction = findTransaction(input.prevTransactionId);
+            Transaction previousTransaction = findTransaction(input.getTransactionID());
             if (previousTransaction == null) {
                 System.out.println("Transaction is not Found");
                 return false;
