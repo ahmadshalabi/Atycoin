@@ -6,9 +6,6 @@ import java.util.Iterator;
 
 // BlockchainIterator is used to iterate over blockchain blocks
 public class BlockchainIterator implements Iterator<Block> {
-    //    // get Big-endian form for genesisPrevHash and serialize it
-//    private static final String genesisPrevHash = Util.serializeHash(Util.reverseBytesOrder(
-//            Util.applySHA256(Util.reverseBytesOrder("Atycoin".getBytes()))));
     private static final String genesisPrevHash = Util.serializeHash(new byte[0]);
 
     private Jedis dbConnection;
