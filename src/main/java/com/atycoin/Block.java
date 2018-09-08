@@ -62,7 +62,8 @@ public class Block {
         }
 
         MerkleTree mTree = MerkleTree.newMerkleTree(transactions);
-        return mTree.rootNode.data;
+        MerkleNode rootNode = mTree.getRootNode();
+        return rootNode.getData();
     }
 
     // serializes the block header in bytes form

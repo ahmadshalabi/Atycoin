@@ -3,7 +3,7 @@ package com.atycoin;
 import java.io.ByteArrayOutputStream;
 
 public class MerkleNode {
-    byte[] data;
+    private byte[] data;
     private MerkleNode left;
     private MerkleNode right;
 
@@ -26,5 +26,9 @@ public class MerkleNode {
         mNode.right = right;
 
         return mNode;
+    }
+
+    public byte[] getData() {
+        return data;
     }
 }

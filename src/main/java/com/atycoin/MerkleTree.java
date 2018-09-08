@@ -3,7 +3,7 @@ package com.atycoin;
 import java.util.ArrayList;
 
 public class MerkleTree {
-    MerkleNode rootNode;
+    private MerkleNode rootNode;
 
     private MerkleTree(MerkleNode rootNode) {
         this.rootNode = rootNode;
@@ -34,5 +34,9 @@ public class MerkleTree {
         }
 
         return new MerkleTree(nodes.get(0));
+    }
+
+    public MerkleNode getRootNode() {
+        return rootNode;
     }
 }
