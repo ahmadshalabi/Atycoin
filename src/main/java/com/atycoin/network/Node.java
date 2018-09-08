@@ -55,7 +55,7 @@ public class Node implements Runnable {
         return miningAddress;
     }
 
-    public void startServer() {
+    private void startServer() {
         try (ServerSocket server = new ServerSocket(nodeAddress)) {
             if (nodeAddress != knownNodes.get(0)) {
                 NetworkMessage version = new VersionMessage(NODE_VERSION, nodeAddress);
