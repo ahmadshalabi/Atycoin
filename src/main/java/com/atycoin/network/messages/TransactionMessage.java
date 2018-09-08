@@ -17,7 +17,7 @@ public class TransactionMessage implements NetworkMessage {
         StringBuilder request = new StringBuilder();
 
         String command = "transaction ";
-        String message = new Gson().toJson(this, TransactionMessage.class);
+        String message = new Gson().toJson(this);
 
         request.append(command);
         request.append(message);
