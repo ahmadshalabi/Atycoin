@@ -44,10 +44,11 @@ public class UTXOSet {
     //updates the UTXO set with transactions from the newly mined Block
     public void update(Block block) {
         ArrayList<Transaction> transactions = block.getTransactions();
-        for (Transaction tx : transactions) {
+        for (Transaction transaction : transactions) {
             // Remove inputs
-            if (!tx.isCoinbaseTransaction()) {
-                for (TransactionInput input : tx.inputs) {
+            if (!transaction.isCoinbaseTransaction()) {
+                ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
+                for (TransactionInput input : transactionInputs) {
                     //ArrayList<TransactionOutput> updatedOuts = new ArrayList<>();
                     String serialisedTxInputID = Util.serializeHash(input.prevTransactionId);
                     String serializedOuts = dbConnection.get(serialisedTxInputID);
@@ -64,7 +65,7 @@ public class UTXOSet {
             }
 
             //Add outputs
-            dbConnection.set(Util.serializeHash(tx.id), serializeOutputs(tx.outputs));
+            dbConnection.set(Util.serializeHash(transaction.getId()), serializeOutputs(transaction.getOutputs()));
         }
     }
 

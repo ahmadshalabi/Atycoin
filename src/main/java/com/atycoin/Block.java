@@ -57,7 +57,7 @@ public class Block {
         ArrayList<ArrayList<Byte>> transactions = new ArrayList<>();
         for (Transaction transaction : this.transactions) {
             //little-endian
-            ArrayList<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.id));
+            ArrayList<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.getId()));
             transactions.add(transactionId);
         }
 

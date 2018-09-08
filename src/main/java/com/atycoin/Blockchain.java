@@ -91,9 +91,9 @@ public class Blockchain implements Iterable<Block> {
     public Transaction findTransaction(byte[] id) {
         for (Block block : this) {
             ArrayList<Transaction> transactions = block.getTransactions();
-            for (Transaction tx : transactions) {
-                if (Arrays.equals(id, tx.id)) {
-                    return tx;
+            for (Transaction transaction : transactions) {
+                if (Arrays.equals(id, transaction.getId())) {
+                    return transaction;
                 }
             }
         }
@@ -109,11 +109,12 @@ public class Blockchain implements Iterable<Block> {
         for (Block block : this) {
             ArrayList<Transaction> transactions = block.getTransactions();
             for (Transaction transaction : transactions) {
-                String transactionId = Util.serializeHash(transaction.id);
+                String transactionId = Util.serializeHash(transaction.getId());
 
-                for (TransactionOutput transactionOutput : transaction.outputs) {
+                ArrayList<TransactionOutput> transactionOutputs = transaction.getOutputs();
+                for (TransactionOutput transactionOutput : transactionOutputs) {
                     boolean isTransactionOutputSpent = false;
-                    int outIdx = transaction.outputs.indexOf(transactionOutput);
+                    int outIdx = transactionOutputs.indexOf(transactionOutput);
 
                     // Was the output spent?
                     ArrayList<Integer> spentTransactionOutputIndexes = spentTXOs.get(transactionId);
@@ -134,7 +135,8 @@ public class Blockchain implements Iterable<Block> {
                     outs.add(transactionOutput);
                 }
 
-                for (TransactionInput transactionInput : transaction.inputs) {
+                ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
+                for (TransactionInput transactionInput : transactionInputs) {
                     String prevTransactionId = Util.serializeHash(transactionInput.prevTransactionId);
 
                     ArrayList<Integer> spentTransactionOutputIndexes =
@@ -218,39 +220,41 @@ public class Blockchain implements Iterable<Block> {
     }
 
     // signs inputs of a Transaction
-    public boolean signTransaction(Transaction tx, ECPrivateKey privateKey) {
-        HashMap<String, Transaction> prevTXs = new HashMap<>();
+    public boolean signTransaction(Transaction transaction, ECPrivateKey privateKey) {
+        HashMap<String, Transaction> previousTransactions = new HashMap<>();
 
-        for (TransactionInput input : tx.inputs) {
-            Transaction prevTX = findTransaction(input.prevTransactionId);
-            if (prevTX == null) {
+        ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
+        for (TransactionInput input : transactionInputs) {
+            Transaction previousTransaction = findTransaction(input.prevTransactionId);
+            if (previousTransaction == null) {
                 System.out.println("Transaction is not Found");
                 return false;
             }
-            prevTXs.put(Util.serializeHash(prevTX.id), prevTX);
+            previousTransactions.put(Util.serializeHash(previousTransaction.getId()), previousTransaction);
         }
 
-        tx.sign(privateKey, prevTXs);
+        transaction.sign(privateKey, previousTransactions);
         return true;
     }
 
     // verifies transaction input signatures
-    public boolean verifyTransaction(Transaction tx) {
-        if (tx.isCoinbaseTransaction()) {
+    public boolean verifyTransaction(Transaction transaction) {
+        if (transaction.isCoinbaseTransaction()) {
             return true;
         }
 
-        HashMap<String, Transaction> prevTXs = new HashMap<>();
+        HashMap<String, Transaction> previousTransactions = new HashMap<>();
 
-        for (TransactionInput input : tx.inputs) {
-            Transaction prevTX = findTransaction(input.prevTransactionId);
-            if (prevTX == null) {
+        ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
+        for (TransactionInput input : transactionInputs) {
+            Transaction previousTransaction = findTransaction(input.prevTransactionId);
+            if (previousTransaction == null) {
                 System.out.println("Transaction is not Found");
                 return false;
             }
-            prevTXs.put(Util.serializeHash(prevTX.id), prevTX);
+            previousTransactions.put(Util.serializeHash(previousTransaction.getId()), previousTransaction);
         }
 
-        return tx.verify(prevTXs);
+        return transaction.verify(previousTransactions);
     }
 }

@@ -12,9 +12,9 @@ import java.util.Random;
 public class Transaction {
     private static final int reward = 10;
 
-    byte[] id;
-    ArrayList<TransactionInput> inputs;
-    ArrayList<TransactionOutput> outputs;
+    private byte[] id;
+    private ArrayList<TransactionInput> inputs;
+    private ArrayList<TransactionOutput> outputs;
     private long timestamp;
 
     private Transaction(ArrayList<TransactionInput> inputs, ArrayList<TransactionOutput> outputs) {
@@ -226,5 +226,13 @@ public class Transaction {
 
     public byte[] getId() {
         return id;
+    }
+
+    public ArrayList<TransactionInput> getInputs() {
+        return inputs;
+    }
+
+    public ArrayList<TransactionOutput> getOutputs() {
+        return outputs;
     }
 }
