@@ -13,6 +13,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 
+//TODO: Implement it as in https://en.bitcoin.it/wiki/Network#Addr and https://en.bitcoin.it/wiki/Protocol_documentation#addr
+
 public class AddressesCommandHandler implements NetworkCommand {
     private BufferedWriter output;
 
@@ -26,7 +28,7 @@ public class AddressesCommandHandler implements NetworkCommand {
         requestBlocks();
     }
 
-    public void requestBlocks() {
+    private void requestBlocks() {
         ArrayList<Integer> knownNodes = Node.getKnownNodes();
 
         for (int node : knownNodes) {
