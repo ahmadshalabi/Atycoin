@@ -8,7 +8,7 @@ public class ProofOfWork {
 
     public ProofOfWork(Block block) {
         this.block = block;
-        targetBits = block.targetBits;
+        targetBits = block.getTargetBits();
     }
 
     // performs a proof-of-work

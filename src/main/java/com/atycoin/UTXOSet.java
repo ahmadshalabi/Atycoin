@@ -43,7 +43,8 @@ public class UTXOSet {
 
     //updates the UTXO set with transactions from the newly mined Block
     public void update(Block block) {
-        for (Transaction tx : block.transactions) {
+        ArrayList<Transaction> transactions = block.getTransactions();
+        for (Transaction tx : transactions) {
             // Remove inputs
             if (!tx.isCoinbaseTransaction()) {
                 for (TransactionInput input : tx.inputs) {

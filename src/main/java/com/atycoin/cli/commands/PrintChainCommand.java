@@ -6,6 +6,7 @@ import com.atycoin.Transaction;
 import com.atycoin.Util;
 import com.atycoin.cli.Commander;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PrintChainCommand implements Command {
@@ -28,12 +29,13 @@ public class PrintChainCommand implements Command {
         if (args.length < 1) { //no parameters
             for (Block block : Blockchain.getInstance()) {
                 Commander.CommanderPrint(String.format(
-                        "============ Block %s ============", Util.bytesToHex(block.hash)));
+                        "============ Block %s ============", Util.bytesToHex(block.getHash())));
                 Commander.CommanderPrint(String.format(
-                        "Prev. block: %s", Util.bytesToHex(block.hashPrevBlock)));
+                        "Prev. block: %s", Util.bytesToHex(block.getHashPrevBlock())));
                 Commander.CommanderPrint(String.format(
-                        "Merkle Root: %s%n", Util.bytesToHex(block.merkleRoot)));
-                for (Transaction transaction : block.transactions) {
+                        "Merkle Root: %s%n", Util.bytesToHex(block.getMerkleRoot())));
+                ArrayList<Transaction> transactions = block.getTransactions();
+                for (Transaction transaction : transactions) {
                     System.out.println(transaction);
                 }
             }

@@ -90,7 +90,8 @@ public class Blockchain implements Iterable<Block> {
     // finds a transaction by its ID
     public Transaction findTransaction(byte[] id) {
         for (Block block : this) {
-            for (Transaction tx : block.transactions) {
+            ArrayList<Transaction> transactions = block.getTransactions();
+            for (Transaction tx : transactions) {
                 if (Arrays.equals(id, tx.id)) {
                     return tx;
                 }
@@ -106,7 +107,8 @@ public class Blockchain implements Iterable<Block> {
 
         //TODO: Optimize logic in find unspentTransactions
         for (Block block : this) {
-            for (Transaction transaction : block.transactions) {
+            ArrayList<Transaction> transactions = block.getTransactions();
+            for (Transaction transaction : transactions) {
                 String transactionId = Util.serializeHash(transaction.id);
 
                 for (TransactionOutput transactionOutput : transaction.outputs) {

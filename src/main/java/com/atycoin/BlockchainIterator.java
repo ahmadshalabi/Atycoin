@@ -36,7 +36,7 @@ public class BlockchainIterator implements Iterator<Block> {
         Block block = Block.deserializeBlock(blockSerialized);
 
         // get next blockHash
-        currentHashSerialized = Util.serializeHash(block.hashPrevBlock);
+        currentHashSerialized = Util.serializeHash(block.getHashPrevBlock());
         return block;
     }
 }

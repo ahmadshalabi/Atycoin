@@ -6,19 +6,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-//TODO: separate some data in BlockHeader
 // Block represents a block in the blockchain
 public class Block {
-    public final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
-    public byte[] hashPrevBlock;
-    public byte[] merkleRoot;
-    public long timestamp;
+    private final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
+    private byte[] hashPrevBlock;
+    private byte[] merkleRoot;
+    private long timestamp;
     private int version;
     private int nonce;
     private int height;
 
-    public ArrayList<Transaction> transactions;
-    public byte[] hash; // Current Block hash
+    private ArrayList<Transaction> transactions;
+    private byte[] hash; // Current Block hash
 
     private Block(ArrayList<Transaction> transactions, byte[] hashPrevBlock, int height) {
         version = 1;
@@ -31,10 +30,6 @@ public class Block {
 
     // newGenesisBlock: creates and returns genesis Block
     public static Block newGenesisBlock(Transaction coinbase) {
-        //TODO: Find way to Mining the prevHash of Genesis Block
-//        byte[] prevHash = Util.reverseBytesOrder(
-//                Util.applySHA256(Util.reverseBytesOrder("Atycoin".getBytes())));
-
         //add coinbase Transaction
         ArrayList<Transaction> transactions = new ArrayList<>();
         transactions.add(coinbase);
@@ -72,8 +67,6 @@ public class Block {
 
     // serializes the block header in bytes form
     public byte[] serializeBlockHeader(int nonce) {
-        //TODO: Consider more efficient way to concatenate byte[] arrays
-
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         try {
@@ -117,5 +110,21 @@ public class Block {
 
     public byte[] getHash() {
         return hash;
+    }
+
+    public int getTargetBits() {
+        return targetBits;
+    }
+
+    public byte[] getHashPrevBlock() {
+        return hashPrevBlock;
+    }
+
+    public byte[] getMerkleRoot() {
+        return merkleRoot;
+    }
+
+    public ArrayList<Transaction> getTransactions() {
+        return transactions;
     }
 }
