@@ -2,6 +2,8 @@ package com.atycoin.cli.commands;
 
 import com.atycoin.cli.Commander;
 
+import java.util.Collection;
+
 public class HelpCommand implements Command {
     @Override
     public String getHelp() {
@@ -21,8 +23,10 @@ public class HelpCommand implements Command {
                 "-  ATYCOIN HELP\n" +
                 "------------------------------------------------------------------------");
 
-        for (String key : Commander.getInstance().commands.keySet()) {
-            Commander.CommanderPrint(Commander.getInstance().commands.get(key).getHelp());
+        Commander commander = Commander.getInstance();
+        Collection<Command> commands = commander.getCommands();
+        for (Command command : commands) {
+            Commander.CommanderPrint(command.getHelp());
         }
     }
 }

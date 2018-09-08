@@ -3,6 +3,7 @@ package com.atycoin.cli;
 import com.atycoin.cli.commands.*;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -10,10 +11,10 @@ import java.util.Scanner;
 
 // responsible for processing command line
 public class Commander {
-    public static Commander instance = new Commander();
-    public static boolean debugMode = false;
-    public HashMap<String, Command> commands;
-    public Scanner scanner;
+    private static Commander instance = new Commander();
+    private static boolean debugMode = false;
+    private HashMap<String, Command> commands;
+    private Scanner scanner;
 
     private Commander() {
         setup();
@@ -23,16 +24,16 @@ public class Commander {
         return instance;
     }
 
-    public static void CommanderPrint(String msg) {
-        System.out.println("- " + msg);
+    public static void CommanderPrint(String message) {
+        System.out.println("- " + message);
     }
 
-    public static void CommanderInput(String msg) {
-        System.out.println(msg + ": ");
+    private static void CommanderInput(String message) {
+        System.out.println(message + ": ");
     }
 
     // populates commands in a map
-    public void setup() {
+    private void setup() {
         commands = new HashMap<>();
         commands.put("createblockchain", new CreateBlockchainCommand());
         commands.put("createwallet", new CreateWalletCommand());
@@ -53,15 +54,15 @@ public class Commander {
             CommanderInput("Atycoin-cli");
 
             //Gather user input
-            String rawInput = scanner.nextLine();
+            String userInput = scanner.nextLine();
 
             //check if the users wishes to quit
-            if (rawInput.equals("quit") || rawInput.equals("exit")) {
+            if (userInput.equals("quit") || userInput.equals("exit")) {
                 break;
             }
 
             //Gather the raw arguments entered by the user
-            String[] rawArgs = rawInput.split("\\s+");
+            String[] rawArgs = userInput.split("\\s+");
 
             //check any command or argument was entered
             if (!rawArgs[0].equals("")) {
@@ -84,7 +85,7 @@ public class Commander {
     }
 
     //get command object from commands and call command.run(args)
-    public void call(String[] rawArgs) {
+    private void call(String[] rawArgs) {
         String function = rawArgs[0];
         String[] args = Arrays.copyOfRange(rawArgs, 1, rawArgs.length);
 
@@ -94,5 +95,9 @@ public class Commander {
         } else {
             command.run(args);
         }
+    }
+
+    public Collection<Command> getCommands() {
+        return commands.values();
     }
 }
