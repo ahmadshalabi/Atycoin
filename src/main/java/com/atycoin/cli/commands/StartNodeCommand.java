@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StartNodeCommand implements Command {
+    private static ExecutorService pool = Executors.newSingleThreadExecutor();
+
     @Override
     public String getHelp() {
         return "cmd: startnode \n" +
@@ -34,14 +36,14 @@ public class StartNodeCommand implements Command {
             if (!Arrays.asList(params).contains(args[0])) {
                 Commander.CommanderPrint("ERROR ! unknown parameters...");
                 Commander.CommanderPrint(Arrays.toString(params));
+                return;
             }
         }
 
         System.out.printf("Starting node %s%n", AtycoinStart.nodeID);
 
-        if (args.length == 0) {
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
-            executorService.execute(new Node(AtycoinStart.nodeID, ""));
+        if (args.length < 1) {
+            pool.execute(new Node(AtycoinStart.nodeID, ""));
         } else if (args[0].equals(params[2])) {
             String minerAddress = args[1];
 
@@ -50,10 +52,8 @@ public class StartNodeCommand implements Command {
                 return;
             }
 
+            pool.execute(new Node(AtycoinStart.nodeID, minerAddress));
             System.out.printf("Mining is on. Address to receive rewards: %s", minerAddress);
-
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
-            executorService.execute(new Node(AtycoinStart.nodeID, minerAddress));
         } else if (args[0].equals(params[0])) { //help
             Commander.CommanderPrint(getHelp());
         } else if (args[0].equals(params[1])) { //-params
