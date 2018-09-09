@@ -2,7 +2,6 @@ package com.atycoin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 // represents a transaction input
 public class TransactionInput {
@@ -23,12 +22,6 @@ public class TransactionInput {
 
         this(transactionID, outputIndex, rawPublicKey);
         this.signature = signature;
-    }
-
-    // checks checks whether the address initiated the transaction
-    public boolean usesKey(byte[] publicKeyHash) {
-        byte[] lockingHash = Wallet.hashPublicKey(rawPublicKey);
-        return Arrays.equals(lockingHash, publicKeyHash);
     }
 
     public byte[] concatenateData() {
