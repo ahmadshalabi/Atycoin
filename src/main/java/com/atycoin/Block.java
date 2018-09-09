@@ -129,6 +129,6 @@ public class Block {
 
     private void setHash() {
         byte[] blockHeader = setBlockHeader(nonce);
-        hash = Util.reverseBytesOrder(Util.applySHA256(blockHeader));
+        hash = Util.reverseBytesOrder(Util.applySHA256(Util.applySHA256(blockHeader)));
     }
 }
