@@ -36,7 +36,7 @@ public class MerkleTree {
         return new MerkleTree(nodes.get(0));
     }
 
-    public MerkleNode getRootNode() {
-        return rootNode;
+    public byte[] getMerkleRoot() {
+        return rootNode.getData();
     }
 }
