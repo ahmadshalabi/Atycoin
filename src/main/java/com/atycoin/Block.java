@@ -9,16 +9,16 @@ import java.util.List;
 
 // Block represents a block in the blockchain
 public class Block {
-    private final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
-    private final byte[] hashPrevBlock;
-    private final byte[] merkleRoot;
-    private final long timestamp;
     private final int version;
+    private final byte[] hashPrevBlock;
+    private final long timestamp;
+    private byte[] merkleRoot;
+    private final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
     private int nonce;
-    private final int height;
 
+    private final int height;
+    private byte[] hash;
     private final List<Transaction> transactions;
-    private byte[] hash; // Current Block hash
 
     private Block(List<Transaction> transactions, byte[] hashPrevBlock, int height) {
         version = 1;
@@ -26,7 +26,6 @@ public class Block {
         this.transactions = transactions;
         this.hashPrevBlock = hashPrevBlock;
         this.height = height;
-        merkleRoot = hashTransactions();
     }
 
     // newGenesisBlock: creates and returns genesis Block
@@ -36,10 +35,13 @@ public class Block {
         transactions.add(coinbase);
 
         Block block = new Block(transactions, new byte[0], 0);
+        block.setMerkleRoot();
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
+
         int nonce = proofOfWork.runProofOfWork();
         block.setNonce(nonce);
+
         block.setHash();
         return block;
     }
@@ -47,25 +49,27 @@ public class Block {
     // newBlock: creates and returns Block
     public static Block newBlock(List<Transaction> transactions, byte[] hashPrevBlock, int height) {
         Block block = new Block(transactions, hashPrevBlock, height);
+        block.setMerkleRoot();
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
+
         int nonce = proofOfWork.runProofOfWork();
         block.setNonce(nonce);
+
         block.setHash();
         return block;
     }
 
-    // hashTransactions returns a hash of the transactions in the block
-    private byte[] hashTransactions() {
-        List<List<Byte>> transactions = new ArrayList<>();
-        for (Transaction transaction : this.transactions) {
-            //little-endian
-            List<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.getId()));
-            transactions.add(transactionId);
-        }
+    public static Block deserializeBlock(String serializedBlock) {
+        Gson decoder = new Gson();
+        return decoder.fromJson(serializedBlock, Block.class);
+    }
 
-        MerkleTree mTree = MerkleTree.newMerkleTree(transactions);
-        return mTree.getMerkleRoot();
+    // Serialize the block
+    public String serializeBlock() {
+        Gson encoder = new Gson();
+
+        return encoder.toJson(this);
     }
 
     // serializes the block header in bytes form
@@ -87,16 +91,45 @@ public class Block {
         }
     }
 
-    public static Block deserializeBlock(String serializedBlock) {
-        Gson decoder = new Gson();
-        return decoder.fromJson(serializedBlock, Block.class);
+    public byte[] getHashPrevBlock() {
+        return hashPrevBlock;
     }
 
-    // Serialize the block
-    public String serializeBlock() {
-        Gson encoder = new Gson();
+    public byte[] getMerkleRoot() {
+        return merkleRoot;
+    }
 
-        return encoder.toJson(this);
+    public int getTargetBits() {
+        return targetBits;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public byte[] getHash() {
+        return hash;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    private void setMerkleRoot() {
+        merkleRoot = hashTransactions();
+    }
+
+    // hashTransactions returns a hash of the transactions in the block
+    private byte[] hashTransactions() {
+        List<List<Byte>> transactions = new ArrayList<>();
+        for (Transaction transaction : this.transactions) {
+            //little-endian
+            List<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.getId()));
+            transactions.add(transactionId);
+        }
+
+        MerkleTree mTree = MerkleTree.newMerkleTree(transactions);
+        return mTree.getMerkleRoot();
     }
 
     private void setHash() {
@@ -106,29 +139,5 @@ public class Block {
 
     private void setNonce(int nonce) {
         this.nonce = nonce;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public byte[] getHash() {
-        return hash;
-    }
-
-    public int getTargetBits() {
-        return targetBits;
-    }
-
-    public byte[] getHashPrevBlock() {
-        return hashPrevBlock;
-    }
-
-    public byte[] getMerkleRoot() {
-        return merkleRoot;
-    }
-
-    public List<Transaction> getTransactions() {
-        return transactions;
     }
 }
