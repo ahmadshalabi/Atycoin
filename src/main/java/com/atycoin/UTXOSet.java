@@ -7,38 +7,24 @@ import redis.clients.jedis.Jedis;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class UTXOSet {
     private static UTXOSet instance;
-    private Blockchain blockchain;
+
     private Jedis dbConnection;
 
-    private UTXOSet(Blockchain blockchain) {
+    private UTXOSet() {
         int nodeId = AtycoinStart.getNodeID();
-        this.blockchain = blockchain;
         dbConnection = new Jedis("localhost", nodeId + 3379);
         dbConnection.select(1); // chainstates db
     }
 
     public static UTXOSet getInstance() {
         if (instance == null) {
-            instance = new UTXOSet(Blockchain.getInstance());
+            instance = new UTXOSet();
         }
         return instance;
-    }
-
-    // rebuilds the UTXO set
-    public void reIndex() {
-        dbConnection.flushDB(); // delete chainstates db
-
-        HashMap<String, ArrayList<TransactionOutput>> UTXO = blockchain.findUTXO();
-
-        for (Map.Entry<String, ArrayList<TransactionOutput>> entry : UTXO.entrySet()) {
-            String outsSerialized = serializeOutputs(entry.getValue());
-            dbConnection.set(entry.getKey(), outsSerialized);
-        }
     }
 
     //updates the UTXO set with transactions from the newly mined Block
@@ -66,11 +52,6 @@ public class UTXOSet {
             //Add outputs
             dbConnection.set(Util.serializeHash(transaction.getId()), serializeOutputs(transaction.getOutputs()));
         }
-    }
-
-    //returns the number of transactions in the UTXO set
-    public long countTransactions() {
-        return dbConnection.dbSize();
     }
 
     // finds and returns unspent outputs to reference in input
@@ -128,7 +109,7 @@ public class UTXOSet {
         return UTXOs;
     }
 
-    public String serializeOutputs(ArrayList<TransactionOutput> outputs) {
+    private String serializeOutputs(ArrayList<TransactionOutput> outputs) {
         Gson gson = new Gson();
 
         Type arrayListTypeToken = new TypeToken<ArrayList<TransactionOutput>>() {
@@ -137,7 +118,7 @@ public class UTXOSet {
         return gson.toJson(outputs, arrayListTypeToken);
     }
 
-    public ArrayList<TransactionOutput> deserializeOutputs(String outputSerialized) {
+    private ArrayList<TransactionOutput> deserializeOutputs(String outputSerialized) {
         Gson gson = new Gson();
 
         Type arrayListTypeToken = new TypeToken<ArrayList<TransactionOutput>>() {

@@ -40,7 +40,6 @@ public class Commander {
         commands.put("help", new HelpCommand());
         commands.put("listaddresses", new ListAddressesCommand());
         commands.put("printchain", new PrintChainCommand());
-        commands.put("reindexutxo", new ReIndexUTXOCommand());
         commands.put("send", new SendCommand());
         commands.put("startnode", new StartNodeCommand());
         scanner = new Scanner(System.in);
