@@ -3,25 +3,17 @@ package com.atycoin;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-// represents a transaction input
 public class TransactionInput {
     private final byte[] transactionID;
     private final int outputIndex;
-    private byte[] signature;
     private byte[] rawPublicKey;
+    private byte[] signature;
 
     public TransactionInput(byte[] transactionID, int outputIndex, byte[] rawPublicKey) {
         this.transactionID = transactionID;
         this.outputIndex = outputIndex;
         this.rawPublicKey = rawPublicKey;
-        signature = new byte[0];
-    }
-
-    public TransactionInput(byte[] transactionID, int outputIndex,
-                            byte[] signature, byte[] rawPublicKey) {
-
-        this(transactionID, outputIndex, rawPublicKey);
-        this.signature = signature;
+        signature = Constant.EMPTY_BYTE_ARRAY;
     }
 
     public byte[] concatenateData() {

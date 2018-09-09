@@ -11,11 +11,10 @@ import java.util.Random;
 
 public class Transaction {
     private static final int reward = 10;
-
-    private byte[] id;
     private final List<TransactionInput> inputs;
     private final List<TransactionOutput> outputs;
     private final long timestamp;
+    private byte[] id;
 
     private Transaction(List<TransactionInput> inputs, List<TransactionOutput> outputs) {
         this.inputs = inputs;
@@ -169,7 +168,7 @@ public class Transaction {
         List<TransactionInput> inputs = new ArrayList<>();
         for (TransactionInput input : this.inputs) {
             inputs.add(new TransactionInput(
-                    input.getTransactionID(), input.getOutputIndex(), new byte[0], new byte[0]));
+                    input.getTransactionID(), input.getOutputIndex(), new byte[0]));
         }
 
         List<TransactionOutput> outputs = new ArrayList<>();

@@ -4,14 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-// represents a transaction output
 public class TransactionOutput {
     private final int value;
     private byte[] publicKeyHashed;
-
-    private TransactionOutput(int value) {
-        this.value = value;
-    }
 
     public TransactionOutput(int value, byte[] publicKeyHashed) {
         this.value = value;
@@ -19,13 +14,13 @@ public class TransactionOutput {
     }
 
     public static TransactionOutput newTXOutput(int value, String address) {
-        TransactionOutput transactionOutput = new TransactionOutput(value);
+        TransactionOutput transactionOutput = new TransactionOutput(value, Constant.EMPTY_BYTE_ARRAY);
         transactionOutput.lock(address);
 
         return transactionOutput;
     }
 
-    // lock signs the output
+    // signs the output
     private void lock(String address) {
         byte[] fullPayload = Base58.decode(address);
         publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
