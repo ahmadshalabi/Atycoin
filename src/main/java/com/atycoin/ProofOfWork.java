@@ -3,25 +3,24 @@ package com.atycoin;
 public class ProofOfWork {
     private final Block block;
     private final int targetBits;
+    private byte[] blockHeader;
 
     public ProofOfWork(Block block) {
         this.block = block;
         targetBits = block.getTargetBits();
     }
 
-    // performs a proof-of-work
     public int runProofOfWork() {
-        System.out.println("Mining a new block");
-
+        //initialize blockHeader
         int nonce = 0;
-        byte[] hash = new byte[0];
+        blockHeader = block.setBlockHeader(nonce);
 
-        //TODO: Enhance checking in nonce overflow
+        //TODO: Add extraNonce when nonce overflow occurs
         while (nonce < Integer.MAX_VALUE) {
-            byte[] blockData = this.block.serializeBlockHeader(nonce);
+            updateBlockHeader(nonce++);
 
             // Double hash
-            hash = Util.applySHA256(Util.applySHA256(blockData));
+            byte[] hash = Util.applySHA256(Util.applySHA256(blockHeader));
 
             // Change to Big-endian
             hash = Util.reverseBytesOrder(hash);
@@ -29,14 +28,14 @@ public class ProofOfWork {
             if (isHashMeetTarget(hash)) {
                 break;
             }
-
-            nonce++;
         }
-
-        System.out.println(Util.bytesToHex(hash));
-        System.out.println();
-
         return nonce;
+    }
+
+    private void updateBlockHeader(int nonce) {
+        byte[] nonceBytes = Util.reverseBytesOrder(Util.intToBytes(nonce));
+        //update the last 4 bytes
+        System.arraycopy(nonceBytes, 0, blockHeader, blockHeader.length - 4, 4);
     }
 
     private boolean isHashMeetTarget(byte[] hash) {
@@ -45,8 +44,8 @@ public class ProofOfWork {
         int bitsInLastByte = targetBits % 8;
 
         // Check whole bytes
-        for (int i = 0; i < numberOfBytes; i++) {
-            if (hash[i] != 0) {
+        for (int byteIndex = 0; byteIndex < numberOfBytes; byteIndex++) {
+            if (hash[byteIndex] != 0) {
                 return false;
             }
         }
