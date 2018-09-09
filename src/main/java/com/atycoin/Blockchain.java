@@ -88,7 +88,7 @@ public class Blockchain implements Iterable<Block> {
 
     //TODO: Check if you can replace it using UTXOSet
     // finds a transaction by its ID
-    public Transaction findTransaction(byte[] id) {
+    private Transaction findTransaction(byte[] id) {
         for (Block block : this) {
             ArrayList<Transaction> transactions = block.getTransactions();
             for (Transaction transaction : transactions) {
@@ -98,54 +98,6 @@ public class Blockchain implements Iterable<Block> {
             }
         }
         return null; // Transaction is not found
-    }
-
-    // finds all unspent transaction outputs and returns transactions with unspent outputs
-    public HashMap<String, ArrayList<TransactionOutput>> findUTXO() {
-        HashMap<String, ArrayList<TransactionOutput>> UTXO = new HashMap<>();
-        HashMap<String, ArrayList<Integer>> spentTXOs = new HashMap<>();
-
-        //TODO: Optimize logic in find unspentTransactions
-        for (Block block : this) {
-            ArrayList<Transaction> transactions = block.getTransactions();
-            for (Transaction transaction : transactions) {
-                String transactionId = Util.serializeHash(transaction.getId());
-
-                ArrayList<TransactionOutput> transactionOutputs = transaction.getOutputs();
-                for (TransactionOutput transactionOutput : transactionOutputs) {
-                    boolean isTransactionOutputSpent = false;
-                    int outIdx = transactionOutputs.indexOf(transactionOutput);
-
-                    // Was the output spent?
-                    ArrayList<Integer> spentTransactionOutputIndexes = spentTXOs.get(transactionId);
-                    if (spentTransactionOutputIndexes != null) {
-                        for (int spentOutIndex : spentTransactionOutputIndexes) {
-                            if (spentOutIndex == outIdx) {
-                                isTransactionOutputSpent = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (isTransactionOutputSpent) {
-                        continue;
-                    }
-
-                    ArrayList<TransactionOutput> outs = UTXO.computeIfAbsent(transactionId, k -> new ArrayList<>());
-                    outs.add(transactionOutput);
-                }
-
-                ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
-                for (TransactionInput transactionInput : transactionInputs) {
-                    String prevTransactionId = Util.serializeHash(transactionInput.getTransactionID());
-
-                    ArrayList<Integer> spentTransactionOutputIndexes =
-                            spentTXOs.computeIfAbsent(prevTransactionId, k -> new ArrayList<>());
-                    spentTransactionOutputIndexes.add(transactionInput.getOutputIndex());
-                }
-            }
-        }
-        return UTXO;
     }
 
     @Override
