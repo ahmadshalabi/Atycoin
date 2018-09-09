@@ -99,12 +99,12 @@ public class Block {
         return encoder.toJson(this);
     }
 
-    public void setHash() {
+    private void setHash() {
         byte[] blockHeader = serializeBlockHeader(nonce);
         this.hash = Util.reverseBytesOrder(Util.applySHA256(blockHeader));
     }
 
-    public void setNonce(int nonce) {
+    private void setNonce(int nonce) {
         this.nonce = nonce;
     }
 
