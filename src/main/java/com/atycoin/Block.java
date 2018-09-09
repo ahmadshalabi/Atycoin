@@ -9,7 +9,6 @@ import java.util.List;
 
 // Block represents a block in the blockchain
 public class Block {
-    private transient static final byte[] GENESIS_PREVIOUS_HASH = new byte[0];
     private transient static final int GENESIS_HEIGHT = 0;
 
     private final int version;
@@ -37,7 +36,7 @@ public class Block {
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(coinbase);
 
-        return newBlock(transactions, GENESIS_PREVIOUS_HASH, GENESIS_HEIGHT);
+        return newBlock(transactions, Constant.EMPTY_BYTE_ARRAY, GENESIS_HEIGHT);
     }
 
     // newBlock: creates and returns Block
