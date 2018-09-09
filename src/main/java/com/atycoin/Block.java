@@ -38,8 +38,9 @@ public class Block {
         Block block = new Block(transactions, new byte[0], 0);
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
-        proofOfWork.runProofOfWork();
-
+        int nonce = proofOfWork.runProofOfWork();
+        block.setNonce(nonce);
+        block.setHash();
         return block;
     }
 
@@ -48,8 +49,9 @@ public class Block {
         Block block = new Block(transactions, hashPrevBlock, height);
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
-        proofOfWork.runProofOfWork();
-
+        int nonce = proofOfWork.runProofOfWork();
+        block.setNonce(nonce);
+        block.setHash();
         return block;
     }
 
@@ -97,8 +99,9 @@ public class Block {
         return encoder.toJson(this);
     }
 
-    public void setHash(byte[] hash) {
-        this.hash = hash;
+    public void setHash() {
+        byte[] blockHeader = serializeBlockHeader(nonce);
+        this.hash = Util.reverseBytesOrder(Util.applySHA256(blockHeader));
     }
 
     public void setNonce(int nonce) {

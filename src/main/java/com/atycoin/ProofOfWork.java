@@ -3,8 +3,6 @@ package com.atycoin;
 public class ProofOfWork {
     private final Block block;
     private final int targetBits;
-    private byte[] hash;
-    private int nonce;
 
     public ProofOfWork(Block block) {
         this.block = block;
@@ -12,8 +10,11 @@ public class ProofOfWork {
     }
 
     // performs a proof-of-work
-    public void runProofOfWork() {
+    public int runProofOfWork() {
         System.out.println("Mining a new block");
+
+        int nonce = 0;
+        byte[] hash = new byte[0];
 
         //TODO: Enhance checking in nonce overflow
         while (nonce < Integer.MAX_VALUE) {
@@ -32,11 +33,10 @@ public class ProofOfWork {
             nonce++;
         }
 
-        block.setHash(hash);
-        block.setNonce(nonce);
-
         System.out.println(Util.bytesToHex(hash));
         System.out.println();
+
+        return nonce;
     }
 
     private boolean isHashMeetTarget(byte[] hash) {
