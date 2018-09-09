@@ -31,11 +31,7 @@ public class Blockchain {
 
             Transaction coinbaseTransaction = Transaction.newCoinbaseTransaction(address);
             Block genesisBlock = Block.newGenesisBlock(coinbaseTransaction);
-
-            UTXOSet utxoSet = UTXOSet.getInstance();
-            utxoSet.update(genesisBlock);
-
-            blocksDAO.addBlock(genesisBlock);
+            addBlock(genesisBlock);
 
             System.out.println("Done!");
         } else {
@@ -45,17 +41,19 @@ public class Blockchain {
 
     public Block mineBlock(List<Transaction> transactions) {
         for (int i = 0, size = transactions.size(); i < size; i++) {
-            if (!verifyTransaction(transactions.get(0))) {
-                System.out.println("ERROR: Invalid transactions");
-                transactions.remove(transactions.get(0));
+            Transaction transaction = transactions.get(0);
+            if (!verifyTransaction(transaction)) {
+                transactions.remove(transaction);
             }
         }
 
         String tipOfChain = blocksDAO.getTipOfChain();
+        byte[] previousBlockHash = Util.deserializeHash(tipOfChain);
+
         int newHeight = blocksDAO.getBestHeight() + 1;
 
-        Block newBlock = Block.newBlock(transactions, Util.deserializeHash(tipOfChain), newHeight);
-        blocksDAO.addBlock(newBlock);
+        Block newBlock = Block.newBlock(transactions, previousBlockHash, newHeight);
+        addBlock(newBlock);
 
         return newBlock;
     }
@@ -64,14 +62,14 @@ public class Blockchain {
     public boolean signTransaction(Transaction transaction, ECPrivateKey privateKey) {
         Map<String, Transaction> previousTransactions = new HashMap<>();
 
-        List<TransactionInput> transactionInputs = transaction.getInputs();
-        for (TransactionInput input : transactionInputs) {
-            Transaction previousTransaction = findTransaction(input.getTransactionID());
-            if (previousTransaction == null) {
-                System.out.println("Transaction is not Found");
+        List<TransactionInput> inputs = transaction.getInputs();
+        for (TransactionInput input : inputs) {
+            byte[] referenceTransactionID = input.getTransactionID();
+            Transaction referenceTransaction = findTransaction(referenceTransactionID);
+            if (referenceTransaction == null) {
                 return false;
             }
-            previousTransactions.put(Util.serializeHash(previousTransaction.getId()), previousTransaction);
+            previousTransactions.put(Util.serializeHash(referenceTransactionID), referenceTransaction);
         }
 
         transaction.sign(privateKey, previousTransactions);
@@ -86,17 +84,23 @@ public class Blockchain {
 
         Map<String, Transaction> previousTransactions = new HashMap<>();
 
-        List<TransactionInput> transactionInputs = transaction.getInputs();
-        for (TransactionInput input : transactionInputs) {
-            Transaction previousTransaction = findTransaction(input.getTransactionID());
-            if (previousTransaction == null) {
+        List<TransactionInput> inputs = transaction.getInputs();
+        for (TransactionInput input : inputs) {
+            byte[] referenceTransactionID = input.getTransactionID();
+            Transaction referenceTransaction = findTransaction(referenceTransactionID);
+            if (referenceTransaction == null) {
                 System.out.println("Transaction is not Found");
                 return false;
             }
-            previousTransactions.put(Util.serializeHash(previousTransaction.getId()), previousTransaction);
+            previousTransactions.put(Util.serializeHash(referenceTransactionID), referenceTransaction);
         }
 
         return transaction.verify(previousTransactions);
+    }
+
+    private void addBlock(Block newBlock) {
+        blocksDAO.addBlock(newBlock);
+        UTXOSet.getInstance().update(newBlock);
     }
 
     //TODO: Check if you can replace it using UTXOSet

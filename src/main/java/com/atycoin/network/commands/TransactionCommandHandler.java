@@ -1,6 +1,9 @@
 package com.atycoin.network.commands;
 
-import com.atycoin.*;
+import com.atycoin.Block;
+import com.atycoin.Blockchain;
+import com.atycoin.Transaction;
+import com.atycoin.Util;
 import com.atycoin.network.Mempool;
 import com.atycoin.network.Node;
 import com.atycoin.network.messages.InventoryMessage;
@@ -61,8 +64,6 @@ public class TransactionCommandHandler implements NetworkCommand {
                     validTransactions.addAll(Mempool.values());
 
                     Block newBlock = blockchain.mineBlock(validTransactions);
-                    UTXOSet utxoSet = UTXOSet.getInstance();
-                    utxoSet.update(newBlock);
 
                     System.out.println("New block is mined!");
 

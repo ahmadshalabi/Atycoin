@@ -95,16 +95,12 @@ public class SendCommand implements Command {
                 transactions.add(Transaction.newCoinbaseTransaction(from));
                 transactions.add(newUTXOTransaction);
 
-                Blockchain blockchain = Blockchain.getInstance();
-                Block newBlock = blockchain.mineBlock(transactions);
+                Block newBlock = Blockchain.getInstance().mineBlock(transactions);
 
                 if (newBlock == null) {
                     Commander.CommanderPrint("Invalid Block");
                     return;
                 }
-
-                UTXOSet utxoSet = UTXOSet.getInstance();
-                utxoSet.update(newBlock);
             }
 
             Commander.CommanderPrint("Success!");
