@@ -59,17 +59,4 @@ public class ProofOfWork {
         // unsignedTargetInLastByte : Upper Boundary
         return unsignedLastHashByte <= unsignedTargetInLastByte;
     }
-
-    // TODO: Clean isValidProofOFWork
-    // validates block's PoW
-    public boolean isValidProofOFWork() {
-        byte[] blockData = block.serializeBlockHeader(nonce);
-
-        byte[] calculatedHash = Util.applySHA256(Util.applySHA256(blockData));
-
-        // Change to Big-endian
-        calculatedHash = Util.reverseBytesOrder(calculatedHash);
-
-        return isHashMeetTarget(calculatedHash);
-    }
 }
