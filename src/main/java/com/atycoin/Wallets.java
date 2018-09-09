@@ -11,12 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Wallets {
     private static String WALLETS_FILE = String.format("wallets%d.txt", AtycoinStart.getNodeID());
     private static Wallets instance = new Wallets();
     private final String directory;
-    private HashMap<String, Wallet> wallets;
+    private Map<String, Wallet> wallets;
 
     private Wallets() {
         directory = getClass().getResource("").getPath();
@@ -37,7 +39,7 @@ public class Wallets {
     }
 
     // returns a list of addresses stored in the wallet file
-    public ArrayList<String> getAddresses() {
+    public List<String> getAddresses() {
         return new ArrayList<>(wallets.keySet());
     }
 
@@ -60,10 +62,10 @@ public class Wallets {
                 wallets = new HashMap<>();
             } else {
                 Gson decoder = new Gson();
-                Type hashMapTypeToken = new TypeToken<HashMap<String, Wallet>>() {
+                Type mapTypeToken = new TypeToken<Map<String, Wallet>>() {
                 }.getType();
 
-                wallets = decoder.fromJson(deserializeWallets, hashMapTypeToken);
+                wallets = decoder.fromJson(deserializeWallets, mapTypeToken);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

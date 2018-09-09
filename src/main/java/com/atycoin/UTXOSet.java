@@ -5,9 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.Jedis;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 public class UTXOSet {
     private static UTXOSet instance;
@@ -29,15 +27,15 @@ public class UTXOSet {
 
     //updates the UTXO set with transactions from the newly mined Block
     public void update(Block block) {
-        ArrayList<Transaction> transactions = block.getTransactions();
+        List<Transaction> transactions = block.getTransactions();
         for (Transaction transaction : transactions) {
             // Remove inputs
             if (!transaction.isCoinbaseTransaction()) {
-                ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
+                List<TransactionInput> transactionInputs = transaction.getInputs();
                 for (TransactionInput input : transactionInputs) {
                     String serialisedTxInputID = Util.serializeHash(input.getTransactionID());
                     String serializedOuts = dbConnection.get(serialisedTxInputID);
-                    ArrayList<TransactionOutput> outs = deserializeOutputs(serializedOuts);
+                    List<TransactionOutput> outs = deserializeOutputs(serializedOuts);
 
                     outs.remove(input.getOutputIndex());
 
@@ -55,8 +53,8 @@ public class UTXOSet {
     }
 
     // finds and returns unspent outputs to reference in input
-    public HashMap<String, ArrayList<Integer>> findSpendableOutputs(byte[] publicKeyHashed, int amount) {
-        HashMap<String, ArrayList<Integer>> unspentOutputs = new HashMap<>();
+    public Map<String, List<Integer>> findSpendableOutputs(byte[] publicKeyHashed, int amount) {
+        Map<String, List<Integer>> unspentOutputs = new HashMap<>();
         int accumulated = 0;
 
         Set<String> transactionIDs = dbConnection.keys("*");
@@ -64,13 +62,13 @@ public class UTXOSet {
         boolean isAmountReached = false;
 
         for (String transactionID : transactionIDs) {
-            ArrayList<TransactionOutput> outputs = deserializeOutputs(dbConnection.get(transactionID));
+            List<TransactionOutput> outputs = deserializeOutputs(dbConnection.get(transactionID));
 
             for (TransactionOutput output : outputs) {
                 if (output.isLockedWithKey(publicKeyHashed) && accumulated < amount) {
                     accumulated += output.getValue();
 
-                    ArrayList<Integer> indexes =
+                    List<Integer> indexes =
                             unspentOutputs.computeIfAbsent(transactionID, k -> new ArrayList<>());
 
                     indexes.add(outputs.indexOf(output));
@@ -91,13 +89,13 @@ public class UTXOSet {
     }
 
     // finds UTXO for a public key hash
-    public ArrayList<TransactionOutput> findUTXO(byte[] publicKeyHashed) {
-        ArrayList<TransactionOutput> UTXOs = new ArrayList<>();
+    public List<TransactionOutput> findUTXO(byte[] publicKeyHashed) {
+        List<TransactionOutput> UTXOs = new ArrayList<>();
 
         Set<String> transactionIDs = dbConnection.keys("*");
 
         for (String transactionID : transactionIDs) {
-            ArrayList<TransactionOutput> outputs = deserializeOutputs(dbConnection.get(transactionID));
+            List<TransactionOutput> outputs = deserializeOutputs(dbConnection.get(transactionID));
 
             for (TransactionOutput output : outputs) {
                 if (output.isLockedWithKey(publicKeyHashed)) {
@@ -109,25 +107,25 @@ public class UTXOSet {
         return UTXOs;
     }
 
-    private String serializeOutputs(ArrayList<TransactionOutput> outputs) {
+    private String serializeOutputs(List<TransactionOutput> outputs) {
         Gson gson = new Gson();
 
-        Type arrayListTypeToken = new TypeToken<ArrayList<TransactionOutput>>() {
+        Type arrayListTypeToken = new TypeToken<List<TransactionOutput>>() {
         }.getType();
 
         return gson.toJson(outputs, arrayListTypeToken);
     }
 
-    private ArrayList<TransactionOutput> deserializeOutputs(String outputSerialized) {
+    private List<TransactionOutput> deserializeOutputs(String outputSerialized) {
         Gson gson = new Gson();
 
-        Type arrayListTypeToken = new TypeToken<ArrayList<TransactionOutput>>() {
+        Type listTypeToken = new TypeToken<List<TransactionOutput>>() {
         }.getType();
 
-        return gson.fromJson(outputSerialized, arrayListTypeToken);
+        return gson.fromJson(outputSerialized, listTypeToken);
     }
 
-    public ArrayList<TransactionOutput> getTxOutputs(String transactionID) {
+    public List<TransactionOutput> getTxOutputs(String transactionID) {
         return deserializeOutputs(dbConnection.get(transactionID));
     }
 }

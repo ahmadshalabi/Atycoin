@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.List;
 
 public class GetBlocksCommandHandler implements NetworkCommand {
     private BufferedWriter output;
@@ -22,7 +22,7 @@ public class GetBlocksCommandHandler implements NetworkCommand {
         int requiredHeight = remoteMessage.getRequiredHeight();
 
         Blockchain blockchain = Blockchain.getInstance();
-        ArrayList<String> blocks = blockchain.getBlockHashes(requiredHeight);
+        List<String> blocks = blockchain.getBlockHashes(requiredHeight);
 
         NetworkMessage responseMessage = new InventoryMessage(nodeAddress, "block", blocks);
 

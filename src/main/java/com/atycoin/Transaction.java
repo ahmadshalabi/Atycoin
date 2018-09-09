@@ -5,7 +5,7 @@ import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -13,11 +13,11 @@ public class Transaction {
     private static final int reward = 10;
 
     private byte[] id;
-    private ArrayList<TransactionInput> inputs;
-    private ArrayList<TransactionOutput> outputs;
+    private List<TransactionInput> inputs;
+    private List<TransactionOutput> outputs;
     private long timestamp;
 
-    private Transaction(ArrayList<TransactionInput> inputs, ArrayList<TransactionOutput> outputs) {
+    private Transaction(List<TransactionInput> inputs, List<TransactionOutput> outputs) {
         this.inputs = inputs;
         this.outputs = outputs;
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
@@ -35,10 +35,10 @@ public class Transaction {
         //Reward to miner
         TransactionOutput transactionOutput = TransactionOutput.newTXOutput(reward, to);
 
-        ArrayList<TransactionInput> transactionInputs = new ArrayList<>();
+        List<TransactionInput> transactionInputs = new ArrayList<>();
         transactionInputs.add(transactionInput);
 
-        ArrayList<TransactionOutput> transactionOutputs = new ArrayList<>();
+        List<TransactionOutput> transactionOutputs = new ArrayList<>();
         transactionOutputs.add(transactionOutput);
 
         Transaction coinbaseTransaction = new Transaction(transactionInputs, transactionOutputs);
@@ -53,12 +53,12 @@ public class Transaction {
         UTXOSet utxoSet = UTXOSet.getInstance();
 
         // finds and returns unspent outputs to reference in inputs
-        HashMap<String, ArrayList<Integer>> UTXO = utxoSet.findSpendableOutputs(senderPublicKeyHashed, amount);
+        Map<String, List<Integer>> UTXO = utxoSet.findSpendableOutputs(senderPublicKeyHashed, amount);
 
         int accumulated = 0;
         //TODO: Solve recalculated accumulated balance of SpendableOutputs
-        for (Map.Entry<String, ArrayList<Integer>> entry : UTXO.entrySet()) {
-            ArrayList<TransactionOutput> outputs = utxoSet.getTxOutputs(entry.getKey());
+        for (Map.Entry<String, List<Integer>> entry : UTXO.entrySet()) {
+            List<TransactionOutput> outputs = utxoSet.getTxOutputs(entry.getKey());
             for (int index : entry.getValue()) {
                 TransactionOutput transactionOutput = outputs.get(index);
                 accumulated += transactionOutput.getValue();
@@ -70,11 +70,11 @@ public class Transaction {
             return null;
         }
 
-        ArrayList<TransactionInput> inputs = new ArrayList<>();
-        ArrayList<TransactionOutput> outputs = new ArrayList<>();
+        List<TransactionInput> inputs = new ArrayList<>();
+        List<TransactionOutput> outputs = new ArrayList<>();
 
         //Build a list of inputs
-        for (Map.Entry<String, ArrayList<Integer>> entry : UTXO.entrySet()) {
+        for (Map.Entry<String, List<Integer>> entry : UTXO.entrySet()) {
             byte[] transactionId = Util.deserializeHash(entry.getKey());
             for (int transactionOutputIndex : entry.getValue()) {
                 inputs.add(new TransactionInput(transactionId, transactionOutputIndex, wallet.getRawPublicKey()));
@@ -102,21 +102,21 @@ public class Transaction {
     }
 
     // signs each input of a Transaction
-    public void sign(ECPrivateKey privateKey, HashMap<String, Transaction> previousTransactions) {
+    public void sign(ECPrivateKey privateKey, Map<String, Transaction> previousTransactions) {
         if (isCoinbaseTransaction()) {
             return;
         }
 
         Transaction trimmedCopy = trimmedCopy();
 
-        ArrayList<TransactionInput> trimmedCopyInputs = trimmedCopy.getInputs();
+        List<TransactionInput> trimmedCopyInputs = trimmedCopy.getInputs();
 
         for (TransactionInput input : trimmedCopyInputs) {
             Transaction previousTransaction = previousTransactions.get(Util.serializeHash(input.getTransactionID()));
 
             input.setSignature(new byte[0]);
 
-            ArrayList<TransactionOutput> previousTransactionOutputs = previousTransaction.getOutputs();
+            List<TransactionOutput> previousTransactionOutputs = previousTransaction.getOutputs();
             TransactionOutput transactionOutput = previousTransactionOutputs.get(input.getOutputIndex());
             transactionOutput.getPublicKeyHashed();
 
@@ -146,7 +146,7 @@ public class Transaction {
             TransactionInput trimmedCopyInput = trimmedCopy.inputs.get(inputIndex);
             trimmedCopyInput.setSignature(new byte[0]);
 
-            ArrayList<TransactionOutput> transactionOutputs = previousTransaction.getOutputs();
+            List<TransactionOutput> transactionOutputs = previousTransaction.getOutputs();
             TransactionOutput transactionOutput = transactionOutputs.get(input.getOutputIndex());
             trimmedCopyInput.setRawPublicKey(transactionOutput.getPublicKeyHashed());
 
@@ -166,14 +166,13 @@ public class Transaction {
 
     // creates a trimmed copy of Transaction to be used in signing
     private Transaction trimmedCopy() {
-        ArrayList<TransactionInput> inputs = new ArrayList<>();
-        ArrayList<TransactionOutput> outputs = new ArrayList<>();
-
+        List<TransactionInput> inputs = new ArrayList<>();
         for (TransactionInput input : this.inputs) {
             inputs.add(new TransactionInput(
                     input.getTransactionID(), input.getOutputIndex(), new byte[0], new byte[0]));
         }
 
+        List<TransactionOutput> outputs = new ArrayList<>();
         for (TransactionOutput output : this.outputs) {
             outputs.add(new TransactionOutput(output.getValue(), output.getPublicKeyHashed()));
         }
@@ -244,11 +243,11 @@ public class Transaction {
         return id;
     }
 
-    public ArrayList<TransactionInput> getInputs() {
+    public List<TransactionInput> getInputs() {
         return inputs;
     }
 
-    public ArrayList<TransactionOutput> getOutputs() {
+    public List<TransactionOutput> getOutputs() {
         return outputs;
     }
 }

@@ -1,11 +1,12 @@
 package com.atycoin.network;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class BlocksInTransit {
-    private static ArrayList<String> blocksInTransit = new ArrayList<>();
+    private static List<String> blocksInTransit = new ArrayList<>();
 
-    public static void addItems(ArrayList<String> items) {
+    public static void addItems(List<String> items) {
         blocksInTransit.addAll(items);
     }
 

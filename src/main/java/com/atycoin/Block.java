@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 // Block represents a block in the blockchain
 public class Block {
@@ -16,10 +17,10 @@ public class Block {
     private int nonce;
     private int height;
 
-    private ArrayList<Transaction> transactions;
+    private List<Transaction> transactions;
     private byte[] hash; // Current Block hash
 
-    private Block(ArrayList<Transaction> transactions, byte[] hashPrevBlock, int height) {
+    private Block(List<Transaction> transactions, byte[] hashPrevBlock, int height) {
         version = 1;
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
         this.transactions = transactions;
@@ -31,7 +32,7 @@ public class Block {
     // newGenesisBlock: creates and returns genesis Block
     public static Block newGenesisBlock(Transaction coinbase) {
         //add coinbase Transaction
-        ArrayList<Transaction> transactions = new ArrayList<>();
+        List<Transaction> transactions = new ArrayList<>();
         transactions.add(coinbase);
 
         Block block = new Block(transactions, new byte[0], 0);
@@ -43,7 +44,7 @@ public class Block {
     }
 
     // newBlock: creates and returns Block
-    public static Block newBlock(ArrayList<Transaction> transactions, byte[] hashPrevBlock, int height) {
+    public static Block newBlock(List<Transaction> transactions, byte[] hashPrevBlock, int height) {
         Block block = new Block(transactions, hashPrevBlock, height);
 
         ProofOfWork proofOfWork = new ProofOfWork(block);
@@ -54,10 +55,10 @@ public class Block {
 
     // hashTransactions returns a hash of the transactions in the block
     private byte[] hashTransactions() {
-        ArrayList<ArrayList<Byte>> transactions = new ArrayList<>();
+        List<List<Byte>> transactions = new ArrayList<>();
         for (Transaction transaction : this.transactions) {
             //little-endian
-            ArrayList<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.getId()));
+            List<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.getId()));
             transactions.add(transactionId);
         }
 
@@ -124,7 +125,7 @@ public class Block {
         return merkleRoot;
     }
 
-    public ArrayList<Transaction> getTransactions() {
+    public List<Transaction> getTransactions() {
         return transactions;
     }
 }

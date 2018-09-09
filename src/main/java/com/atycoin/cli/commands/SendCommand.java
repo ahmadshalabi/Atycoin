@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class SendCommand implements Command {
     @Override
@@ -90,7 +91,7 @@ public class SendCommand implements Command {
             }
 
             if (args[6].equals("-mine")) {
-                ArrayList<Transaction> transactions = new ArrayList<>();
+                List<Transaction> transactions = new ArrayList<>();
                 transactions.add(Transaction.newCoinbaseTransaction(from));
                 transactions.add(newUTXOTransaction);
 

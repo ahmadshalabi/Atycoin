@@ -2,14 +2,14 @@ package com.atycoin.network.messages;
 
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class InventoryMessage implements NetworkMessage {
     private int senderAddress;
     private String type;
-    private ArrayList<String> items;
+    private List<String> items;
 
-    public InventoryMessage(int senderAddress, String type, ArrayList<String> items) {
+    public InventoryMessage(int senderAddress, String type, List<String> items) {
         this.senderAddress = senderAddress;
         this.type = type;
         this.items = items;
@@ -35,7 +35,7 @@ public class InventoryMessage implements NetworkMessage {
         return type;
     }
 
-    public ArrayList<String> getItems() {
+    public List<String> getItems() {
         return items;
     }
 }

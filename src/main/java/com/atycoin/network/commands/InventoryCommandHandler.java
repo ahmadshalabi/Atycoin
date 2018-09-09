@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.List;
 
 public class InventoryCommandHandler implements NetworkCommand {
     private BufferedWriter output;
@@ -21,7 +21,7 @@ public class InventoryCommandHandler implements NetworkCommand {
     @Override
     public void execute(String message, int nodeAddress) {
         InventoryMessage remoteMessage = new Gson().fromJson(message, InventoryMessage.class);
-        ArrayList<String> items = remoteMessage.getItems();
+        List<String> items = remoteMessage.getItems();
         String type = remoteMessage.getType();
 
         System.out.printf("Received inventory with %d %s%n", items.size(), type);

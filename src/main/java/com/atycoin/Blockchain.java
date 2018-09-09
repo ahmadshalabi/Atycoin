@@ -3,10 +3,7 @@ package com.atycoin;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import redis.clients.jedis.Jedis;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 //Blockchain implements interaction with a DB
 public class Blockchain implements Iterable<Block> {
@@ -90,7 +87,7 @@ public class Blockchain implements Iterable<Block> {
     // finds a transaction by its ID
     private Transaction findTransaction(byte[] id) {
         for (Block block : this) {
-            ArrayList<Transaction> transactions = block.getTransactions();
+            List<Transaction> transactions = block.getTransactions();
             for (Transaction transaction : transactions) {
                 if (Arrays.equals(id, transaction.getId())) {
                     return transaction;
@@ -132,8 +129,8 @@ public class Blockchain implements Iterable<Block> {
     }
 
     // returns a list of required block hashes from the chain
-    public ArrayList<String> getBlockHashes(int requiredHeight) {
-        ArrayList<String> blockHashes = new ArrayList<>();
+    public List<String> getBlockHashes(int requiredHeight) {
+        List<String> blockHashes = new ArrayList<>();
         for (Block block : this) {
             if (requiredHeight != 0 && block.getHeight() <= requiredHeight) {
                 break;
@@ -147,7 +144,7 @@ public class Blockchain implements Iterable<Block> {
 
     //TODO: Check failed connection
     // mines a new block with the provided transactions
-    public Block mineBlock(ArrayList<Transaction> transactions) {
+    public Block mineBlock(List<Transaction> transactions) {
         for (int i = 0, size = transactions.size(); i < size; i++) {
             if (!verifyTransaction(transactions.get(0))) {
                 System.out.println("ERROR: Invalid transactions");
@@ -173,9 +170,9 @@ public class Blockchain implements Iterable<Block> {
 
     // signs inputs of a Transaction
     public boolean signTransaction(Transaction transaction, ECPrivateKey privateKey) {
-        HashMap<String, Transaction> previousTransactions = new HashMap<>();
+        Map<String, Transaction> previousTransactions = new HashMap<>();
 
-        ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
+        List<TransactionInput> transactionInputs = transaction.getInputs();
         for (TransactionInput input : transactionInputs) {
             Transaction previousTransaction = findTransaction(input.getTransactionID());
             if (previousTransaction == null) {
@@ -195,9 +192,9 @@ public class Blockchain implements Iterable<Block> {
             return true;
         }
 
-        HashMap<String, Transaction> previousTransactions = new HashMap<>();
+        Map<String, Transaction> previousTransactions = new HashMap<>();
 
-        ArrayList<TransactionInput> transactionInputs = transaction.getInputs();
+        List<TransactionInput> transactionInputs = transaction.getInputs();
         for (TransactionInput input : transactionInputs) {
             Transaction previousTransaction = findTransaction(input.getTransactionID());
             if (previousTransaction == null) {

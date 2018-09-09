@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.List;
 
 //TODO: Implement it as in https://en.bitcoin.it/wiki/Network#Addr and https://en.bitcoin.it/wiki/Protocol_documentation#addr
 
@@ -21,7 +21,7 @@ public class AddressesCommandHandler implements NetworkCommand {
     @Override
     public void execute(String message, int nodeAddress) {
         AddressesMessage remoteMessage = new Gson().fromJson(message, AddressesMessage.class);
-        ArrayList<Integer> knownNodes = remoteMessage.getAddresses();
+        List<Integer> knownNodes = remoteMessage.getAddresses();
 
         Node.getKnownNodes().addAll(knownNodes);
         System.out.printf("There are %d known nodes now!%n", Node.getKnownNodes().size());
@@ -29,7 +29,7 @@ public class AddressesCommandHandler implements NetworkCommand {
     }
 
     private void requestBlocks() {
-        ArrayList<Integer> knownNodes = Node.getKnownNodes();
+        List<Integer> knownNodes = Node.getKnownNodes();
 
         for (int node : knownNodes) {
             NetworkMessage inventoryMessage = new GetBlocksMessage(node, 0);

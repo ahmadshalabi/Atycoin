@@ -1,10 +1,11 @@
 package com.atycoin.network.commands;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class NetworkCommandFactory {
     private static final NetworkCommand NULL_COMMAND = new NullCommandHandler();
-    private static HashMap<String, NetworkCommand> commands;
+    private static Map<String, NetworkCommand> commands;
 
     static {
         commands = new HashMap<>();

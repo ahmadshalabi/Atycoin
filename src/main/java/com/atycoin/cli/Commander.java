@@ -2,16 +2,13 @@ package com.atycoin.cli;
 
 import com.atycoin.cli.commands.*;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 
 // responsible for processing command line
 public class Commander {
     private static Commander instance = new Commander();
     private boolean debugMode = false;
-    private HashMap<String, Command> commands;
+    private Map<String, Command> commands;
     private Scanner scanner;
 
     private Commander() {

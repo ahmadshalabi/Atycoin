@@ -6,8 +6,8 @@ import com.atycoin.UTXOSet;
 import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class GetBalanceCommand implements Command {
     @Override
@@ -52,7 +52,7 @@ public class GetBalanceCommand implements Command {
             byte[] publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
 
             UTXOSet utxoSet = UTXOSet.getInstance();
-            ArrayList<TransactionOutput> UTXOs = utxoSet.findUTXO(publicKeyHashed);
+            List<TransactionOutput> UTXOs = utxoSet.findUTXO(publicKeyHashed);
 
             int balance = 0;
             for (TransactionOutput transactionOutput : UTXOs) {

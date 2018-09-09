@@ -3,8 +3,8 @@ package com.atycoin.cli.commands;
 import com.atycoin.Wallets;
 import com.atycoin.cli.Commander;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ListAddressesCommand implements Command {
     @Override
@@ -25,7 +25,7 @@ public class ListAddressesCommand implements Command {
     public void run(String[] args) {
         if (args.length < 1) {
             Wallets wallets = Wallets.getInstance();
-            ArrayList<String> addresses = wallets.getAddresses();
+            List<String> addresses = wallets.getAddresses();
 
             for (String address : addresses) {
                 Commander.CommanderPrint(address);

@@ -6,8 +6,8 @@ import com.atycoin.Transaction;
 import com.atycoin.Util;
 import com.atycoin.cli.Commander;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class PrintChainCommand implements Command {
     @Override
@@ -34,7 +34,7 @@ public class PrintChainCommand implements Command {
                         "Prev. block: %s", Util.bytesToHex(block.getHashPrevBlock())));
                 Commander.CommanderPrint(String.format(
                         "Merkle Root: %s%n", Util.bytesToHex(block.getMerkleRoot())));
-                ArrayList<Transaction> transactions = block.getTransactions();
+                List<Transaction> transactions = block.getTransactions();
                 for (Transaction transaction : transactions) {
                     System.out.println(transaction);
                 }

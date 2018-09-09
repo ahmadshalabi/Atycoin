@@ -1,6 +1,7 @@
 package com.atycoin;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MerkleTree {
     private MerkleNode rootNode;
@@ -10,17 +11,17 @@ public class MerkleTree {
     }
 
     // creates a new Merkle tree from a sequence of data
-    public static MerkleTree newMerkleTree(ArrayList<ArrayList<Byte>> data) {
-        ArrayList<MerkleNode> nodes = new ArrayList<>();
+    public static MerkleTree newMerkleTree(List<List<Byte>> data) {
+        List<MerkleNode> nodes = new ArrayList<>();
 
-        for (ArrayList<Byte> datum : data) {
+        for (List<Byte> datum : data) {
             MerkleNode node = MerkleNode.newMerkleNode(null, null, Util.listToBytes(datum));
             nodes.add(node);
         }
 
         int numberOfNodes = nodes.size();
         while (numberOfNodes > 1) {
-            ArrayList<MerkleNode> newLevel = new ArrayList<>();
+            List<MerkleNode> newLevel = new ArrayList<>();
             for (int leftNode = 0, rightNode = leftNode + 1; leftNode < numberOfNodes; leftNode += 2) {
                 if (rightNode == numberOfNodes) {
                     rightNode = leftNode;

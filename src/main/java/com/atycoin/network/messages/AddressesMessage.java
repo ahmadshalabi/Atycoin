@@ -3,10 +3,10 @@ package com.atycoin.network.messages;
 import com.atycoin.network.Node;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class AddressesMessage implements NetworkMessage {
-    private ArrayList<Integer> addresses;
+    private List<Integer> addresses;
 
     @Override
     public String makeRequest() {
@@ -22,7 +22,7 @@ public class AddressesMessage implements NetworkMessage {
         return String.valueOf(request);
     }
 
-    public ArrayList<Integer> getAddresses() {
+    public List<Integer> getAddresses() {
         return addresses;
     }
 }

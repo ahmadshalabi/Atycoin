@@ -6,9 +6,10 @@ import com.atycoin.Util;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Mempool {
-    private static HashMap<String, Transaction> mempool = new HashMap<>();
+    private static Map<String, Transaction> mempool = new HashMap<>();
 
     public static Transaction getItem(String txId) {
         return mempool.get(txId);

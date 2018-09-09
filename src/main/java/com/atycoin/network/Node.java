@@ -11,13 +11,14 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Node implements Runnable {
     private static final int NODE_VERSION = 1;
     private static String miningAddress;
-    private static ArrayList<Integer> knownNodes; // To simulate DNS Seed
+    private static List<Integer> knownNodes; // To simulate DNS Seed
 
     static {
         knownNodes = new ArrayList<>();
@@ -47,7 +48,7 @@ public class Node implements Runnable {
         return instance;
     }
 
-    public static ArrayList<Integer> getKnownNodes() {
+    public static List<Integer> getKnownNodes() {
         return knownNodes;
     }
 

@@ -14,6 +14,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TransactionCommandHandler implements NetworkCommand {
     private BufferedWriter output;
@@ -32,9 +33,9 @@ public class TransactionCommandHandler implements NetworkCommand {
             System.out.println("Trying adding invalid transaction to mempool");
         }
 
-        ArrayList<Integer> knownNodes = Node.getKnownNodes();
+        List<Integer> knownNodes = Node.getKnownNodes();
         if (nodeAddress == knownNodes.get(0)) {
-            ArrayList<String> transactions = new ArrayList<>();
+            List<String> transactions = new ArrayList<>();
             transactions.add(Util.serializeHash(transaction.getId()));
             for (int node : knownNodes) {
                 if (node != nodeAddress && node != remoteMessage.getSenderAddress()) {
@@ -54,7 +55,7 @@ public class TransactionCommandHandler implements NetworkCommand {
                 while (Mempool.size() > 0) {
                     Blockchain blockchain = Blockchain.getInstance();
 
-                    ArrayList<Transaction> validTransactions = new ArrayList<>();
+                    List<Transaction> validTransactions = new ArrayList<>();
                     Transaction coinbaseTx = Transaction.newCoinbaseTransaction(Node.getMiningAddress());
                     validTransactions.add(coinbaseTx);
                     validTransactions.addAll(Mempool.values());
