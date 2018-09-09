@@ -3,8 +3,8 @@ package com.atycoin.network.messages;
 import com.google.gson.Gson;
 
 public class GetBlocksMessage implements NetworkMessage {
-    private int senderAddress;
-    private int requiredHeight;
+    private final int senderAddress;
+    private final int requiredHeight;
 
     public GetBlocksMessage(int senderAddress, int requiredHeight) {
         this.senderAddress = senderAddress;

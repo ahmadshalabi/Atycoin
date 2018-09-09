@@ -4,8 +4,8 @@ import com.atycoin.Transaction;
 import com.google.gson.Gson;
 
 public class TransactionMessage implements NetworkMessage {
-    private int senderAddress;
-    private Transaction transaction;
+    private final int senderAddress;
+    private final Transaction transaction;
 
     public TransactionMessage(int senderAddress, Transaction transaction) {
         this.senderAddress = senderAddress;

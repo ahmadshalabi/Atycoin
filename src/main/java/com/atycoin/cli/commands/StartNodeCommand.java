@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StartNodeCommand implements Command {
-    private static ExecutorService pool = Executors.newSingleThreadExecutor();
+    private static final ExecutorService pool = Executors.newSingleThreadExecutor();
 
     @Override
     public String getHelp() {

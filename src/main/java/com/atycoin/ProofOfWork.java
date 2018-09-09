@@ -1,8 +1,8 @@
 package com.atycoin;
 
 public class ProofOfWork {
-    private Block block;
-    private int targetBits;
+    private final Block block;
+    private final int targetBits;
     private byte[] hash;
     private int nonce;
 

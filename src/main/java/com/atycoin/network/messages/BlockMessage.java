@@ -4,8 +4,8 @@ import com.atycoin.Block;
 import com.google.gson.Gson;
 
 public class BlockMessage implements NetworkMessage {
-    private int senderAddress;
-    private Block block;
+    private final int senderAddress;
+    private final Block block;
 
     public BlockMessage(int senderAddress, Block block) {
         this.senderAddress = senderAddress;

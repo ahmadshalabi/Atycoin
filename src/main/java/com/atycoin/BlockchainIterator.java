@@ -8,7 +8,7 @@ import java.util.Iterator;
 public class BlockchainIterator implements Iterator<Block> {
     private static final String genesisPrevHash = Util.serializeHash(new byte[0]);
 
-    private Jedis dbConnection;
+    private final Jedis dbConnection;
     private String currentHashSerialized;
 
     //TODO: Check failed connection

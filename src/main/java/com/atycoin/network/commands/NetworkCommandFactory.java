@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class NetworkCommandFactory {
     private static final NetworkCommand NULL_COMMAND = new NullCommandHandler();
-    private static Map<String, NetworkCommand> commands;
+    private static final Map<String, NetworkCommand> commands;
 
     static {
         commands = new HashMap<>();

@@ -5,8 +5,8 @@ import java.io.IOException;
 
 // represents a transaction input
 public class TransactionInput {
-    private byte[] transactionID;
-    private int outputIndex;
+    private final byte[] transactionID;
+    private final int outputIndex;
     private byte[] signature;
     private byte[] rawPublicKey;
 

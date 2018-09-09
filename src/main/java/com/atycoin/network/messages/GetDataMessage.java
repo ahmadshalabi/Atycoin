@@ -3,9 +3,9 @@ package com.atycoin.network.messages;
 import com.google.gson.Gson;
 
 public class GetDataMessage implements NetworkMessage {
-    private int senderAddress;
-    private String type;
-    private String id;
+    private final int senderAddress;
+    private final String type;
+    private final String id;
 
     public GetDataMessage(int senderAddress, String type, String id) {
         this.senderAddress = senderAddress;

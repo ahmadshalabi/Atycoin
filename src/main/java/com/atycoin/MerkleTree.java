@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MerkleTree {
-    private MerkleNode rootNode;
+    private final MerkleNode rootNode;
 
     private MerkleTree(MerkleNode rootNode) {
         this.rootNode = rootNode;

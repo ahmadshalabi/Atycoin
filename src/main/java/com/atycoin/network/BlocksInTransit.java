@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlocksInTransit {
-    private static List<String> blocksInTransit = new ArrayList<>();
+    private static final List<String> blocksInTransit = new ArrayList<>();
 
     public static void addItems(List<String> items) {
         blocksInTransit.addAll(items);

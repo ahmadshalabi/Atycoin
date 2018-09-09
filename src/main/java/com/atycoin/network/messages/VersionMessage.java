@@ -4,8 +4,8 @@ import com.atycoin.Blockchain;
 import com.google.gson.Gson;
 
 public class VersionMessage implements NetworkMessage {
-    private int version;
-    private int senderAddress;
+    private final int version;
+    private final int senderAddress;
     private int bestHeight;
 
     public VersionMessage(int version, int senderAddress) {

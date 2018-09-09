@@ -5,9 +5,9 @@ import com.google.gson.Gson;
 import java.util.List;
 
 public class InventoryMessage implements NetworkMessage {
-    private int senderAddress;
-    private String type;
-    private List<String> items;
+    private final int senderAddress;
+    private final String type;
+    private final List<String> items;
 
     public InventoryMessage(int senderAddress, String type, List<String> items) {
         this.senderAddress = senderAddress;

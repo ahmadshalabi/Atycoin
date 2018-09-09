@@ -10,7 +10,7 @@ import java.util.*;
 public class UTXOSet {
     private static UTXOSet instance;
 
-    private Jedis dbConnection;
+    private final Jedis dbConnection;
 
     private UTXOSet() {
         int nodeId = AtycoinStart.getNodeID();

@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 // represents a transaction output
 public class TransactionOutput {
-    private int value;
+    private final int value;
     private byte[] publicKeyHashed;
 
     private TransactionOutput(int value) {

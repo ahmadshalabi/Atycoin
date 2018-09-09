@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Wallets {
-    private static String WALLETS_FILE = String.format("wallets%d.txt", AtycoinStart.getNodeID());
-    private static Wallets instance = new Wallets();
+    private static final String WALLETS_FILE = String.format("wallets%d.txt", AtycoinStart.getNodeID());
+    private static final Wallets instance = new Wallets();
     private final String directory;
     private Map<String, Wallet> wallets;
 

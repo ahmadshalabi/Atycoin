@@ -10,14 +10,14 @@ import java.util.List;
 // Block represents a block in the blockchain
 public class Block {
     private final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
-    private byte[] hashPrevBlock;
-    private byte[] merkleRoot;
-    private long timestamp;
-    private int version;
+    private final byte[] hashPrevBlock;
+    private final byte[] merkleRoot;
+    private final long timestamp;
+    private final int version;
     private int nonce;
-    private int height;
+    private final int height;
 
-    private List<Transaction> transactions;
+    private final List<Transaction> transactions;
     private byte[] hash; // Current Block hash
 
     private Block(List<Transaction> transactions, byte[] hashPrevBlock, int height) {

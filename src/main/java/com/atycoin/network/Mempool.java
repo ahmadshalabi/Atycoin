@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Mempool {
-    private static Map<String, Transaction> mempool = new HashMap<>();
+    private static final Map<String, Transaction> mempool = new HashMap<>();
 
     public static Transaction getItem(String txId) {
         return mempool.get(txId);

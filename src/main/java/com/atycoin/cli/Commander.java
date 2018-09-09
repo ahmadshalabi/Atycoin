@@ -6,7 +6,7 @@ import java.util.*;
 
 // responsible for processing command line
 public class Commander {
-    private static Commander instance = new Commander();
+    private static final Commander instance = new Commander();
     private boolean debugMode = false;
     private Map<String, Command> commands;
     private Scanner scanner;

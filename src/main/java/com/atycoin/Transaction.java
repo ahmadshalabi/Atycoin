@@ -13,9 +13,9 @@ public class Transaction {
     private static final int reward = 10;
 
     private byte[] id;
-    private List<TransactionInput> inputs;
-    private List<TransactionOutput> outputs;
-    private long timestamp;
+    private final List<TransactionInput> inputs;
+    private final List<TransactionOutput> outputs;
+    private final long timestamp;
 
     private Transaction(List<TransactionInput> inputs, List<TransactionOutput> outputs) {
         this.inputs = inputs;

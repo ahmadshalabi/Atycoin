@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 public class Node implements Runnable {
     private static final int NODE_VERSION = 1;
     private static String miningAddress;
-    private static List<Integer> knownNodes; // To simulate DNS Seed
+    private static final List<Integer> knownNodes; // To simulate DNS Seed
 
     static {
         knownNodes = new ArrayList<>();

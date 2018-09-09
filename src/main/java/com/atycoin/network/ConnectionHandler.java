@@ -9,9 +9,9 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class ConnectionHandler implements Runnable {
-    private Socket receivingConnection;
+    private final Socket receivingConnection;
     private BufferedReader input;
-    private int nodeAddress;
+    private final int nodeAddress;
 
     public ConnectionHandler(Socket receivingConnection, int nodeAddress) {
         this.receivingConnection = receivingConnection;
