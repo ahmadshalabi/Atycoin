@@ -26,7 +26,7 @@ public class TransactionOutput {
     }
 
     // lock signs the output
-    public void lock(String address) {
+    private void lock(String address) {
         byte[] fullPayload = Base58.decode(address);
         publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
     }

@@ -53,7 +53,7 @@ public class Block {
     }
 
     // hashTransactions returns a hash of the transactions in the block
-    public byte[] hashTransactions() {
+    private byte[] hashTransactions() {
         ArrayList<ArrayList<Byte>> transactions = new ArrayList<>();
         for (Transaction transaction : this.transactions) {
             //little-endian
@@ -62,8 +62,7 @@ public class Block {
         }
 
         MerkleTree mTree = MerkleTree.newMerkleTree(transactions);
-        MerkleNode rootNode = mTree.getRootNode();
-        return rootNode.getData();
+        return mTree.getMerkleRoot();
     }
 
     // serializes the block header in bytes form

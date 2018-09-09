@@ -47,7 +47,7 @@ public class StartNodeCommand implements Command {
         } else if (args[0].equals(params[2])) {
             String minerAddress = args[1];
 
-            if (!Wallet.validateAddress(minerAddress)) {
+            if (!Wallet.isValidAddress(minerAddress)) {
                 Commander.CommanderPrint("ERROR: Wrong miner address!");
                 return;
             }

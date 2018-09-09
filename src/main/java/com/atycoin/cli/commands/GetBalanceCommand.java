@@ -43,7 +43,7 @@ public class GetBalanceCommand implements Command {
             } else if (args.length > 2) {
                 Commander.CommanderPrint("ERROR ! Invalid address entered.");
                 return;
-            } else if (!Wallet.validateAddress(address)) {
+            } else if (!Wallet.isValidAddress(address)) {
                 Commander.CommanderPrint("ERROR ! Address in not valid.");
                 return;
             }

@@ -37,7 +37,7 @@ public class CreateBlockchainCommand implements Command {
             if (address == null) {
                 Commander.CommanderPrint("ERROR ! Address is not entered.");
                 return;
-            } else if (!Wallet.validateAddress(address)) {
+            } else if (!Wallet.isValidAddress(address)) {
                 Commander.CommanderPrint("ERROR ! Address is not valid.");
                 return;
             }

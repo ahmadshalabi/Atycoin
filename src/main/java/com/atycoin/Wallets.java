@@ -47,7 +47,7 @@ public class Wallets {
     }
 
     // loads wallets from the file
-    public void loadFromFile() {
+    private void loadFromFile() {
         if (!Files.exists(Paths.get(directory, WALLETS_FILE))) {
             wallets = new HashMap<>();
             return;
@@ -71,7 +71,7 @@ public class Wallets {
     }
 
     // saves wallets to a file
-    public void saveToFile() {
+    private void saveToFile() {
         Gson encoder = new Gson();
         String serializedWallets = encoder.toJson(wallets);
 

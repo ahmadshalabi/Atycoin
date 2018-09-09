@@ -40,14 +40,14 @@ public class Wallet {
     }
 
     // generates a checksum for a public key
-    public static byte[] checksum(byte[] versionedPayload) {
+    private static byte[] checksum(byte[] versionedPayload) {
         byte[] firstSHA256 = Util.applySHA256(versionedPayload);
         byte[] secondSHA256 = Util.applySHA256(firstSHA256);
 
         return Arrays.copyOfRange(secondSHA256, 0, CHECKSUM_LEN);
     }
 
-    public static boolean validateAddress(String address) {
+    public static boolean isValidAddress(String address) {
         byte[] fullyPayload = Base58.decode(address);
 
         int checksumPosition = fullyPayload.length - CHECKSUM_LEN;
@@ -84,7 +84,7 @@ public class Wallet {
         }
     }
 
-    public ECPublicKey getPublicKey() {
+    private ECPublicKey getPublicKey() {
         try {
             X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyEncoded);
             KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");

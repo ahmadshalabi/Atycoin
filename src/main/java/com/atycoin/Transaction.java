@@ -165,7 +165,7 @@ public class Transaction {
     }
 
     // creates a trimmed copy of Transaction to be used in signing
-    public Transaction trimmedCopy() {
+    private Transaction trimmedCopy() {
         ArrayList<TransactionInput> inputs = new ArrayList<>();
         ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
@@ -182,7 +182,7 @@ public class Transaction {
     }
 
     // returns the hash of the Transaction
-    public byte[] hash() {
+    private byte[] hash() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             //little-endian

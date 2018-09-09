@@ -46,12 +46,12 @@ public class SendCommand implements Command {
             String to = args[3];
             int amount = Integer.parseInt(args[5]);
 
-            if (!Wallet.validateAddress(from)) {
+            if (!Wallet.isValidAddress(from)) {
                 Commander.CommanderPrint("ERROR: Sender address is not valid");
                 return;
             }
 
-            if (!Wallet.validateAddress(to)) {
+            if (!Wallet.isValidAddress(to)) {
                 Commander.CommanderPrint("ERROR: Recipient address is not valid");
                 return;
             }
