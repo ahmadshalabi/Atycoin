@@ -1,6 +1,6 @@
 package com.atycoin.network.messages;
 
-import com.atycoin.Blockchain;
+import com.atycoin.BlocksDAO;
 import com.google.gson.Gson;
 
 public class VersionMessage implements NetworkMessage {
@@ -15,7 +15,7 @@ public class VersionMessage implements NetworkMessage {
 
     @Override
     public String makeRequest() {
-        bestHeight = Blockchain.getInstance().getBestHeight();
+        bestHeight = BlocksDAO.getInstance().getBestHeight();
 
         StringBuilder request = new StringBuilder();
 

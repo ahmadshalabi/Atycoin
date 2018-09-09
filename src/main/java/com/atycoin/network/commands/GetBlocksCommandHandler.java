@@ -1,6 +1,6 @@
 package com.atycoin.network.commands;
 
-import com.atycoin.Blockchain;
+import com.atycoin.BlocksDAO;
 import com.atycoin.network.messages.GetBlocksMessage;
 import com.atycoin.network.messages.InventoryMessage;
 import com.atycoin.network.messages.NetworkMessage;
@@ -21,8 +21,7 @@ public class GetBlocksCommandHandler implements NetworkCommand {
         GetBlocksMessage remoteMessage = new Gson().fromJson(message, GetBlocksMessage.class);
         int requiredHeight = remoteMessage.getRequiredHeight();
 
-        Blockchain blockchain = Blockchain.getInstance();
-        List<String> blocks = blockchain.getBlockHashes(requiredHeight);
+        List<String> blocks = BlocksDAO.getInstance().getBlockHashes(requiredHeight);
 
         NetworkMessage responseMessage = new InventoryMessage(nodeAddress, "block", blocks);
 

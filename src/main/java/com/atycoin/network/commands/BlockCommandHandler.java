@@ -1,7 +1,7 @@
 package com.atycoin.network.commands;
 
 import com.atycoin.Block;
-import com.atycoin.Blockchain;
+import com.atycoin.BlocksDAO;
 import com.atycoin.UTXOSet;
 import com.atycoin.Util;
 import com.atycoin.network.BlocksInTransit;
@@ -28,8 +28,8 @@ public class BlockCommandHandler implements NetworkCommand {
         System.out.println("Received a new block!");
 
         //TODO: check validity of incoming block before adding it
-        Blockchain blockchain = Blockchain.getInstance();
-        boolean isBlockAdded = blockchain.addBlock(block);
+        BlocksDAO blocksDAO = BlocksDAO.getInstance();
+        boolean isBlockAdded = blocksDAO.addBlock(block);
 
         if (isBlockAdded) {
             System.out.printf("Added block %s%n", Util.serializeHash(block.getHash()));

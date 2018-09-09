@@ -1,7 +1,7 @@
 package com.atycoin.network.commands;
 
 import com.atycoin.Block;
-import com.atycoin.Blockchain;
+import com.atycoin.BlocksDAO;
 import com.atycoin.Transaction;
 import com.atycoin.network.Mempool;
 import com.atycoin.network.messages.*;
@@ -24,9 +24,8 @@ public class GetDataCommandHandler implements NetworkCommand {
 
         NetworkMessage responseMessage = new NullMessage();
         if (type.equals("block")) {
-            Blockchain blockchain = Blockchain.getInstance();
             String blockHash = remoteMessage.getId();
-            Block block = blockchain.getBlock(blockHash);
+            Block block = BlocksDAO.getInstance().getBlock(blockHash);
 
             responseMessage = new BlockMessage(nodeAddress, block);
         } else if (type.equals("tx")) {

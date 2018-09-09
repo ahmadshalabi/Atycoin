@@ -1,6 +1,7 @@
 package com.atycoin.cli;
 
 import com.atycoin.cli.commands.*;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.util.*;
 
@@ -68,6 +69,9 @@ public class Commander {
                         call(rawArgs);
                     } catch (ArrayIndexOutOfBoundsException e) {
                         CommanderPrint("command couldn't execute, perhaps not enough arguments? try: " + rawArgs[0] + " -help");
+                    } catch (JedisConnectionException e) {
+                        CommanderPrint("Failed connecting to database");
+                        System.exit(0);
                     } catch (Exception e) {
                         CommanderPrint("command failed to execute.");
                     }

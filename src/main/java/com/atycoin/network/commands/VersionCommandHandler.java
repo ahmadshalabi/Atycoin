@@ -1,6 +1,6 @@
 package com.atycoin.network.commands;
 
-import com.atycoin.Blockchain;
+import com.atycoin.BlocksDAO;
 import com.atycoin.network.Node;
 import com.atycoin.network.messages.GetBlocksMessage;
 import com.atycoin.network.messages.NetworkMessage;
@@ -19,8 +19,7 @@ public class VersionCommandHandler implements NetworkCommand {
 
     @Override
     public void execute(String message, int nodeAddress) {
-        Blockchain blockchain = Blockchain.getInstance();
-        int localBestHeight = blockchain.getBestHeight();
+        int localBestHeight = BlocksDAO.getInstance().getBestHeight();
 
         VersionMessage remoteMessage = new Gson().fromJson(message, VersionMessage.class);
         int remoteBestHeight = remoteMessage.getBestHeight();

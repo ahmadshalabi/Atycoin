@@ -1,7 +1,7 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Block;
-import com.atycoin.Blockchain;
+import com.atycoin.BlocksDAO;
 import com.atycoin.Transaction;
 import com.atycoin.Util;
 import com.atycoin.cli.Commander;
@@ -27,7 +27,8 @@ public class PrintChainCommand implements Command {
     @Override
     public void run(String[] args) {
         if (args.length < 1) { //no parameters
-            for (Block block : Blockchain.getInstance()) {
+            BlocksDAO blocksDAO = BlocksDAO.getInstance();
+            for (Block block : blocksDAO) {
                 Commander.CommanderPrint(String.format(
                         "============ Block %s ============", Util.bytesToHex(block.getHash())));
                 Commander.CommanderPrint(String.format(
