@@ -15,19 +15,24 @@ public class MerkleTree {
         List<MerkleNode> nodes = new ArrayList<>();
 
         for (List<Byte> datum : data) {
-            MerkleNode node = MerkleNode.newMerkleNode(null, null, Util.listToBytes(datum));
+            byte[] datumBytes = Util.listToBytes(datum);
+            MerkleNode node = MerkleNode.newMerkleNode(null, null, datumBytes);
             nodes.add(node);
         }
 
         int numberOfNodes = nodes.size();
         while (numberOfNodes > 1) {
             List<MerkleNode> newLevel = new ArrayList<>();
-            for (int leftNode = 0, rightNode = leftNode + 1; leftNode < numberOfNodes; leftNode += 2) {
-                if (rightNode == numberOfNodes) {
-                    rightNode = leftNode;
+            for (int left = 0, right = left + 1; left < numberOfNodes; left += 2) {
+                if (right == numberOfNodes) {
+                    right = left;
                 }
 
-                MerkleNode node = MerkleNode.newMerkleNode(nodes.get(leftNode), nodes.get(rightNode), new byte[0]);
+                MerkleNode leftNode = nodes.get(left);
+                MerkleNode rightNode = nodes.get(right);
+
+                MerkleNode node = MerkleNode.newMerkleNode(leftNode, rightNode, Constant.EMPTY_BYTE_ARRAY);
+
                 newLevel.add(node);
             }
             nodes = newLevel;

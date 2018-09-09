@@ -14,12 +14,16 @@ public class MerkleNode {
         if (left == null && right == null) {
             mNode.data = Util.applySHA256(data);
         } else {
-            ByteArrayOutputStream prevHashes = new ByteArrayOutputStream();
+            ByteArrayOutputStream previousHashes = new ByteArrayOutputStream();
             if (left != null) {
-                prevHashes.write(left.data, 0, left.data.length);
+                byte[] leftData = left.data;
+                previousHashes.write(left.data, 0, leftData.length);
             }
-            prevHashes.write(right.data, 0, right.data.length);
-            mNode.data = Util.applySHA256(prevHashes.toByteArray());
+
+            byte[] rightData = right.data;
+            previousHashes.write(right.data, 0, rightData.length);
+            byte[] previousHashesBytes = previousHashes.toByteArray();
+            mNode.data = Util.applySHA256(previousHashesBytes);
         }
 
         mNode.left = left;
