@@ -3,6 +3,7 @@ package com.atycoin;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.StringJoiner;
 
 public class TransactionOutput {
     private final int value;
@@ -50,5 +51,13 @@ public class TransactionOutput {
 
     public byte[] getPublicKeyHashed() {
         return publicKeyHashed;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n")
+                .add(String.format("\t\tValue: %d", value))
+                .add(String.format("\t\tPublic Key Hashed: %s", Util.bytesToHex(publicKeyHashed)))
+                .toString();
     }
 }

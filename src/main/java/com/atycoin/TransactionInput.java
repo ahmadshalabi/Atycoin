@@ -2,15 +2,16 @@ package com.atycoin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 public class TransactionInput {
-    private final byte[] transactionID;
+    private final byte[] referenceTransaction;
     private final int outputIndex;
     private byte[] rawPublicKey;
     private byte[] signature;
 
-    public TransactionInput(byte[] transactionID, int outputIndex, byte[] rawPublicKey) {
-        this.transactionID = transactionID;
+    public TransactionInput(byte[] referenceTransaction, int outputIndex, byte[] rawPublicKey) {
+        this.referenceTransaction = referenceTransaction;
         this.outputIndex = outputIndex;
         this.rawPublicKey = rawPublicKey;
         signature = Constant.EMPTY_BYTE_ARRAY;
@@ -20,7 +21,7 @@ public class TransactionInput {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             // little-endian
-            buffer.write(Util.reverseBytesOrder(transactionID));
+            buffer.write(Util.reverseBytesOrder(referenceTransaction));
             buffer.write(Util.reverseBytesOrder(Util.intToBytes(outputIndex)));
             buffer.write(Util.reverseBytesOrder(rawPublicKey));
 
@@ -30,8 +31,8 @@ public class TransactionInput {
         }
     }
 
-    public byte[] getTransactionID() {
-        return transactionID;
+    public byte[] getReferenceTransaction() {
+        return referenceTransaction;
     }
 
     public int getOutputIndex() {
@@ -52,5 +53,15 @@ public class TransactionInput {
 
     public void setRawPublicKey(byte[] rawPublicKey) {
         this.rawPublicKey = rawPublicKey;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n", "", "\n")
+                .add(String.format("\t\tReference transaction: %s", Util.bytesToHex(referenceTransaction)))
+                .add(String.format("\t\tOutput index: %d", outputIndex))
+                .add(String.format("\t\tPublic key: %s", Util.bytesToHex(rawPublicKey)))
+                .add(String.format("\t\tSignature: %s", Util.bytesToHex(signature)))
+                .toString();
     }
 }
