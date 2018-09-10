@@ -9,14 +9,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-// Block represents a block in the blockchain
 public class Block {
     private transient static final int GENESIS_HEIGHT = 0;
 
     private final int version;
     private final byte[] hashPrevBlock;
     private final long timestamp;
-    private final int targetBits = 16; //TODO: Make it Adjusted to meet some requirements
+    private final int targetBits = 5; //TODO: Make it Adjusted to meet some requirements
     private final int height;
     private final List<Transaction> transactions;
 
@@ -32,7 +31,7 @@ public class Block {
         this.height = height;
     }
 
-    // newGenesisBlock: creates and returns genesis Block
+    // creates and returns genesis Block
     public static Block newGenesisBlock(Transaction coinbase) {
         //add coinbase Transaction
         List<Transaction> transactions = new ArrayList<>();
@@ -41,7 +40,6 @@ public class Block {
         return newBlock(transactions, Constant.EMPTY_BYTE_ARRAY, GENESIS_HEIGHT);
     }
 
-    // newBlock: creates and returns Block
     public static Block newBlock(List<Transaction> transactions, byte[] hashPrevBlock, int height) {
         Block block = new Block(transactions, hashPrevBlock, height);
         block.setRemainingData();
@@ -54,24 +52,21 @@ public class Block {
         return decoder.fromJson(serializedBlock, Block.class);
     }
 
-    // Serialize the block
     public String serializeBlock() {
         Gson encoder = new Gson();
         return encoder.toJson(this);
     }
 
-    // serializes the block header in bytes form
     public byte[] setBlockHeader(int nonce) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         try {
-            //concatenate data in little-endian order
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(version)));
-            buffer.write(Bytes.reverseOrder(hashPrevBlock));
-            buffer.write(Bytes.reverseOrder(merkleRoot));
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(timestamp)));
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(targetBits)));
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(nonce)));
+            buffer.write(Bytes.toBytes(version));
+            buffer.write(hashPrevBlock);
+            buffer.write(merkleRoot);
+            buffer.write(Bytes.toBytes(timestamp));
+            buffer.write(Bytes.toBytes(targetBits));
+            buffer.write(Bytes.toBytes(nonce));
 
             return buffer.toByteArray();
         } catch (IOException e) {
@@ -117,8 +112,8 @@ public class Block {
     private List<List<Byte>> getTransactionsHashes() {
         List<List<Byte>> transactionIDs = new ArrayList<>();
         for (Transaction transaction : transactions) {
-            byte[] littleEndianID = Bytes.reverseOrder(transaction.getId());
-            List<Byte> transactionID = Bytes.toByteList(littleEndianID);
+            byte[] id = transaction.getId();
+            List<Byte> transactionID = Bytes.toByteList(id);
             transactionIDs.add(transactionID);
         }
         return transactionIDs;
@@ -131,6 +126,7 @@ public class Block {
 
     private void setHash() {
         byte[] blockHeader = setBlockHeader(nonce);
-        hash = Bytes.reverseOrder(Hash.doubleSHA256(blockHeader));
+        hash = Hash.doubleSHA256(blockHeader);
+        System.out.println(Bytes.toHex(hash));
     }
 }

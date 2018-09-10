@@ -22,11 +22,9 @@ public class TransactionInput {
     public byte[] concatenateData() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
-            // little-endian
-            buffer.write(Bytes.reverseOrder(referenceTransaction));
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(outputIndex)));
-            buffer.write(Bytes.reverseOrder(rawPublicKey));
-
+            buffer.write(referenceTransaction);
+            buffer.write(Bytes.toBytes(outputIndex));
+            buffer.write(rawPublicKey);
             return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

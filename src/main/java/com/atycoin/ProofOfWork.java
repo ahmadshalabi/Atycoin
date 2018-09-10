@@ -24,9 +24,9 @@ public class ProofOfWork {
         //initialize blockHeader
         int nonce = 0;
         blockHeader = block.setBlockHeader(nonce);
+
         while (nonce < Integer.MAX_VALUE) {
             updateBlockHeader(nonce);
-
             byte[] hash = Hash.doubleSHA256(blockHeader);
             if (isHashMeetTarget(hash)) {
                 break;
@@ -37,21 +37,19 @@ public class ProofOfWork {
     }
 
     private void updateBlockHeader(int nonce) {
-        byte[] nonceBytes = Bytes.reverseOrder(Bytes.toBytes(nonce));
+        byte[] nonceBytes = Bytes.toBytes(nonce);
         //update the last 4 bytes
         System.arraycopy(nonceBytes, 0, blockHeader, blockHeader.length - 4, 4);
     }
 
     private boolean isHashMeetTarget(byte[] hash) {
-        int index;
-        int targetIndex = hash.length - targetBytes;
-        for (index = hash.length - 1; index >= targetIndex; index--) {
+        for (int index = 0; index < targetBytes; index++) {
             if (hash[index] != 0) {
                 return false;
             }
         }
 
-        int lastByteInHash = hash[index];
+        int lastByteInHash = hash[targetBytes] & 0xff;
         return lastByteInHash <= lastByteTarget;
     }
 }

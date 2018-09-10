@@ -43,7 +43,7 @@ public class Transaction {
         return coinbaseTransaction;
     }
 
-    //from : wallet, to : Base58 Address
+    //recipient : Base58 Address
     public static Transaction newTransaction(Wallet sender, String recipient, int amount) {
         // get unspent outputs to reference in inputs
         Map<String, List<Integer>> unspentOutputs = UTXOSet.getInstance().findSpendableOutputs(sender, amount);
@@ -191,13 +191,13 @@ public class Transaction {
 
     private void setID() {
         byte[] unHashedID = getUnHashedID();
-        id = Bytes.reverseOrder(Hash.applySHA256(unHashedID)); // Big-endian
+        id = Hash.applySHA256(unHashedID);
     }
 
     private byte[] getUnHashedID() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(reward))); // Little-endian
+            buffer.write(Bytes.toBytes(reward));
 
             for (TransactionInput transactionInput : inputs) {
                 buffer.write(transactionInput.concatenateData());
@@ -207,7 +207,7 @@ public class Transaction {
                 buffer.write(transactionOutput.concatenateData());
             }
 
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(timestamp)));
+            buffer.write(Bytes.toBytes(timestamp));
             return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
