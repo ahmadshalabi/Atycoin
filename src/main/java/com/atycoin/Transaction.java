@@ -4,13 +4,12 @@ import org.bouncycastle.jce.interfaces.ECPrivateKey;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Transaction {
-    private static final int reward = 10;
+    private static final byte[] COINBASE_ID = Constant.EMPTY_BYTE_ARRAY;
+    private static final int COINBASE_INDEX = -1;
+    private static final int reward = 10; //TODO: Make reward adjustable
     private final List<TransactionInput> inputs;
     private final List<TransactionOutput> outputs;
     private final long timestamp;
@@ -22,220 +21,156 @@ public class Transaction {
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
     }
 
-    // creates a new coinbase transaction (to : address in BASE58)
+    //Reward to miner
     public static Transaction newCoinbaseTransaction(String to) {
-        byte[] arbitraryData = new byte[20];
-
         Random random = new Random();
+        byte[] arbitraryData = new byte[20];
         random.nextBytes(arbitraryData);
-        //Coinbase: One inputs, empty prevTransactionHash and -1 index
-        TransactionInput transactionInput = new TransactionInput(new byte[0], -1, arbitraryData);
 
-        //Reward to miner
-        TransactionOutput transactionOutput = TransactionOutput.newTXOutput(reward, to);
+        TransactionInput input = new TransactionInput(COINBASE_ID, COINBASE_INDEX, arbitraryData);
+        List<TransactionInput> inputs = new ArrayList<>();
+        inputs.add(input);
 
-        List<TransactionInput> transactionInputs = new ArrayList<>();
-        transactionInputs.add(transactionInput);
+        TransactionOutput output = TransactionOutput.newTXOutput(reward, to);
+        List<TransactionOutput> outputs = new ArrayList<>();
+        outputs.add(output);
 
-        List<TransactionOutput> transactionOutputs = new ArrayList<>();
-        transactionOutputs.add(transactionOutput);
-
-        Transaction coinbaseTransaction = new Transaction(transactionInputs, transactionOutputs);
-        coinbaseTransaction.id = coinbaseTransaction.hash();
+        Transaction coinbaseTransaction = new Transaction(inputs, outputs);
+        coinbaseTransaction.setID();
         return coinbaseTransaction;
     }
 
     //from : wallet, to : Base58 Address
-    public static Transaction newUTXOTransaction(Wallet wallet, String to, int amount) {
-        byte[] senderPublicKeyHashed = Wallet.hashPublicKey(wallet.getRawPublicKey());
+    public static Transaction newTransaction(Wallet sender, String recipient, int amount) {
+        // get unspent outputs to reference in inputs
+        Map<String, List<Integer>> unspentOutputs = UTXOSet.getInstance().findSpendableOutputs(sender, amount);
 
-        UTXOSet utxoSet = UTXOSet.getInstance();
-
-        // finds and returns unspent outputs to reference in inputs
-        Map<String, List<Integer>> UTXO = utxoSet.findSpendableOutputs(senderPublicKeyHashed, amount);
-
-        int accumulated = 0;
-        //TODO: Solve recalculated accumulated balance of SpendableOutputs
-        for (Map.Entry<String, List<Integer>> entry : UTXO.entrySet()) {
-            List<TransactionOutput> outputs = utxoSet.getTxOutputs(entry.getKey());
-            for (int index : entry.getValue()) {
-                TransactionOutput transactionOutput = outputs.get(index);
-                accumulated += transactionOutput.getValue();
-            }
-        }
-
-        if (accumulated < amount) {
+        int balance = getBalance(unspentOutputs);
+        if (balance < amount) {
             System.out.println("ERROR: Not enough funds");
             return null;
         }
 
-        List<TransactionInput> inputs = new ArrayList<>();
-        List<TransactionOutput> outputs = new ArrayList<>();
-
-        //Build a list of inputs
-        for (Map.Entry<String, List<Integer>> entry : UTXO.entrySet()) {
-            byte[] transactionId = Util.deserializeHash(entry.getKey());
-            for (int transactionOutputIndex : entry.getValue()) {
-                inputs.add(new TransactionInput(transactionId, transactionOutputIndex, wallet.getRawPublicKey()));
-            }
-        }
-
-        //Build a list of outputs
-        outputs.add(TransactionOutput.newTXOutput(amount, to));
-        if (accumulated > amount) {
-            int change = accumulated - amount;
-            outputs.add(TransactionOutput.newTXOutput(change, wallet.getAddress()));
-        }
+        List<TransactionInput> inputs = buildInputs(sender, unspentOutputs);
+        List<TransactionOutput> outputs = buildOutputs(sender, balance, recipient, amount);
 
         Transaction newTransaction = new Transaction(inputs, outputs);
-        newTransaction.id = newTransaction.hash();
-
-        Blockchain blockchain = Blockchain.getInstance();
-        boolean isSigningCorrectly = blockchain.signTransaction(newTransaction, wallet.getPrivateKey());
-
-        if (!isSigningCorrectly) {
-            return null;
-        }
-
+        newTransaction.setID();
         return newTransaction;
     }
 
-    // signs each input of a Transaction
-    public void sign(ECPrivateKey privateKey, Map<String, Transaction> previousTransactions) {
-        if (isCoinbaseTransaction()) {
-            return;
+    private static int getBalance(Map<String, List<Integer>> unspentOutputs) {
+        int balance = 0;
+        for (Map.Entry<String, List<Integer>> unspentOutputReferences : unspentOutputs.entrySet()) {
+            String transactionID = unspentOutputReferences.getKey();
+            List<TransactionOutput> outputs = UTXOSet.getInstance().getTxOutputs(transactionID);
+
+            List<Integer> unspentOutputIndices = unspentOutputReferences.getValue();
+            for (int index : unspentOutputIndices) {
+                TransactionOutput unspentOutput = outputs.get(index);
+                balance += unspentOutput.getValue();
+            }
         }
+        return balance;
+    }
 
+    private static List<TransactionInput> buildInputs(Wallet sender, Map<String, List<Integer>> unspentOutputs) {
+        byte[] publicKey = sender.getRawPublicKey();
+        List<TransactionInput> inputs = new ArrayList<>();
+        for (Map.Entry<String, List<Integer>> entry : unspentOutputs.entrySet()) {
+            byte[] transactionId = Util.deserializeHash(entry.getKey());
+            for (int transactionOutputIndex : entry.getValue()) {
+                inputs.add(new TransactionInput(transactionId, transactionOutputIndex, publicKey));
+            }
+        }
+        return inputs;
+    }
+
+    private static List<TransactionOutput> buildOutputs(Wallet sender, int balance, String recipient, int amount) {
+        List<TransactionOutput> outputs = new ArrayList<>();
+        outputs.add(TransactionOutput.newTXOutput(amount, recipient));
+        if (balance > amount) {
+            int change = balance - amount;
+            outputs.add(TransactionOutput.newTXOutput(change, sender.getAddress()));
+        }
+        return outputs;
+    }
+
+    // signs each input of a Transaction
+    public void sign(ECPrivateKey privateKey, Map<String, Transaction> referenceTransactions) {
         Transaction trimmedCopy = trimmedCopy();
-
         List<TransactionInput> trimmedCopyInputs = trimmedCopy.getInputs();
 
         for (TransactionInput input : trimmedCopyInputs) {
-            Transaction previousTransaction = previousTransactions.get(Util.serializeHash(input.getTransactionID()));
+            TransactionOutput referenceOutput = getReferenceOutput(referenceTransactions, input);
+            setRawPublicKey(input, referenceOutput);
 
-            input.setSignature(new byte[0]);
+            //sign id data
+            trimmedCopy.setID();
+            byte[] signature = Util.applyECDSASig(privateKey, trimmedCopy.getId());
 
-            List<TransactionOutput> previousTransactionOutputs = previousTransaction.getOutputs();
-            TransactionOutput transactionOutput = previousTransactionOutputs.get(input.getOutputIndex());
-            transactionOutput.getPublicKeyHashed();
+            TransactionInput transactionInput = getCorrespondingInput(trimmedCopyInputs, input);
+            transactionInput.setSignature(signature);
 
-            byte[] rawPublicKey = transactionOutput.getPublicKeyHashed();
-            input.setRawPublicKey(rawPublicKey);
-
-            trimmedCopy.id = trimmedCopy.hash();
-            input.setRawPublicKey(new byte[0]);
-
-            int txCopyIndex = trimmedCopy.inputs.indexOf(input);
-
-            TransactionInput transactionInput = inputs.get(txCopyIndex);
-            transactionInput.setSignature(Util.applyECDSASig(privateKey, trimmedCopy.getId()));
+            // Remove publicKey from input
+            input.setRawPublicKey(Constant.EMPTY_BYTE_ARRAY);
         }
     }
 
     // verifies signatures of Transaction inputs
-    public boolean verify(Map<String, Transaction> previousTransactions) {
+    public boolean verify(Map<String, Transaction> referenceTransactions) {
         Transaction trimmedCopy = trimmedCopy();
 
         boolean isValidTransaction = true;
         for (TransactionInput input : inputs) {
-            Transaction previousTransaction = previousTransactions.get(Util.serializeHash(input.getTransactionID()));
+            TransactionOutput referenceOutput = getReferenceOutput(referenceTransactions, input);
 
-            int inputIndex = inputs.indexOf(input);
+            TransactionInput trimmedCopyInput = getCorrespondingInput(inputs, input);
+            setRawPublicKey(trimmedCopyInput, referenceOutput);
 
-            TransactionInput trimmedCopyInput = trimmedCopy.inputs.get(inputIndex);
-            trimmedCopyInput.setSignature(new byte[0]);
-
-            List<TransactionOutput> transactionOutputs = previousTransaction.getOutputs();
-            TransactionOutput transactionOutput = transactionOutputs.get(input.getOutputIndex());
-            trimmedCopyInput.setRawPublicKey(transactionOutput.getPublicKeyHashed());
-
-            trimmedCopy.id = trimmedCopy.hash();
-            trimmedCopyInput.setRawPublicKey(new byte[0]);
-
-            isValidTransaction = Util.verifyECDSASig(Util.decodeKey(input.getRawPublicKey()),
-                    trimmedCopy.id, input.getSignature());
+            //Verify Data
+            byte[] rawPublicKey = input.getRawPublicKey();
+            trimmedCopy.setID();
+            byte[] signature = input.getSignature();
+            isValidTransaction = Util.verifyECDSASig(rawPublicKey, trimmedCopy.id, signature);
 
             if (!isValidTransaction) {
                 break;
             }
-        }
 
+            // Remove publicKey from trimmedCopyInput
+            trimmedCopyInput.setRawPublicKey(Constant.EMPTY_BYTE_ARRAY);
+        }
         return isValidTransaction;
     }
 
-    // creates a trimmed copy of Transaction to be used in signing
-    private Transaction trimmedCopy() {
-        List<TransactionInput> inputs = new ArrayList<>();
-        for (TransactionInput input : this.inputs) {
-            inputs.add(new TransactionInput(
-                    input.getTransactionID(), input.getOutputIndex(), new byte[0]));
-        }
-
-        List<TransactionOutput> outputs = new ArrayList<>();
-        for (TransactionOutput output : this.outputs) {
-            outputs.add(new TransactionOutput(output.getValue(), output.getPublicKeyHashed()));
-        }
-
-        return new Transaction(inputs, outputs);
-    }
-
-    // returns the hash of the Transaction
-    private byte[] hash() {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        try {
-            //little-endian
-            buffer.write(Util.reverseBytesOrder(Util.intToBytes(reward)));
-
-            //Already little-endian from input itself
-            for (TransactionInput transactionInput : inputs) {
-                buffer.write(transactionInput.concatenateData());
-            }
-
-            //Already little-endian from output itself
-            for (TransactionOutput transactionOutput : outputs) {
-                buffer.write(transactionOutput.concatenateData());
-            }
-
-            buffer.write(Util.reverseBytesOrder(Util.longToBytes(timestamp)));
-            // Big-endian
-            return Util.reverseBytesOrder(Util.applySHA256(buffer.toByteArray()));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    //Coinbase: One inputs, empty prevTransactionHash and -1 index
+    //Coinbase: One input, empty transactionID and -1 index
     public boolean isCoinbaseTransaction() {
-        TransactionInput transactionInput = inputs.get(0);
+        TransactionInput input = inputs.get(0);
         return inputs.size() == 1 &&
-                transactionInput.getTransactionID().length == 0 &&
-                transactionInput.getOutputIndex() == -1;
+                input.getReferenceTransaction().length == 0 &&
+                input.getOutputIndex() == COINBASE_INDEX;
     }
 
-    // returns a human-readable representation of a transaction
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(String.format("--- Transaction %s:%n", Util.bytesToHex(id)));
+        StringJoiner stringJoiner = new StringJoiner("\n", "", "\n");
+        stringJoiner.add(String.format("--- Transaction %s:", Util.bytesToHex(id)));
 
         TransactionInput input;
         for (int i = 0, size = inputs.size(); i < size; i++) {
             input = inputs.get(i);
-            builder.append(String.format("\tInput %d:%n", i));
-            builder.append(String.format("\t\tTXID:      %s%n", Util.bytesToHex(input.getTransactionID())));
-            builder.append(String.format("\t\tOutIndex:  %d%n", input.getOutputIndex()));
-            builder.append(String.format("\t\tSignature: %s%n", Util.bytesToHex(input.getSignature())));
-            builder.append(String.format("\t\tPubKey:    %s%n", Util.bytesToHex(input.getRawPublicKey())));
+            stringJoiner.add(String.format("\tInput %d:", i));
+            stringJoiner.add(input.toString());
         }
 
         TransactionOutput output;
         for (int i = 0, size = outputs.size(); i < size; i++) {
             output = outputs.get(i);
-            builder.append(String.format("\tOutput %d:%n", i));
-            builder.append(String.format("\t\tValue:  %d%n", output.getValue()));
-            builder.append(String.format("\t\tScript: %s%n", Util.bytesToHex(output.getPublicKeyHashed())));
+            stringJoiner.add(String.format("\tOutput %d:", i));
+            stringJoiner.add(output.toString());
         }
-        return builder.toString();
+        return stringJoiner.toString();
     }
 
     public byte[] getId() {
@@ -248,5 +183,72 @@ public class Transaction {
 
     public List<TransactionOutput> getOutputs() {
         return outputs;
+    }
+
+    private void setID() {
+        byte[] unHashedID = getUnHashedID();
+        id = Util.reverseBytesOrder(Util.applySHA256(unHashedID)); // Big-endian
+    }
+
+    private byte[] getUnHashedID() {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            buffer.write(Util.reverseBytesOrder(Util.intToBytes(reward))); // Little-endian
+
+            for (TransactionInput transactionInput : inputs) {
+                buffer.write(transactionInput.concatenateData());
+            }
+
+            for (TransactionOutput transactionOutput : outputs) {
+                buffer.write(transactionOutput.concatenateData());
+            }
+
+            buffer.write(Util.reverseBytesOrder(Util.longToBytes(timestamp)));
+            return buffer.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // creates a trimmed copy of Transaction to be used in signing and verifying
+    private Transaction trimmedCopy() {
+        List<TransactionInput> inputs = new ArrayList<>();
+        for (TransactionInput input : this.inputs) {
+            byte[] id = input.getReferenceTransaction();
+            int index = input.getOutputIndex();
+            inputs.add(new TransactionInput(id, index, Constant.EMPTY_BYTE_ARRAY));
+        }
+
+        List<TransactionOutput> outputs = new ArrayList<>();
+        for (TransactionOutput output : this.outputs) {
+            int value = output.getValue();
+            byte[] publicKeyHashed = output.getPublicKeyHashed();
+            outputs.add(new TransactionOutput(value, publicKeyHashed));
+        }
+        return new Transaction(inputs, outputs);
+    }
+
+    private TransactionOutput getReferenceOutput(Map<String, Transaction> referenceTransactions, TransactionInput input) {
+        //get reference transaction
+        byte[] id = input.getReferenceTransaction();
+        String referenceID = Util.serializeHash(id);
+        Transaction referenceTransaction = referenceTransactions.get(referenceID);
+
+        //get reference outputs
+        List<TransactionOutput> referenceOutputs = referenceTransaction.getOutputs();
+
+        //get reference output
+        int referenceIndex = input.getOutputIndex();
+        return referenceOutputs.get(referenceIndex);
+    }
+
+    private void setRawPublicKey(TransactionInput input, TransactionOutput referenceOutput) {
+        byte[] publicKeyHashed = referenceOutput.getPublicKeyHashed();
+        input.setRawPublicKey(publicKeyHashed);
+    }
+
+    private TransactionInput getCorrespondingInput(List<TransactionInput> inputs, TransactionInput input) {
+        int inputIndex = inputs.indexOf(input);
+        return inputs.get(inputIndex);
     }
 }

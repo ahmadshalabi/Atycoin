@@ -33,7 +33,7 @@ public class UTXOSet {
             if (!transaction.isCoinbaseTransaction()) {
                 List<TransactionInput> transactionInputs = transaction.getInputs();
                 for (TransactionInput input : transactionInputs) {
-                    String serialisedTxInputID = Util.serializeHash(input.getTransactionID());
+                    String serialisedTxInputID = Util.serializeHash(input.getReferenceTransaction());
                     String serializedOuts = dbConnection.get(serialisedTxInputID);
                     List<TransactionOutput> outs = deserializeOutputs(serializedOuts);
 
@@ -53,7 +53,8 @@ public class UTXOSet {
     }
 
     // finds and returns unspent outputs to reference in input
-    public Map<String, List<Integer>> findSpendableOutputs(byte[] publicKeyHashed, int amount) {
+    public Map<String, List<Integer>> findSpendableOutputs(Wallet sender, int amount) {
+        byte[] publicKeyHashed = Wallet.hashPublicKey(sender.getRawPublicKey());
         Map<String, List<Integer>> unspentOutputs = new HashMap<>();
         int accumulated = 0;
 

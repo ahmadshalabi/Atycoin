@@ -60,19 +60,24 @@ public class Blockchain {
 
     // signs inputs of a Transaction
     public boolean signTransaction(Transaction transaction, ECPrivateKey privateKey) {
-        Map<String, Transaction> previousTransactions = new HashMap<>();
+        if (transaction.isCoinbaseTransaction()) {
+            return true;
+        }
+
+        Map<String, Transaction> referenceTransactions = new HashMap<>();
 
         List<TransactionInput> inputs = transaction.getInputs();
         for (TransactionInput input : inputs) {
-            byte[] referenceTransactionID = input.getTransactionID();
+            byte[] referenceTransactionID = input.getReferenceTransaction();
             Transaction referenceTransaction = findTransaction(referenceTransactionID);
             if (referenceTransaction == null) {
                 return false;
             }
-            previousTransactions.put(Util.serializeHash(referenceTransactionID), referenceTransaction);
+            String key = Util.serializeHash(referenceTransactionID);
+            referenceTransactions.put(key, referenceTransaction);
         }
 
-        transaction.sign(privateKey, previousTransactions);
+        transaction.sign(privateKey, referenceTransactions);
         return true;
     }
 
@@ -82,20 +87,21 @@ public class Blockchain {
             return true;
         }
 
-        Map<String, Transaction> previousTransactions = new HashMap<>();
+        Map<String, Transaction> referenceTransactions = new HashMap<>();
 
         List<TransactionInput> inputs = transaction.getInputs();
         for (TransactionInput input : inputs) {
-            byte[] referenceTransactionID = input.getTransactionID();
+            byte[] referenceTransactionID = input.getReferenceTransaction();
             Transaction referenceTransaction = findTransaction(referenceTransactionID);
             if (referenceTransaction == null) {
                 System.out.println("Transaction is not Found");
                 return false;
             }
-            previousTransactions.put(Util.serializeHash(referenceTransactionID), referenceTransaction);
+            String key = Util.serializeHash(referenceTransactionID);
+            referenceTransactions.put(key, referenceTransaction);
         }
 
-        return transaction.verify(previousTransactions);
+        return transaction.verify(referenceTransactions);
     }
 
     private void addBlock(Block newBlock) {

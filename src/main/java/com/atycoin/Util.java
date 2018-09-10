@@ -49,9 +49,10 @@ public class Util {
     }
 
     //Verifies a String signature
-    public static boolean verifyECDSASig(ECPublicKey publicKey, byte[] data, byte[] signature) {
+    public static boolean verifyECDSASig(byte[] rawPublicKey, byte[] data, byte[] signature) {
         try {
             Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
+            ECPublicKey publicKey = decodeKey(rawPublicKey);
             ecdsaVerify.initVerify(publicKey);
             ecdsaVerify.update(data);
             return ecdsaVerify.verify(signature);
@@ -59,33 +60,6 @@ public class Util {
             throw new RuntimeException(e);
         }
     }
-
-    public static ECPublicKey decodeKey(byte[] encoded) {
-
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-        // Get RawPublicKey (0x04 + xAffineCoord + yAffineCoord)
-        buffer.write(0x04);
-        encoded = Hex.decode(encoded);
-        buffer.write(encoded, 0, encoded.length);
-
-        try {
-            ECNamedCurveParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
-
-            ECCurve curve = params.getCurve();
-            EllipticCurve ellipticCurve = EC5Util.convertCurve(curve, params.getSeed());
-            ECPoint point = ECPointUtil.decodePoint(ellipticCurve, buffer.toByteArray());
-            ECParameterSpec params2 = EC5Util.convertSpec(ellipticCurve, params);
-            ECPublicKeySpec keySpec = new ECPublicKeySpec(point, params2);
-
-            KeyFactory fact = KeyFactory.getInstance("ECDSA", "BC");
-            return (ECPublicKey) fact.generatePublic(keySpec);
-
-        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
-            throw new RuntimeException();
-        }
-    }
-
 
     // Just for printing on CLI
     public static String bytesToHex(byte[] hash) {
@@ -141,5 +115,31 @@ public class Util {
 
     public static byte[] deserializeHash(String serializedHash) {
         return new Gson().fromJson(serializedHash, byte[].class);
+    }
+
+    private static ECPublicKey decodeKey(byte[] encoded) {
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        // Get RawPublicKey (0x04 + xAffineCoord + yAffineCoord)
+        buffer.write(0x04);
+        encoded = Hex.decode(encoded);
+        buffer.write(encoded, 0, encoded.length);
+
+        try {
+            ECNamedCurveParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
+
+            ECCurve curve = params.getCurve();
+            EllipticCurve ellipticCurve = EC5Util.convertCurve(curve, params.getSeed());
+            ECPoint point = ECPointUtil.decodePoint(ellipticCurve, buffer.toByteArray());
+            ECParameterSpec params2 = EC5Util.convertSpec(ellipticCurve, params);
+            ECPublicKeySpec keySpec = new ECPublicKeySpec(point, params2);
+
+            KeyFactory fact = KeyFactory.getInstance("ECDSA", "BC");
+            return (ECPublicKey) fact.generatePublic(keySpec);
+
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+            throw new RuntimeException();
+        }
     }
 }

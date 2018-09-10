@@ -5,6 +5,7 @@ import com.atycoin.cli.Commander;
 import com.atycoin.network.Node;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.TransactionMessage;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
@@ -68,16 +69,19 @@ public class SendCommand implements Command {
             }
 
             Wallet senderWallet = Wallets.getInstance().getWallet(from);
-            Transaction newUTXOTransaction = Transaction.newUTXOTransaction(senderWallet, to, amount);
+            Transaction newTransaction = Transaction.newTransaction(senderWallet, to, amount);
 
-            if (newUTXOTransaction == null) {
+            ECPrivateKey privateKey = senderWallet.getPrivateKey();
+            boolean isSignedCorrectly = Blockchain.getInstance().signTransaction(newTransaction, privateKey);
+
+            if (!isSignedCorrectly) {
                 Commander.CommanderPrint("ERROR: Invalid Transaction");
                 return;
             }
 
             if (args.length == 6) {
                 try (Socket connection = new Socket(InetAddress.getLocalHost(), Node.getKnownNodes().get(0))) {
-                    NetworkMessage message = new TransactionMessage(AtycoinStart.getNodeID(), newUTXOTransaction);
+                    NetworkMessage message = new TransactionMessage(AtycoinStart.getNodeID(), newTransaction);
                     BufferedWriter output = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
                     output.flush();
 
@@ -93,7 +97,7 @@ public class SendCommand implements Command {
             if (args[6].equals("-mine")) {
                 List<Transaction> transactions = new ArrayList<>();
                 transactions.add(Transaction.newCoinbaseTransaction(from));
-                transactions.add(newUTXOTransaction);
+                transactions.add(newTransaction);
 
                 Block newBlock = Blockchain.getInstance().mineBlock(transactions);
 
