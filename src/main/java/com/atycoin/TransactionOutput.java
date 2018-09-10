@@ -37,10 +37,8 @@ public class TransactionOutput {
     public byte[] concatenateData() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
-            //little-endian
-            buffer.write(Bytes.reverseOrder(Bytes.toBytes(value)));
-            buffer.write(Bytes.reverseOrder(publicKeyHashed));
-
+            buffer.write(Bytes.toBytes(value));
+            buffer.write(publicKeyHashed);
             return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

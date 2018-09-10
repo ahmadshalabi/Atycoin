@@ -1,7 +1,5 @@
 package com.atycoin.utility;
 
-import org.bouncycastle.util.Arrays;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +42,5 @@ public class Bytes {
             list.add(element);
         }
         return list;
-    }
-
-    // Convert between big-endian and little-endian
-    public static byte[] reverseOrder(byte[] data) {
-        return Arrays.reverse(data);
     }
 }
