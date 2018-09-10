@@ -1,5 +1,7 @@
 package com.atycoin;
 
+import com.atycoin.utility.Bytes;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class MerkleTree {
         List<MerkleNode> nodes = new ArrayList<>();
 
         for (List<Byte> datum : data) {
-            byte[] datumBytes = Util.listToBytes(datum);
+            byte[] datumBytes = Bytes.toBytes(datum);
             MerkleNode node = MerkleNode.newMerkleNode(null, null, datumBytes);
             nodes.add(node);
         }

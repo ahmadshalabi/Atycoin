@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.utility.Hash;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 
 import java.util.Arrays;
@@ -48,7 +49,7 @@ public class Blockchain {
         }
 
         String tipOfChain = blocksDAO.getTipOfChain();
-        byte[] previousBlockHash = Util.deserializeHash(tipOfChain);
+        byte[] previousBlockHash = Hash.deserialize(tipOfChain);
 
         int newHeight = blocksDAO.getBestHeight() + 1;
 
@@ -73,7 +74,7 @@ public class Blockchain {
             if (referenceTransaction == null) {
                 return false;
             }
-            String key = Util.serializeHash(referenceTransactionID);
+            String key = Hash.serialize(referenceTransactionID);
             referenceTransactions.put(key, referenceTransaction);
         }
 
@@ -97,7 +98,7 @@ public class Blockchain {
                 System.out.println("Transaction is not Found");
                 return false;
             }
-            String key = Util.serializeHash(referenceTransactionID);
+            String key = Hash.serialize(referenceTransactionID);
             referenceTransactions.put(key, referenceTransaction);
         }
 

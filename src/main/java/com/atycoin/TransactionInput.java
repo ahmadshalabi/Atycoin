@@ -1,5 +1,7 @@
 package com.atycoin;
 
+import com.atycoin.utility.Bytes;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.StringJoiner;
@@ -21,9 +23,9 @@ public class TransactionInput {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             // little-endian
-            buffer.write(Util.reverseBytesOrder(referenceTransaction));
-            buffer.write(Util.reverseBytesOrder(Util.intToBytes(outputIndex)));
-            buffer.write(Util.reverseBytesOrder(rawPublicKey));
+            buffer.write(Bytes.reverseOrder(referenceTransaction));
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(outputIndex)));
+            buffer.write(Bytes.reverseOrder(rawPublicKey));
 
             return buffer.toByteArray();
         } catch (IOException e) {
@@ -58,10 +60,10 @@ public class TransactionInput {
     @Override
     public String toString() {
         return new StringJoiner("\n", "", "\n")
-                .add(String.format("\t\tReference transaction: %s", Util.bytesToHex(referenceTransaction)))
+                .add(String.format("\t\tReference transaction: %s", Bytes.toHex(referenceTransaction)))
                 .add(String.format("\t\tOutput index: %d", outputIndex))
-                .add(String.format("\t\tPublic key: %s", Util.bytesToHex(rawPublicKey)))
-                .add(String.format("\t\tSignature: %s", Util.bytesToHex(signature)))
+                .add(String.format("\t\tPublic key: %s", Bytes.toHex(rawPublicKey)))
+                .add(String.format("\t\tSignature: %s", Bytes.toHex(signature)))
                 .toString();
     }
 }

@@ -1,5 +1,8 @@
 package com.atycoin;
 
+import com.atycoin.utility.Bytes;
+import com.atycoin.utility.Hash;
+
 public class ProofOfWork {
     private final Block block;
     private final int targetBytes;
@@ -24,9 +27,7 @@ public class ProofOfWork {
         while (nonce < Integer.MAX_VALUE) {
             updateBlockHeader(nonce);
 
-            // Double hash
-            byte[] hash = Util.applySHA256(Util.applySHA256(blockHeader));
-
+            byte[] hash = Hash.doubleSHA256(blockHeader);
             if (isHashMeetTarget(hash)) {
                 break;
             }
@@ -36,7 +37,7 @@ public class ProofOfWork {
     }
 
     private void updateBlockHeader(int nonce) {
-        byte[] nonceBytes = Util.reverseBytesOrder(Util.intToBytes(nonce));
+        byte[] nonceBytes = Bytes.reverseOrder(Bytes.toBytes(nonce));
         //update the last 4 bytes
         System.arraycopy(nonceBytes, 0, blockHeader, blockHeader.length - 4, 4);
     }

@@ -1,5 +1,7 @@
 package com.atycoin;
 
+import com.atycoin.utility.Hash;
+
 import java.io.ByteArrayOutputStream;
 
 public class MerkleNode {
@@ -12,7 +14,7 @@ public class MerkleNode {
         MerkleNode mNode = new MerkleNode();
 
         if (left == null && right == null) {
-            mNode.data = Util.applySHA256(data);
+            mNode.data = Hash.applySHA256(data);
         } else {
             ByteArrayOutputStream previousHashes = new ByteArrayOutputStream();
             if (left != null) {
@@ -23,7 +25,7 @@ public class MerkleNode {
             byte[] rightData = right.data;
             previousHashes.write(right.data, 0, rightData.length);
             byte[] previousHashesBytes = previousHashes.toByteArray();
-            mNode.data = Util.applySHA256(previousHashesBytes);
+            mNode.data = Hash.applySHA256(previousHashesBytes);
         }
 
         mNode.left = left;

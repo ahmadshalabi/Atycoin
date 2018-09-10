@@ -1,11 +1,11 @@
 package com.atycoin;
 
+import com.atycoin.utility.Hash;
+
 import java.util.Iterator;
 
 public class BlocksIterator implements Iterator<Block> {
-    private static final String GENESIS_PREVIOUS_HASH =
-            Util.serializeHash(Constant.EMPTY_BYTE_ARRAY);
-
+    private static final String GENESIS_PREVIOUS_HASH = Hash.serialize(Constant.EMPTY_BYTE_ARRAY);
     private final BlocksDAO blocksDAO;
     private String currentHashSerialized;
 
@@ -27,7 +27,7 @@ public class BlocksIterator implements Iterator<Block> {
         Block block = blocksDAO.getBlock(currentHashSerialized);
 
         // get next blockHash
-        currentHashSerialized = Util.serializeHash(block.getHashPrevBlock());
+        currentHashSerialized = Hash.serialize(block.getHashPrevBlock());
         return block;
     }
 }

@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.utility.Hash;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.Jedis;
@@ -33,7 +34,7 @@ public class UTXOSet {
             if (!transaction.isCoinbaseTransaction()) {
                 List<TransactionInput> transactionInputs = transaction.getInputs();
                 for (TransactionInput input : transactionInputs) {
-                    String serialisedTxInputID = Util.serializeHash(input.getReferenceTransaction());
+                    String serialisedTxInputID = Hash.serialize(input.getReferenceTransaction());
                     String serializedOuts = dbConnection.get(serialisedTxInputID);
                     List<TransactionOutput> outs = deserializeOutputs(serializedOuts);
 
@@ -48,7 +49,7 @@ public class UTXOSet {
             }
 
             //Add outputs
-            dbConnection.set(Util.serializeHash(transaction.getId()), serializeOutputs(transaction.getOutputs()));
+            dbConnection.set(Hash.serialize(transaction.getId()), serializeOutputs(transaction.getOutputs()));
         }
     }
 

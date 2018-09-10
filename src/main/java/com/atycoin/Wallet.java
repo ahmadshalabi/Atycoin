@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.utility.Hash;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
@@ -35,16 +36,14 @@ public class Wallet {
 
     // hashes public key
     public static byte[] hashPublicKey(byte[] rawPublicKey) {
-        byte[] publicSHA256 = Util.applySHA256(rawPublicKey);
-        return Util.applyRIPEMP160(publicSHA256);
+        byte[] HashSHA256 = Hash.applySHA256(rawPublicKey);
+        return Hash.applyRIPEMP160(HashSHA256);
     }
 
     // generates a checksum for a public key
     private static byte[] checksum(byte[] versionedPayload) {
-        byte[] firstSHA256 = Util.applySHA256(versionedPayload);
-        byte[] secondSHA256 = Util.applySHA256(firstSHA256);
-
-        return Arrays.copyOfRange(secondSHA256, 0, CHECKSUM_LEN);
+        byte[] hash = Hash.doubleSHA256(versionedPayload);
+        return Arrays.copyOfRange(hash, 0, CHECKSUM_LEN);
     }
 
     public static boolean isValidAddress(String address) {

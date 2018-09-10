@@ -1,5 +1,7 @@
 package com.atycoin;
 
+import com.atycoin.utility.Bytes;
+import com.atycoin.utility.Hash;
 import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
@@ -64,12 +66,12 @@ public class Block {
 
         try {
             //concatenate data in little-endian order
-            buffer.write(Util.reverseBytesOrder(Util.intToBytes(version)));
-            buffer.write(Util.reverseBytesOrder(hashPrevBlock));
-            buffer.write(Util.reverseBytesOrder(merkleRoot));
-            buffer.write(Util.reverseBytesOrder(Util.longToBytes(timestamp)));
-            buffer.write(Util.reverseBytesOrder(Util.intToBytes(targetBits)));
-            buffer.write(Util.reverseBytesOrder(Util.intToBytes(nonce)));
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(version)));
+            buffer.write(Bytes.reverseOrder(hashPrevBlock));
+            buffer.write(Bytes.reverseOrder(merkleRoot));
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(timestamp)));
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(targetBits)));
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(nonce)));
 
             return buffer.toByteArray();
         } catch (IOException e) {
@@ -115,9 +117,9 @@ public class Block {
     private List<List<Byte>> getTransactionsHashes() {
         List<List<Byte>> transactionIDs = new ArrayList<>();
         for (Transaction transaction : transactions) {
-            //little-endian
-            List<Byte> transactionId = Util.BytesToList(Util.reverseBytesOrder(transaction.getId()));
-            transactionIDs.add(transactionId);
+            byte[] littleEndianID = Bytes.reverseOrder(transaction.getId());
+            List<Byte> transactionID = Bytes.toByteList(littleEndianID);
+            transactionIDs.add(transactionID);
         }
         return transactionIDs;
     }
@@ -129,6 +131,6 @@ public class Block {
 
     private void setHash() {
         byte[] blockHeader = setBlockHeader(nonce);
-        hash = Util.reverseBytesOrder(Util.applySHA256(Util.applySHA256(blockHeader)));
+        hash = Bytes.reverseOrder(Hash.doubleSHA256(blockHeader));
     }
 }

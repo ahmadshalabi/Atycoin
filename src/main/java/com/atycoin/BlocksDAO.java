@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.utility.Hash;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
@@ -29,7 +30,7 @@ public class BlocksDAO implements Iterable<Block> {
 
     public boolean addBlock(Block block) {
         byte[] previousBlockHash = block.getHashPrevBlock();
-        String previousBlockHashSerialized = Util.serializeHash(previousBlockHash);
+        String previousBlockHashSerialized = Hash.serialize(previousBlockHash);
 
         String tipOfChain = getTipOfChain();
 
@@ -38,7 +39,7 @@ public class BlocksDAO implements Iterable<Block> {
         }
 
         byte[] blockHash = block.getHash();
-        String blockHashSerialized = Util.serializeHash(blockHash);
+        String blockHashSerialized = Hash.serialize(blockHash);
         String blockSerialized = dbConnection.get(blockHashSerialized);
 
         if (blockSerialized != null) {
@@ -86,7 +87,7 @@ public class BlocksDAO implements Iterable<Block> {
                 break;
             }
 
-            blockHashes.add(Util.serializeHash(block.getHash()));
+            blockHashes.add(Hash.serialize(block.getHash()));
         }
 
         return blockHashes;

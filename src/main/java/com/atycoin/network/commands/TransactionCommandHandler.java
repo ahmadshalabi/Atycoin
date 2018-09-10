@@ -3,12 +3,12 @@ package com.atycoin.network.commands;
 import com.atycoin.Block;
 import com.atycoin.Blockchain;
 import com.atycoin.Transaction;
-import com.atycoin.Util;
 import com.atycoin.network.Mempool;
 import com.atycoin.network.Node;
 import com.atycoin.network.messages.InventoryMessage;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.TransactionMessage;
+import com.atycoin.utility.Hash;
 import com.google.gson.Gson;
 
 import java.io.BufferedWriter;
@@ -39,7 +39,7 @@ public class TransactionCommandHandler implements NetworkCommand {
         List<Integer> knownNodes = Node.getKnownNodes();
         if (nodeAddress == knownNodes.get(0)) {
             List<String> transactions = new ArrayList<>();
-            transactions.add(Util.serializeHash(transaction.getId()));
+            transactions.add(Hash.serialize(transaction.getId()));
             for (int node : knownNodes) {
                 if (node != nodeAddress && node != remoteMessage.getSenderAddress()) {
                     NetworkMessage inventoryMessage = new InventoryMessage(nodeAddress, "tx", transactions);
@@ -70,7 +70,7 @@ public class TransactionCommandHandler implements NetworkCommand {
                     Mempool.remove(validTransactions.subList(1, validTransactions.size()));
 
                     ArrayList<String> blockHash = new ArrayList<>();
-                    blockHash.add(Util.serializeHash(newBlock.getHash()));
+                    blockHash.add(Hash.serialize(newBlock.getHash()));
 
                     for (int node : Node.getKnownNodes()) {
                         if (node != nodeAddress) {

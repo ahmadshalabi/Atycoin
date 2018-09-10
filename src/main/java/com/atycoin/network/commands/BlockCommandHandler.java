@@ -3,12 +3,12 @@ package com.atycoin.network.commands;
 import com.atycoin.Block;
 import com.atycoin.BlocksDAO;
 import com.atycoin.UTXOSet;
-import com.atycoin.Util;
 import com.atycoin.network.BlocksInTransit;
 import com.atycoin.network.messages.BlockMessage;
 import com.atycoin.network.messages.GetDataMessage;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.NullMessage;
+import com.atycoin.utility.Hash;
 import com.google.gson.Gson;
 
 import java.io.BufferedWriter;
@@ -32,11 +32,11 @@ public class BlockCommandHandler implements NetworkCommand {
         boolean isBlockAdded = blocksDAO.addBlock(block);
 
         if (isBlockAdded) {
-            System.out.printf("Added block %s%n", Util.serializeHash(block.getHash()));
+            System.out.printf("Added block %s%n", Hash.serialize(block.getHash()));
             UTXOSet utxoSet = UTXOSet.getInstance();
             utxoSet.update(block);
         } else {
-            System.out.printf("Block %s already exist%n", Util.serializeHash(block.getHash()));
+            System.out.printf("Block %s already exist%n", Hash.serialize(block.getHash()));
         }
 
         NetworkMessage responseMessage = new NullMessage();

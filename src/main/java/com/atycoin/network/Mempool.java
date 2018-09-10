@@ -1,7 +1,7 @@
 package com.atycoin.network;
 
 import com.atycoin.Transaction;
-import com.atycoin.Util;
+import com.atycoin.utility.Hash;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public class Mempool {
     }
 
     public static void addItem(Transaction transaction) {
-        String serializedID = Util.serializeHash(transaction.getId());
+        String serializedID = Hash.serialize(transaction.getId());
         mempool.put(serializedID, transaction);
     }
 
@@ -30,7 +30,7 @@ public class Mempool {
 
     public static void remove(List<Transaction> transactions) {
         for (Transaction transaction : transactions) {
-            mempool.remove(Util.serializeHash(transaction.getId()));
+            mempool.remove(Hash.serialize(transaction.getId()));
         }
     }
 }

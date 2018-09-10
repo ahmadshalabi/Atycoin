@@ -1,5 +1,8 @@
 package com.atycoin;
 
+import com.atycoin.utility.Bytes;
+import com.atycoin.utility.Hash;
+import com.atycoin.utility.Signature;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 
 import java.io.ByteArrayOutputStream;
@@ -78,7 +81,8 @@ public class Transaction {
         byte[] publicKey = sender.getRawPublicKey();
         List<TransactionInput> inputs = new ArrayList<>();
         for (Map.Entry<String, List<Integer>> entry : unspentOutputs.entrySet()) {
-            byte[] transactionId = Util.deserializeHash(entry.getKey());
+            String key = entry.getKey();
+            byte[] transactionId = Hash.deserialize(key);
             for (int transactionOutputIndex : entry.getValue()) {
                 inputs.add(new TransactionInput(transactionId, transactionOutputIndex, publicKey));
             }
@@ -107,7 +111,7 @@ public class Transaction {
 
             //sign id data
             trimmedCopy.setID();
-            byte[] signature = Util.applyECDSASig(privateKey, trimmedCopy.getId());
+            byte[] signature = Signature.sign(privateKey, trimmedCopy.getId());
 
             TransactionInput transactionInput = getCorrespondingInput(trimmedCopyInputs, input);
             transactionInput.setSignature(signature);
@@ -132,7 +136,7 @@ public class Transaction {
             byte[] rawPublicKey = input.getRawPublicKey();
             trimmedCopy.setID();
             byte[] signature = input.getSignature();
-            isValidTransaction = Util.verifyECDSASig(rawPublicKey, trimmedCopy.id, signature);
+            isValidTransaction = Signature.verify(rawPublicKey, trimmedCopy.id, signature);
 
             if (!isValidTransaction) {
                 break;
@@ -155,7 +159,7 @@ public class Transaction {
     @Override
     public String toString() {
         StringJoiner stringJoiner = new StringJoiner("\n", "", "\n");
-        stringJoiner.add(String.format("--- Transaction %s:", Util.bytesToHex(id)));
+        stringJoiner.add(String.format("--- Transaction %s:", Bytes.toHex(id)));
 
         TransactionInput input;
         for (int i = 0, size = inputs.size(); i < size; i++) {
@@ -187,13 +191,13 @@ public class Transaction {
 
     private void setID() {
         byte[] unHashedID = getUnHashedID();
-        id = Util.reverseBytesOrder(Util.applySHA256(unHashedID)); // Big-endian
+        id = Bytes.reverseOrder(Hash.applySHA256(unHashedID)); // Big-endian
     }
 
     private byte[] getUnHashedID() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
-            buffer.write(Util.reverseBytesOrder(Util.intToBytes(reward))); // Little-endian
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(reward))); // Little-endian
 
             for (TransactionInput transactionInput : inputs) {
                 buffer.write(transactionInput.concatenateData());
@@ -203,7 +207,7 @@ public class Transaction {
                 buffer.write(transactionOutput.concatenateData());
             }
 
-            buffer.write(Util.reverseBytesOrder(Util.longToBytes(timestamp)));
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(timestamp)));
             return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -231,7 +235,7 @@ public class Transaction {
     private TransactionOutput getReferenceOutput(Map<String, Transaction> referenceTransactions, TransactionInput input) {
         //get reference transaction
         byte[] id = input.getReferenceTransaction();
-        String referenceID = Util.serializeHash(id);
+        String referenceID = Hash.serialize(id);
         Transaction referenceTransaction = referenceTransactions.get(referenceID);
 
         //get reference outputs

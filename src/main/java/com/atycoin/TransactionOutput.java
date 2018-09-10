@@ -1,5 +1,7 @@
 package com.atycoin;
 
+import com.atycoin.utility.Bytes;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -36,8 +38,8 @@ public class TransactionOutput {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             //little-endian
-            buffer.write(Util.reverseBytesOrder(Util.intToBytes(value)));
-            buffer.write(Util.reverseBytesOrder(publicKeyHashed));
+            buffer.write(Bytes.reverseOrder(Bytes.toBytes(value)));
+            buffer.write(Bytes.reverseOrder(publicKeyHashed));
 
             return buffer.toByteArray();
         } catch (IOException e) {
@@ -57,7 +59,7 @@ public class TransactionOutput {
     public String toString() {
         return new StringJoiner("\n")
                 .add(String.format("\t\tValue: %d", value))
-                .add(String.format("\t\tPublic Key Hashed: %s", Util.bytesToHex(publicKeyHashed)))
+                .add(String.format("\t\tPublic Key Hashed: %s", Bytes.toHex(publicKeyHashed)))
                 .toString();
     }
 }
