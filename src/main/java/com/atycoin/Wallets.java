@@ -45,7 +45,7 @@ public class Wallets {
 
     // returns a Wallet by its address
     public Wallet getWallet(String address) {
-        return wallets.get(address); // Check null
+        return wallets.get(address);
     }
 
     // loads wallets from the file
