@@ -2,18 +2,14 @@ package com.atycoin;
 
 import com.atycoin.utility.Address;
 import com.atycoin.utility.Hash;
-import org.bouncycastle.jce.ECNamedCurveTable;
+import com.atycoin.utility.Keys;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
-import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.math.ec.ECFieldElement;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.KeyPair;
 
 // Wallet stores private and public keys
 public class Wallet {
@@ -30,13 +26,7 @@ public class Wallet {
     }
 
     public ECPrivateKey getPrivateKey() {
-        try {
-            PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyEncoded);
-            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
-            return (ECPrivateKey) keyFactory.generatePrivate(privateKeySpec);
-        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        }
+        return Keys.getPrivateKey(privateKeyEncoded);
     }
 
     public String getAddress() {
@@ -67,26 +57,12 @@ public class Wallet {
     }
 
     private void generateKeyPair() {
-        try {
-            ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
-            keyPairGenerator.initialize(ecSpec, new SecureRandom());
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
-
-            privateKeyEncoded = keyPair.getPrivate().getEncoded();
-            publicKeyEncoded = keyPair.getPublic().getEncoded();
-        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        }
+        KeyPair keyPair = Keys.generateKeyPair();
+        privateKeyEncoded = keyPair.getPrivate().getEncoded();
+        publicKeyEncoded = keyPair.getPublic().getEncoded();
     }
 
     private ECPublicKey getPublicKey() {
-        try {
-            X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyEncoded);
-            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
-            return (ECPublicKey) keyFactory.generatePublic(pubKeySpec);
-        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        }
+        return Keys.getPublicKey(publicKeyEncoded);
     }
 }
