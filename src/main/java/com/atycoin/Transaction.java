@@ -115,7 +115,8 @@ public class Transaction {
             trimmedCopy.setID();
             byte[] signature = Signature.sign(privateKey, trimmedCopy.getId());
 
-            TransactionInput transactionInput = getCorrespondingInput(trimmedCopyInputs, input);
+            int index = getCorrespondingIndex(trimmedCopyInputs, input);
+            TransactionInput transactionInput = getCorrespondingInput(inputs, index);
             transactionInput.setSignature(signature);
 
             // Remove publicKey from input
@@ -131,7 +132,8 @@ public class Transaction {
         for (TransactionInput input : inputs) {
             TransactionOutput referenceOutput = getReferenceOutput(referenceTransactions, input);
 
-            TransactionInput trimmedCopyInput = getCorrespondingInput(inputs, input);
+            int index = getCorrespondingIndex(inputs, input);
+            TransactionInput trimmedCopyInput = getCorrespondingInput(trimmedCopy.inputs, index);
             setRawPublicKey(trimmedCopyInput, referenceOutput);
 
             //Verify Data
@@ -253,8 +255,11 @@ public class Transaction {
         input.setRawPublicKey(publicKeyHashed);
     }
 
-    private TransactionInput getCorrespondingInput(List<TransactionInput> inputs, TransactionInput input) {
-        int inputIndex = inputs.indexOf(input);
-        return inputs.get(inputIndex);
+    private TransactionInput getCorrespondingInput(List<TransactionInput> inputs, int index) {
+        return inputs.get(index);
+    }
+
+    private int getCorrespondingIndex(List<TransactionInput> inputs, TransactionInput input) {
+        return inputs.indexOf(input);
     }
 }
