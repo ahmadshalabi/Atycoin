@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.utility.Address;
 import com.atycoin.utility.Bytes;
 
 import java.io.ByteArrayOutputStream;
@@ -19,14 +20,12 @@ public class TransactionOutput {
     public static TransactionOutput newTXOutput(int value, String address) {
         TransactionOutput transactionOutput = new TransactionOutput(value, Constant.EMPTY_BYTE_ARRAY);
         transactionOutput.lock(address);
-
         return transactionOutput;
     }
 
     // signs the output
     private void lock(String address) {
-        byte[] fullPayload = Base58.decode(address);
-        publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
+        publicKeyHashed = Address.getPublicKeyHashed(address);
     }
 
     //checks if the output can be unlocked with the provided data
