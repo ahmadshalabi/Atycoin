@@ -37,12 +37,12 @@ public class Signature {
         }
     }
 
-    private static ECPublicKey getPublicKey(byte[] rawPublikcKey) {
+    private static ECPublicKey getPublicKey(byte[] rawPublicKey) {
         // Get RawPublicKey (0x04 + xAffineCoord + yAffineCoord)
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         buffer.write(0x04);
-        rawPublikcKey = Hex.decode(rawPublikcKey);
-        buffer.write(rawPublikcKey, 0, rawPublikcKey.length);
+        rawPublicKey = Hex.decode(rawPublicKey);
+        buffer.write(rawPublicKey, 0, rawPublicKey.length);
 
         try {
             ECNamedCurveParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
