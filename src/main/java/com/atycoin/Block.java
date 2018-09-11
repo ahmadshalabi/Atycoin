@@ -3,7 +3,6 @@ package com.atycoin;
 import com.atycoin.utility.Bytes;
 import com.atycoin.utility.Constant;
 import com.atycoin.utility.Hash;
-import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,16 +45,6 @@ public class Block {
         block.setRemainingData();
 
         return block;
-    }
-
-    public static Block deserializeBlock(String serializedBlock) {
-        Gson decoder = new Gson();
-        return decoder.fromJson(serializedBlock, Block.class);
-    }
-
-    public String serializeBlock() {
-        Gson encoder = new Gson();
-        return encoder.toJson(this);
     }
 
     public byte[] setBlockHeader(int nonce) {

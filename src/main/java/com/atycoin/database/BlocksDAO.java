@@ -3,6 +3,7 @@ package com.atycoin.database;
 import com.atycoin.AtycoinStart;
 import com.atycoin.Block;
 import com.atycoin.utility.Hash;
+import com.google.gson.Gson;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
@@ -50,7 +51,7 @@ public class BlocksDAO implements Iterable<Block> {
 
         Transaction redisTransaction = dbConnection.multi();
 
-        blockSerialized = block.serializeBlock();
+        blockSerialized = serialize(block);
 
         redisTransaction.set(blockHashSerialized, blockSerialized);
         redisTransaction.set(TIP_OF_CHAIN_KEY, blockHashSerialized);
@@ -70,7 +71,7 @@ public class BlocksDAO implements Iterable<Block> {
         if (blockSerialized == null) {
             throw new NoSuchElementException("Block not found in database.");
         }
-        return Block.deserializeBlock(blockSerialized);
+        return deserialize(blockSerialized);
     }
 
     public int getBestHeight() {
@@ -88,7 +89,6 @@ public class BlocksDAO implements Iterable<Block> {
             if (requiredHeight != 0 && block.getHeight() <= requiredHeight) {
                 break;
             }
-
             blockHashes.add(Hash.serialize(block.getHash()));
         }
 
@@ -98,5 +98,13 @@ public class BlocksDAO implements Iterable<Block> {
     @Override
     public Iterator<Block> iterator() {
         return new BlocksIterator();
+    }
+
+    private Block deserialize(String serializedBlock) {
+        return new Gson().fromJson(serializedBlock, Block.class);
+    }
+
+    private String serialize(Block block) {
+        return new Gson().toJson(block);
     }
 }
