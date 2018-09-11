@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.utility.Address;
 import com.atycoin.utility.Hash;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
@@ -8,19 +9,14 @@ import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.math.ec.ECFieldElement;
 import org.bouncycastle.math.ec.ECPoint;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 
 // Wallet stores private and public keys
 public class Wallet {
-    private static final byte VERSION = 0x00;
-    private static final int CHECKSUM_LEN = 4;
-
     private byte[] privateKeyEncoded;
     private byte[] publicKeyEncoded;
 
@@ -34,29 +30,42 @@ public class Wallet {
         return wallet;
     }
 
+    public ECPrivateKey getPrivateKey() {
+        try {
+            PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyEncoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
+            return (ECPrivateKey) keyFactory.generatePrivate(privateKeySpec);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getAddress() {
+        byte[] publicKeyHashed = getPublicKeyHashed();
+        return Address.getAddress(publicKeyHashed);
+    }
+
     // hashes public key
-    public static byte[] hashPublicKey(byte[] rawPublicKey) {
+    public byte[] getPublicKeyHashed() {
+        byte[] rawPublicKey = getRawPublicKey();
         byte[] HashSHA256 = Hash.applySHA256(rawPublicKey);
         return Hash.applyRIPEMP160(HashSHA256);
     }
 
-    // generates a checksum for a public key
-    private static byte[] checksum(byte[] versionedPayload) {
-        byte[] hash = Hash.doubleSHA256(versionedPayload);
-        return Arrays.copyOfRange(hash, 0, CHECKSUM_LEN);
-    }
+    public byte[] getRawPublicKey() {
+        //Get ECPublicKey form keyPair
+        ECPublicKey ecPublicKey = getPublicKey();
 
-    public static boolean isValidAddress(String address) {
-        byte[] fullyPayload = Base58.decode(address);
+        //Get X and Y Coordinate of ecPublicKey
+        ECPoint pointBefore = ecPublicKey.getQ();
+        ECFieldElement affineXCoordination = pointBefore.getAffineXCoord();
+        ECFieldElement affineYCoordination = pointBefore.getAffineYCoord();
 
-        int checksumPosition = fullyPayload.length - CHECKSUM_LEN;
-        byte[] actualChecksum = Arrays.copyOfRange(fullyPayload, checksumPosition, fullyPayload.length);
+        // concatenate X and Y
+        String pubKeyBufferBefore = affineXCoordination.toString() + affineYCoordination.toString();
 
-        byte[] versionedPayload = Arrays.copyOfRange(fullyPayload, 0, checksumPosition);
-
-        byte[] targetChecksum = checksum(versionedPayload);
-
-        return Arrays.equals(actualChecksum, targetChecksum);
+        // rawPublicKey in byte[] form
+        return pubKeyBufferBefore.getBytes(StandardCharsets.UTF_8);
     }
 
     private void generateKeyPair() {
@@ -73,16 +82,6 @@ public class Wallet {
         }
     }
 
-    public ECPrivateKey getPrivateKey() {
-        try {
-            PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyEncoded);
-            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
-            return (ECPrivateKey) keyFactory.generatePrivate(privateKeySpec);
-        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private ECPublicKey getPublicKey() {
         try {
             X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyEncoded);
@@ -91,40 +90,5 @@ public class Wallet {
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    // returns wallet address
-    public String getAddress() {
-        byte[] publicKeyHash = hashPublicKey(getRawPublicKey());
-
-        //VersionedPayload
-        ByteArrayOutputStream payload = new ByteArrayOutputStream();
-        payload.write(VERSION);
-        payload.write(publicKeyHash, 0, publicKeyHash.length);
-
-        byte[] checksum = checksum(payload.toByteArray());
-
-        //fullPayload
-        payload.write(checksum, 0, checksum.length);
-
-        //calc Address base on BASE58 encoding
-        return Base58.encode(payload.toByteArray());
-    }
-
-    // Get X and Y Coordinate of public key
-    public byte[] getRawPublicKey() {
-        //Get ECPublicKey form keyPair
-        ECPublicKey ecPublicKey = getPublicKey();
-
-        //Get X and Y Coordinate of ecPublicKey
-        ECPoint pointBefore = ecPublicKey.getQ();
-        ECFieldElement affineXCoordination = pointBefore.getAffineXCoord();
-        ECFieldElement affineYCoordination = pointBefore.getAffineYCoord();
-
-        // concatenate X and Y
-        String pubKeyBufferBefore = affineXCoordination.toString() + affineYCoordination.toString();
-
-        // rawPublicKey in byte[] form
-        return pubKeyBufferBefore.getBytes(StandardCharsets.UTF_8);
     }
 }

@@ -48,7 +48,7 @@ public class ChainState {
 
     public Map<String, List<Integer>> findUnspentOutputs(Wallet sender, int amount) {
         Map<String, List<Integer>> unspentOutputs = new HashMap<>();
-        byte[] publicKeyHashed = Wallet.hashPublicKey(sender.getRawPublicKey());
+        byte[] publicKeyHashed = sender.getPublicKeyHashed();
 
         int accumulated = 0;
         boolean isAmountReached = false;
