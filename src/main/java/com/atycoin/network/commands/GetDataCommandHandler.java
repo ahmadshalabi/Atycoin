@@ -1,8 +1,8 @@
 package com.atycoin.network.commands;
 
 import com.atycoin.Block;
-import com.atycoin.BlocksDAO;
 import com.atycoin.Transaction;
+import com.atycoin.database.BlocksDAO;
 import com.atycoin.network.Mempool;
 import com.atycoin.network.messages.*;
 import com.google.gson.Gson;

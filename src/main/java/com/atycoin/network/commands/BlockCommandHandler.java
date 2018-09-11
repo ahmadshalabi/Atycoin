@@ -1,8 +1,8 @@
 package com.atycoin.network.commands;
 
 import com.atycoin.Block;
-import com.atycoin.BlocksDAO;
-import com.atycoin.UTXOSet;
+import com.atycoin.ChainState;
+import com.atycoin.database.BlocksDAO;
 import com.atycoin.network.BlocksInTransit;
 import com.atycoin.network.messages.BlockMessage;
 import com.atycoin.network.messages.GetDataMessage;
@@ -33,8 +33,7 @@ public class BlockCommandHandler implements NetworkCommand {
 
         if (isBlockAdded) {
             System.out.printf("Added block %s%n", Hash.serialize(block.getHash()));
-            UTXOSet utxoSet = UTXOSet.getInstance();
-            utxoSet.update(block);
+            ChainState.getInstance().update(block);
         } else {
             System.out.printf("Block %s already exist%n", Hash.serialize(block.getHash()));
         }

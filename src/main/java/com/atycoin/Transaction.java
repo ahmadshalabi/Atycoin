@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.database.ChainStateDAO;
 import com.atycoin.utility.Bytes;
 import com.atycoin.utility.Hash;
 import com.atycoin.utility.Signature;
@@ -46,7 +47,7 @@ public class Transaction {
     //recipient : Base58 Address
     public static Transaction newTransaction(Wallet sender, String recipient, int amount) {
         // get unspent outputs to reference in inputs
-        Map<String, List<Integer>> unspentOutputs = UTXOSet.getInstance().findSpendableOutputs(sender, amount);
+        Map<String, List<Integer>> unspentOutputs = ChainState.getInstance().findUnspentOutputs(sender, amount);
 
         int balance = getBalance(unspentOutputs);
         if (balance < amount) {
@@ -66,7 +67,7 @@ public class Transaction {
         int balance = 0;
         for (Map.Entry<String, List<Integer>> unspentOutputReferences : unspentOutputs.entrySet()) {
             String transactionID = unspentOutputReferences.getKey();
-            List<TransactionOutput> outputs = UTXOSet.getInstance().getTxOutputs(transactionID);
+            List<TransactionOutput> outputs = ChainStateDAO.getInstance().getReferenceOutputs(transactionID);
 
             List<Integer> unspentOutputIndices = unspentOutputReferences.getValue();
             for (int index : unspentOutputIndices) {

@@ -1,5 +1,7 @@
-package com.atycoin;
+package com.atycoin.database;
 
+import com.atycoin.AtycoinStart;
+import com.atycoin.Block;
 import com.atycoin.utility.Hash;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;

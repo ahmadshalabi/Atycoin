@@ -1,5 +1,6 @@
 package com.atycoin;
 
+import com.atycoin.database.BlocksDAO;
 import com.atycoin.utility.Hash;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 
@@ -107,10 +108,10 @@ public class Blockchain {
 
     private void addBlock(Block newBlock) {
         blocksDAO.addBlock(newBlock);
-        UTXOSet.getInstance().update(newBlock);
+        ChainState.getInstance().update(newBlock);
     }
 
-    //TODO: Check if you can replace it using UTXOSet
+    //TODO: Check if you can replace it using ChainState
     private Transaction findTransaction(byte[] id) {
         for (Block block : blocksDAO) {
             List<Transaction> transactions = block.getTransactions();

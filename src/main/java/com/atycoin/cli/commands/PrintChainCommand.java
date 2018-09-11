@@ -1,9 +1,9 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Block;
-import com.atycoin.BlocksDAO;
 import com.atycoin.Transaction;
 import com.atycoin.cli.Commander;
+import com.atycoin.database.BlocksDAO;
 import com.atycoin.utility.Bytes;
 
 import java.util.Arrays;

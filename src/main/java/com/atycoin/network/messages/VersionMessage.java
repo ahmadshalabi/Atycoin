@@ -1,6 +1,6 @@
 package com.atycoin.network.messages;
 
-import com.atycoin.BlocksDAO;
+import com.atycoin.database.BlocksDAO;
 import com.google.gson.Gson;
 
 public class VersionMessage implements NetworkMessage {

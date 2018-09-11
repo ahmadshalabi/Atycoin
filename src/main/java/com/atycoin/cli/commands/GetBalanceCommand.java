@@ -1,13 +1,11 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Base58;
-import com.atycoin.TransactionOutput;
-import com.atycoin.UTXOSet;
+import com.atycoin.ChainState;
 import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class GetBalanceCommand implements Command {
     @Override
@@ -50,14 +48,7 @@ public class GetBalanceCommand implements Command {
 
             byte[] fullPayload = Base58.decode(address);
             byte[] publicKeyHashed = Arrays.copyOfRange(fullPayload, 1, fullPayload.length - 4);
-
-            UTXOSet utxoSet = UTXOSet.getInstance();
-            List<TransactionOutput> UTXOs = utxoSet.findUTXO(publicKeyHashed);
-
-            int balance = 0;
-            for (TransactionOutput transactionOutput : UTXOs) {
-                balance += transactionOutput.getValue();
-            }
+            int balance = ChainState.getInstance().getBalance(publicKeyHashed);
 
             System.out.printf("Balance of '%s': %d\n", address, balance);
         } else if (args[0].equals(params[0])) { //-help

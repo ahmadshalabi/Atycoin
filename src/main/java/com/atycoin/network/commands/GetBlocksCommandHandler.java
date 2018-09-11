@@ -1,6 +1,6 @@
 package com.atycoin.network.commands;
 
-import com.atycoin.BlocksDAO;
+import com.atycoin.database.BlocksDAO;
 import com.atycoin.network.messages.GetBlocksMessage;
 import com.atycoin.network.messages.InventoryMessage;
 import com.atycoin.network.messages.NetworkMessage;
