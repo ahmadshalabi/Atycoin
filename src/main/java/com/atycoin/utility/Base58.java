@@ -1,4 +1,6 @@
-package com.atycoin;
+package com.atycoin.utility;
+
+import com.atycoin.Constant;
 
 import java.math.BigInteger;
 
