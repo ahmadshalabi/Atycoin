@@ -130,16 +130,16 @@ public class TransactionProcessor {
         return referenceOutputs.get(referenceIndex);
     }
 
-    private void setRawPublicKey(TransactionInput input, TransactionOutput referenceOutput) {
-        byte[] publicKeyHashed = referenceOutput.getPublicKeyHashed();
-        input.setRawPublicKey(publicKeyHashed);
+    private int getCorrespondingIndex(List<TransactionInput> inputs, TransactionInput input) {
+        return inputs.indexOf(input);
     }
 
     private TransactionInput getCorrespondingInput(List<TransactionInput> inputs, int index) {
         return inputs.get(index);
     }
 
-    private int getCorrespondingIndex(List<TransactionInput> inputs, TransactionInput input) {
-        return inputs.indexOf(input);
+    private void setRawPublicKey(TransactionInput input, TransactionOutput referenceOutput) {
+        byte[] publicKeyHashed = referenceOutput.getPublicKeyHashed();
+        input.setRawPublicKey(publicKeyHashed);
     }
 }
