@@ -18,7 +18,7 @@ public class TransactionOutput {
         this.publicKeyHashed = publicKeyHashed;
     }
 
-    public static TransactionOutput newTXOutput(int value, String address) {
+    public static TransactionOutput newTransactionOutput(int value, String address) {
         TransactionOutput transactionOutput = new TransactionOutput(value, Constant.EMPTY_BYTE_ARRAY);
         transactionOutput.lock(address);
         return transactionOutput;

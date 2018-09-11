@@ -36,7 +36,7 @@ public class Transaction {
         List<TransactionInput> inputs = new ArrayList<>();
         inputs.add(input);
 
-        TransactionOutput output = TransactionOutput.newTXOutput(reward, to);
+        TransactionOutput output = TransactionOutput.newTransactionOutput(reward, to);
         List<TransactionOutput> outputs = new ArrayList<>();
         outputs.add(output);
 
@@ -94,10 +94,10 @@ public class Transaction {
 
     private static List<TransactionOutput> buildOutputs(Wallet sender, int balance, String recipient, int amount) {
         List<TransactionOutput> outputs = new ArrayList<>();
-        outputs.add(TransactionOutput.newTXOutput(amount, recipient));
+        outputs.add(TransactionOutput.newTransactionOutput(amount, recipient));
         if (balance > amount) {
             int change = balance - amount;
-            outputs.add(TransactionOutput.newTXOutput(change, sender.getAddress()));
+            outputs.add(TransactionOutput.newTransactionOutput(change, sender.getAddress()));
         }
         return outputs;
     }
