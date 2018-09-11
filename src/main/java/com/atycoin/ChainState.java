@@ -6,7 +6,7 @@ import java.util.*;
 
 public class ChainState {
     private static ChainState instance;
-    private static ChainStateDAO chainStateDAO;
+    private ChainStateDAO chainStateDAO;
 
     private ChainState() {
         chainStateDAO = ChainStateDAO.getInstance();

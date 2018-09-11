@@ -3,6 +3,7 @@ package com.atycoin.network.commands;
 import com.atycoin.Block;
 import com.atycoin.Blockchain;
 import com.atycoin.Transaction;
+import com.atycoin.TransactionProcessor;
 import com.atycoin.network.Mempool;
 import com.atycoin.network.Node;
 import com.atycoin.network.messages.InventoryMessage;
@@ -30,7 +31,8 @@ public class TransactionCommandHandler implements NetworkCommand {
 
         Transaction transaction = remoteMessage.getTransaction();
 
-        if (Blockchain.getInstance().verifyTransaction(transaction)) {
+        TransactionProcessor transactionProcessor = new TransactionProcessor(transaction);
+        if (transactionProcessor.verifyTransaction()) {
             Mempool.addItem(transaction);
         } else {
             System.out.println("Trying adding invalid transaction to mempool");

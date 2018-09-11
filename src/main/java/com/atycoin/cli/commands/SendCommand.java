@@ -73,7 +73,8 @@ public class SendCommand implements Command {
             Transaction newTransaction = Transaction.newTransaction(senderWallet, to, amount);
 
             ECPrivateKey privateKey = senderWallet.getPrivateKey();
-            boolean isSignedCorrectly = Blockchain.getInstance().signTransaction(newTransaction, privateKey);
+            TransactionProcessor transactionProcessor = new TransactionProcessor(newTransaction);
+            boolean isSignedCorrectly = transactionProcessor.signTransaction(privateKey);
 
             if (!isSignedCorrectly) {
                 Commander.CommanderPrint("ERROR: Invalid Transaction");

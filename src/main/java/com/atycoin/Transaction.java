@@ -4,8 +4,6 @@ import com.atycoin.database.ChainStateDAO;
 import com.atycoin.utility.Bytes;
 import com.atycoin.utility.Constant;
 import com.atycoin.utility.Hash;
-import com.atycoin.utility.Signature;
-import org.bouncycastle.jce.interfaces.ECPrivateKey;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,10 +18,28 @@ public class Transaction {
     private final long timestamp;
     private byte[] id;
 
-    private Transaction(List<TransactionInput> inputs, List<TransactionOutput> outputs) {
+    public Transaction(List<TransactionInput> inputs, List<TransactionOutput> outputs) {
         this.inputs = inputs;
         this.outputs = outputs;
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
+    }
+
+    // creates a trimmed copy of Transaction to be used in signing and verifying
+    public static Transaction trimmedTransaction(Transaction transaction) {
+        List<TransactionInput> inputs = new ArrayList<>();
+        for (TransactionInput input : transaction.getInputs()) {
+            byte[] id = input.getReferenceTransaction();
+            int index = input.getOutputIndex();
+            inputs.add(new TransactionInput(id, index, Constant.EMPTY_BYTE_ARRAY));
+        }
+
+        List<TransactionOutput> outputs = new ArrayList<>();
+        for (TransactionOutput output : transaction.getOutputs()) {
+            int value = output.getValue();
+            byte[] publicKeyHashed = output.getPublicKeyHashed();
+            outputs.add(new TransactionOutput(value, publicKeyHashed));
+        }
+        return new Transaction(inputs, outputs);
     }
 
     //Reward to miner
@@ -102,56 +118,6 @@ public class Transaction {
         return outputs;
     }
 
-    // signs each input of a Transaction
-    public void sign(ECPrivateKey privateKey, Map<String, Transaction> referenceTransactions) {
-        Transaction trimmedCopy = trimmedCopy();
-        List<TransactionInput> trimmedCopyInputs = trimmedCopy.getInputs();
-
-        for (TransactionInput input : trimmedCopyInputs) {
-            TransactionOutput referenceOutput = getReferenceOutput(referenceTransactions, input);
-            setRawPublicKey(input, referenceOutput);
-
-            //sign id data
-            trimmedCopy.setID();
-            byte[] signature = Signature.sign(privateKey, trimmedCopy.getId());
-
-            int index = getCorrespondingIndex(trimmedCopyInputs, input);
-            TransactionInput transactionInput = getCorrespondingInput(inputs, index);
-            transactionInput.setSignature(signature);
-
-            // Remove publicKey from input
-            input.setRawPublicKey(Constant.EMPTY_BYTE_ARRAY);
-        }
-    }
-
-    // verifies signatures of Transaction inputs
-    public boolean verify(Map<String, Transaction> referenceTransactions) {
-        Transaction trimmedCopy = trimmedCopy();
-
-        boolean isValidTransaction = true;
-        for (TransactionInput input : inputs) {
-            TransactionOutput referenceOutput = getReferenceOutput(referenceTransactions, input);
-
-            int index = getCorrespondingIndex(inputs, input);
-            TransactionInput trimmedCopyInput = getCorrespondingInput(trimmedCopy.inputs, index);
-            setRawPublicKey(trimmedCopyInput, referenceOutput);
-
-            //Verify Data
-            byte[] rawPublicKey = input.getRawPublicKey();
-            trimmedCopy.setID();
-            byte[] signature = input.getSignature();
-            isValidTransaction = Signature.verify(rawPublicKey, trimmedCopy.id, signature);
-
-            if (!isValidTransaction) {
-                break;
-            }
-
-            // Remove publicKey from trimmedCopyInput
-            trimmedCopyInput.setRawPublicKey(Constant.EMPTY_BYTE_ARRAY);
-        }
-        return isValidTransaction;
-    }
-
     //Coinbase: One input, empty transactionID and -1 index
     public boolean isCoinbaseTransaction() {
         TransactionInput input = inputs.get(0);
@@ -193,7 +159,7 @@ public class Transaction {
         return outputs;
     }
 
-    private void setID() {
+    public void setID() {
         byte[] unHashedID = getUnHashedID();
         id = Hash.applySHA256(unHashedID);
     }
@@ -216,50 +182,5 @@ public class Transaction {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    // creates a trimmed copy of Transaction to be used in signing and verifying
-    private Transaction trimmedCopy() {
-        List<TransactionInput> inputs = new ArrayList<>();
-        for (TransactionInput input : this.inputs) {
-            byte[] id = input.getReferenceTransaction();
-            int index = input.getOutputIndex();
-            inputs.add(new TransactionInput(id, index, Constant.EMPTY_BYTE_ARRAY));
-        }
-
-        List<TransactionOutput> outputs = new ArrayList<>();
-        for (TransactionOutput output : this.outputs) {
-            int value = output.getValue();
-            byte[] publicKeyHashed = output.getPublicKeyHashed();
-            outputs.add(new TransactionOutput(value, publicKeyHashed));
-        }
-        return new Transaction(inputs, outputs);
-    }
-
-    private TransactionOutput getReferenceOutput(Map<String, Transaction> referenceTransactions, TransactionInput input) {
-        //get reference transaction
-        byte[] id = input.getReferenceTransaction();
-        String referenceID = Hash.serialize(id);
-        Transaction referenceTransaction = referenceTransactions.get(referenceID);
-
-        //get reference outputs
-        List<TransactionOutput> referenceOutputs = referenceTransaction.getOutputs();
-
-        //get reference output
-        int referenceIndex = input.getOutputIndex();
-        return referenceOutputs.get(referenceIndex);
-    }
-
-    private void setRawPublicKey(TransactionInput input, TransactionOutput referenceOutput) {
-        byte[] publicKeyHashed = referenceOutput.getPublicKeyHashed();
-        input.setRawPublicKey(publicKeyHashed);
-    }
-
-    private TransactionInput getCorrespondingInput(List<TransactionInput> inputs, int index) {
-        return inputs.get(index);
-    }
-
-    private int getCorrespondingIndex(List<TransactionInput> inputs, TransactionInput input) {
-        return inputs.indexOf(input);
     }
 }
