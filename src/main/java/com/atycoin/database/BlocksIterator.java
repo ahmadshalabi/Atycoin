@@ -1,7 +1,7 @@
 package com.atycoin.database;
 
 import com.atycoin.Block;
-import com.atycoin.Constant;
+import com.atycoin.utility.Constant;
 import com.atycoin.utility.Hash;
 
 import java.util.Iterator;

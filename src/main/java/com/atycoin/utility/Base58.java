@@ -1,7 +1,5 @@
 package com.atycoin.utility;
 
-import com.atycoin.Constant;
-
 import java.math.BigInteger;
 
 public class Base58 {

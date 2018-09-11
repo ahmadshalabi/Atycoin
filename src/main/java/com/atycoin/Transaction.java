@@ -2,6 +2,7 @@ package com.atycoin;
 
 import com.atycoin.database.ChainStateDAO;
 import com.atycoin.utility.Bytes;
+import com.atycoin.utility.Constant;
 import com.atycoin.utility.Hash;
 import com.atycoin.utility.Signature;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;

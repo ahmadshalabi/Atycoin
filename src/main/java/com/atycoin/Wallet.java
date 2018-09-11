@@ -23,7 +23,6 @@ public class Wallet {
     private Wallet() {
     }
 
-    // creates and returns a Wallet
     public static Wallet newWallet() {
         Wallet wallet = new Wallet();
         wallet.generateKeyPair();
@@ -45,7 +44,6 @@ public class Wallet {
         return Address.getAddress(publicKeyHashed);
     }
 
-    // hashes public key
     public byte[] getPublicKeyHashed() {
         byte[] rawPublicKey = getRawPublicKey();
         byte[] HashSHA256 = Hash.applySHA256(rawPublicKey);

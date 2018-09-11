@@ -1,6 +1,7 @@
 package com.atycoin;
 
 import com.atycoin.utility.Bytes;
+import com.atycoin.utility.Constant;
 import com.atycoin.utility.Hash;
 import com.google.gson.Gson;
 

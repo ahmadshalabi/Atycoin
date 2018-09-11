@@ -2,6 +2,7 @@ package com.atycoin;
 
 import com.atycoin.utility.Address;
 import com.atycoin.utility.Bytes;
+import com.atycoin.utility.Constant;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,7 +29,6 @@ public class TransactionOutput {
         publicKeyHashed = Address.getPublicKeyHashed(address);
     }
 
-    //checks if the output can be unlocked with the provided data
     public boolean isLockedWithKey(byte[] publicKeyHashed) {
         return Arrays.equals(this.publicKeyHashed, publicKeyHashed);
     }

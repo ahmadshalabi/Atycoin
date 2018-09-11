@@ -1,6 +1,7 @@
 package com.atycoin;
 
 import com.atycoin.utility.Bytes;
+import com.atycoin.utility.Constant;
 
 import java.util.ArrayList;
 import java.util.List;
