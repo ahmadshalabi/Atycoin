@@ -5,6 +5,7 @@ import com.atycoin.cli.Commander;
 import com.atycoin.network.Node;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.TransactionMessage;
+import com.atycoin.utility.Address;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 
 import java.io.BufferedWriter;
@@ -48,12 +49,12 @@ public class SendCommand implements Command {
             String to = args[3];
             int amount = Integer.parseInt(args[5]);
 
-            if (!Wallet.isValidAddress(from)) {
+            if (!Address.isValidAddress(from)) {
                 Commander.CommanderPrint("ERROR: Sender address is not valid");
                 return;
             }
 
-            if (!Wallet.isValidAddress(to)) {
+            if (!Address.isValidAddress(to)) {
                 Commander.CommanderPrint("ERROR: Recipient address is not valid");
                 return;
             }

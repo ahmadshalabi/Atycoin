@@ -1,9 +1,9 @@
 package com.atycoin.cli.commands;
 
-import com.atycoin.Base58;
 import com.atycoin.ChainState;
-import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
+import com.atycoin.utility.Address;
+import com.atycoin.utility.Base58;
 
 import java.util.Arrays;
 
@@ -41,7 +41,7 @@ public class GetBalanceCommand implements Command {
             } else if (args.length > 2) {
                 Commander.CommanderPrint("ERROR ! Invalid address entered.");
                 return;
-            } else if (!Wallet.isValidAddress(address)) {
+            } else if (!Address.isValidAddress(address)) {
                 Commander.CommanderPrint("ERROR ! Address in not valid.");
                 return;
             }

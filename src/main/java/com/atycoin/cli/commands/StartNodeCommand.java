@@ -1,9 +1,9 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.AtycoinStart;
-import com.atycoin.Wallet;
 import com.atycoin.cli.Commander;
 import com.atycoin.network.Node;
+import com.atycoin.utility.Address;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -47,7 +47,7 @@ public class StartNodeCommand implements Command {
         } else if (args[0].equals(params[2])) {
             String minerAddress = args[1];
 
-            if (!Wallet.isValidAddress(minerAddress)) {
+            if (!Address.isValidAddress(minerAddress)) {
                 Commander.CommanderPrint("ERROR: Wrong miner address!");
                 return;
             }
