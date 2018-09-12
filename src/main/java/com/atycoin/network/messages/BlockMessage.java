@@ -1,9 +1,8 @@
 package com.atycoin.network.messages;
 
 import com.atycoin.Block;
-import com.google.gson.Gson;
 
-public class BlockMessage implements NetworkMessage {
+public class BlockMessage extends NetworkMessage {
     private final int senderAddress;
     private final Block block;
 
@@ -14,15 +13,8 @@ public class BlockMessage implements NetworkMessage {
 
     @Override
     public String makeRequest() {
-        StringBuilder request = new StringBuilder();
-
         String command = "block ";
-        String message = new Gson().toJson(this);
-
-        request.append(command);
-        request.append(message);
-
-        return String.valueOf(request);
+        return serialize(command, this);
     }
 
     public int getSenderAddress() {

@@ -43,7 +43,7 @@ public class StartNodeCommand implements Command {
         System.out.printf("Starting node %s%n", AtycoinStart.getNodeID());
 
         if (args.length < 1) {
-            pool.execute(new Node(AtycoinStart.getNodeID(), ""));
+            pool.execute(Node.getInstance(""));
         } else if (args[0].equals(params[2])) {
             String minerAddress = args[1];
 
@@ -52,7 +52,7 @@ public class StartNodeCommand implements Command {
                 return;
             }
 
-            pool.execute(new Node(AtycoinStart.getNodeID(), minerAddress));
+            pool.execute(Node.getInstance(minerAddress));
             System.out.printf("Mining is on. Address to receive rewards: %s", minerAddress);
         } else if (args[0].equals(params[0])) { //help
             Commander.CommanderPrint(getHelp());

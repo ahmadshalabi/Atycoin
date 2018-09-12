@@ -10,8 +10,8 @@ import java.net.Socket;
 
 public class ConnectionHandler implements Runnable {
     private final Socket receivingConnection;
-    private BufferedReader input;
     private final int nodeAddress;
+    private BufferedReader input;
 
     public ConnectionHandler(Socket receivingConnection, int nodeAddress) {
         this.receivingConnection = receivingConnection;

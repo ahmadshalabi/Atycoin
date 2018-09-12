@@ -17,34 +17,31 @@ import java.util.concurrent.Executors;
 
 public class Node implements Runnable {
     private static final int NODE_VERSION = 1;
-    private static String miningAddress;
     private static final List<Integer> knownNodes; // To simulate DNS Seed
+    private static String miningAddress;
+    private static Node instance;
 
     static {
         knownNodes = new ArrayList<>();
         knownNodes.add(3000);
     }
 
-    private static Node instance;
     private final ExecutorService pool;
     private int nodeAddress;
 
     private Socket connection;
     private BufferedWriter output;
 
-    public Node(int nodeAddress, String minerAddress) {
+    private Node(int nodeAddress, String minerAddress) {
         this.nodeAddress = nodeAddress;
         miningAddress = minerAddress;
-
         pool = Executors.newFixedThreadPool(8);
-        instance = this;
     }
 
-    public static Node getInstance() {
+    public static Node getInstance(String miningAddress) {
         if (instance == null) {
-            instance = new Node(AtycoinStart.getNodeID(), "");
+            instance = new Node(AtycoinStart.getNodeID(), miningAddress);
         }
-
         return instance;
     }
 

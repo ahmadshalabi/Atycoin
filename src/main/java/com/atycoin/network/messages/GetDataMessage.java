@@ -1,8 +1,6 @@
 package com.atycoin.network.messages;
 
-import com.google.gson.Gson;
-
-public class GetDataMessage implements NetworkMessage {
+public class GetDataMessage extends NetworkMessage {
     private final int senderAddress;
     private final String type;
     private final String id;
@@ -15,14 +13,8 @@ public class GetDataMessage implements NetworkMessage {
 
     @Override
     public String makeRequest() {
-        StringBuilder request = new StringBuilder();
-
         String command = "getdata ";
-        String message = new Gson().toJson(this);
-
-        request.append(command);
-        request.append(message);
-        return String.valueOf(request);
+        return serialize(command, this);
     }
 
     public int getSenderAddress() {

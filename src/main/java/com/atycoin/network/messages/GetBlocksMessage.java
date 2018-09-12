@@ -1,8 +1,6 @@
 package com.atycoin.network.messages;
 
-import com.google.gson.Gson;
-
-public class GetBlocksMessage implements NetworkMessage {
+public class GetBlocksMessage extends NetworkMessage {
     private final int senderAddress;
     private final int requiredHeight;
 
@@ -13,15 +11,8 @@ public class GetBlocksMessage implements NetworkMessage {
 
     @Override
     public String makeRequest() {
-        StringBuilder request = new StringBuilder();
-
         String command = "getblocks ";
-        String message = new Gson().toJson(this);
-
-        request.append(command);
-        request.append(message);
-
-        return String.valueOf(request);
+        return serialize(command, this);
     }
 
     public int getRequiredHeight() {

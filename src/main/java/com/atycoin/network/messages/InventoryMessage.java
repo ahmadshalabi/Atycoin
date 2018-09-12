@@ -1,10 +1,8 @@
 package com.atycoin.network.messages;
 
-import com.google.gson.Gson;
-
 import java.util.List;
 
-public class InventoryMessage implements NetworkMessage {
+public class InventoryMessage extends NetworkMessage {
     private final int senderAddress;
     private final String type;
     private final List<String> items;
@@ -17,14 +15,8 @@ public class InventoryMessage implements NetworkMessage {
 
     @Override
     public String makeRequest() {
-        StringBuilder request = new StringBuilder();
-
         String command = "inventory ";
-        String message = new Gson().toJson(this);
-
-        request.append(command);
-        request.append(message);
-        return String.valueOf(request);
+        return serialize(command, this);
     }
 
     public int getSenderAddress() {
