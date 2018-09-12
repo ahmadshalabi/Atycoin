@@ -34,7 +34,9 @@ public class ChainState {
                     }
 
                     int outputIndex = input.getOutputIndex();
-                    outputs.remove(outputIndex);
+                    if (outputIndex < outputs.size()) {
+                        outputs.remove(outputIndex);
+                    }
 
                     if (outputs.size() == 0) {
                         chainStateDAO.deleteUnspentOutputs(id);

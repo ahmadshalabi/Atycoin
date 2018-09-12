@@ -7,6 +7,7 @@ import com.atycoin.TransactionProcessor;
 import com.atycoin.network.Mempool;
 import com.atycoin.network.Node;
 import com.atycoin.network.messages.InventoryMessage;
+import com.atycoin.network.messages.KnownNodes;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.TransactionMessage;
 import com.atycoin.utility.Hash;
@@ -14,13 +15,12 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TransactionCommandHandler extends NetworkCommand {
-
     @Override
     public void execute(String message, int nodeAddress) {
         Gson gson = new Gson();
-
         TransactionMessage remoteMessage = gson.fromJson(message, TransactionMessage.class);
 
         Transaction transaction = remoteMessage.getTransaction();
@@ -33,41 +33,61 @@ public class TransactionCommandHandler extends NetworkCommand {
             return;
         }
 
-        List<Integer> knownNodes = Node.getKnownNodes();
-        if (nodeAddress == knownNodes.get(0)) {
-            List<String> transactions = new ArrayList<>();
-            transactions.add(Hash.serialize(transaction.getId()));
-            for (int node : knownNodes) {
-                if (node != nodeAddress && node != remoteMessage.getSenderAddress()) {
-                    NetworkMessage inventoryMessage = new InventoryMessage(nodeAddress, "tx", transactions);
-                    send(node, inventoryMessage);
-                }
-            }
+        if (nodeAddress == KnownNodes.get(0)) {
+            centralNodeResponse(transaction, nodeAddress, remoteMessage.getSenderAddress());
         } else {
-            if (Mempool.size() >= 2 && Node.getMiningAddress().length() > 0) {
-                while (Mempool.size() > 0) {
-                    Blockchain blockchain = Blockchain.getInstance();
+            minerNodeResponse(nodeAddress);
+        }
+    }
 
-                    List<Transaction> validTransactions = new ArrayList<>();
-                    Transaction coinbaseTx = Transaction.newCoinbaseTransaction(Node.getMiningAddress());
-                    validTransactions.add(coinbaseTx);
-                    validTransactions.addAll(Mempool.values());
+    private void centralNodeResponse(Transaction transaction, int nodeAddress, int senderAddress) {
+        List<String> transactions = new ArrayList<>();
+        transactions.add(Hash.serialize(transaction.getId()));
+        broadcastTransaction(nodeAddress, senderAddress, transactions);
+    }
 
-                    Block newBlock = blockchain.mineBlock(validTransactions);
+    private void minerNodeResponse(int nodeAddress) {
+        if (Mempool.size() >= 2 && Node.getMiningAddress().length() > 0) {
+            while (Mempool.size() > 0) {
+                Blockchain blockchain = Blockchain.getInstance();
 
-                    System.out.println("New block is mined!");
+                List<Transaction> validTransactions = new ArrayList<>();
+                Transaction coinbaseTx = Transaction.newCoinbaseTransaction(Node.getMiningAddress());
+                validTransactions.add(coinbaseTx);
+                validTransactions.addAll(Mempool.values());
 
-                    Mempool.remove(validTransactions.subList(1, validTransactions.size()));
+                Block newBlock = blockchain.mineBlock(validTransactions);
 
-                    ArrayList<String> blockHash = new ArrayList<>();
-                    blockHash.add(Hash.serialize(newBlock.getHash()));
+                System.out.println("New block is mined!");
 
-                    for (int node : Node.getKnownNodes()) {
-                        if (node != nodeAddress) {
-                            NetworkMessage inventoryMessage = new InventoryMessage(nodeAddress, "block", blockHash);
-                            send(node, inventoryMessage);
-                        }
-                    }
+                Mempool.remove(validTransactions.subList(1, validTransactions.size()));
+
+                List<String> blocksHash = new ArrayList<>();
+                blocksHash.add(Hash.serialize(newBlock.getHash()));
+
+                broadcastBlock(nodeAddress, blocksHash);
+            }
+        }
+    }
+
+    private void broadcastTransaction(int nodeAddress, int senderAddress, List<String> items) {
+        for (int node : KnownNodes.getKnownNodes()) {
+            if (node != nodeAddress && node != senderAddress) {
+                NetworkMessage inventoryMessage = new InventoryMessage(nodeAddress, "tx", items);
+                send(node, inventoryMessage);
+            }
+        }
+    }
+
+    private void broadcastBlock(int nodeAddress, List<String> items) {
+        for (int node : KnownNodes.getKnownNodes()) {
+            if (node != nodeAddress) {
+                NetworkMessage inventoryMessage = new InventoryMessage(nodeAddress, "block", items);
+                send(node, inventoryMessage);
+                try {
+                    TimeUnit.MILLISECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }

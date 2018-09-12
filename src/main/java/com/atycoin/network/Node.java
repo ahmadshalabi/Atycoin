@@ -1,6 +1,7 @@
 package com.atycoin.network;
 
 import com.atycoin.AtycoinStart;
+import com.atycoin.network.messages.KnownNodes;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.VersionMessage;
 
@@ -10,21 +11,13 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Node implements Runnable {
     private static final int NODE_VERSION = 1;
-    private static final List<Integer> knownNodes; // To simulate DNS Seed
     private static String miningAddress;
     private static Node instance;
-
-    static {
-        knownNodes = new ArrayList<>();
-        knownNodes.add(3000);
-    }
 
     private final ExecutorService pool;
     private int nodeAddress;
@@ -45,21 +38,17 @@ public class Node implements Runnable {
         return instance;
     }
 
-    public static List<Integer> getKnownNodes() {
-        return knownNodes;
-    }
-
     public static String getMiningAddress() {
         return miningAddress;
     }
 
     private void startServer() {
         try (ServerSocket server = new ServerSocket(nodeAddress)) {
-            if (nodeAddress != knownNodes.get(0)) {
+            if (nodeAddress != KnownNodes.get(0)) {
                 NetworkMessage version = new VersionMessage(NODE_VERSION, nodeAddress);
                 String request = version.makeRequest();
 
-                connection = new Socket(InetAddress.getLocalHost(), knownNodes.get(0));
+                connection = new Socket(InetAddress.getLocalHost(), KnownNodes.get(0));
 
                 getOutputStream();
                 output.write(request);

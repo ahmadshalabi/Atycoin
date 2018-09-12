@@ -7,7 +7,6 @@ import com.atycoin.network.Mempool;
 import com.atycoin.network.messages.*;
 import com.google.gson.Gson;
 
-//TODO: check if we actually have this block/transaction
 public class GetDataCommandHandler extends NetworkCommand {
     @Override
     public void execute(String message, int nodeAddress) {
@@ -15,15 +14,12 @@ public class GetDataCommandHandler extends NetworkCommand {
         String type = remoteMessage.getType();
 
         NetworkMessage responseMessage = new NullMessage(nodeAddress);
+        String itemID = remoteMessage.getId();
         if (type.equals("block")) {
-            String blockHash = remoteMessage.getId();
-            Block block = BlocksDAO.getInstance().getBlock(blockHash);
-
+            Block block = BlocksDAO.getInstance().getBlock(itemID);
             responseMessage = new BlockMessage(nodeAddress, block);
         } else if (type.equals("tx")) {
-            String transactionID = remoteMessage.getId();
-            Transaction transaction = Mempool.getItem(transactionID);
-
+            Transaction transaction = Mempool.getItem(itemID);
             responseMessage = new TransactionMessage(nodeAddress, transaction);
         }
 

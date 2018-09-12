@@ -25,7 +25,6 @@ public class InventoryCommandHandler extends NetworkCommand {
             BlocksInTransit.addItems(items);
 
             String blockHash = items.get(items.size() - 1);
-            //TODO: Transfer blocks from different nodes
             responseMessage = new GetDataMessage(nodeAddress, "block", blockHash);
 
             BlocksInTransit.removeItem(items.size() - 1);

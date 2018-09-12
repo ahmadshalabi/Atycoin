@@ -19,7 +19,6 @@ public class BlockCommandHandler extends NetworkCommand {
         Block block = remoteMessage.getBlock();
         System.out.println("Received a new block!");
 
-        //TODO: check validity of incoming block before adding it
         BlocksDAO blocksDAO = BlocksDAO.getInstance();
         boolean isBlockAdded = blocksDAO.addBlock(block);
 

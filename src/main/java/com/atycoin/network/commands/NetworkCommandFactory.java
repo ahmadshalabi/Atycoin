@@ -15,6 +15,7 @@ public class NetworkCommandFactory {
     private static void initializeCommands() {
         commands.put("addresses", new AddressesCommandHandler());
         commands.put("block", new BlockCommandHandler());
+        commands.put("getaddresses", new GetAddressesCommandHandler());
         commands.put("getblocks", new GetBlocksCommandHandler());
         commands.put("getdata", new GetDataCommandHandler());
         commands.put("inventory", new InventoryCommandHandler());

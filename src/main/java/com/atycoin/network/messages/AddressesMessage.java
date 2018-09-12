@@ -1,19 +1,18 @@
 package com.atycoin.network.messages;
 
-import com.atycoin.network.Node;
-
 import java.util.List;
 
 public class AddressesMessage extends NetworkMessage {
     private List<Integer> addresses;
 
-    public AddressesMessage(int senderAddress) {
+    public AddressesMessage(int senderAddress, List<Integer> addresses) {
         super(senderAddress);
+        this.addresses = addresses;
     }
 
     @Override
     public String makeRequest() {
-        addresses = Node.getKnownNodes();
+        addresses = KnownNodes.getKnownNodes();
         String command = "addresses "; //space, Indicator to find command
         return serialize(command, this);
     }

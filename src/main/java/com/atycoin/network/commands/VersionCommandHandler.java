@@ -1,11 +1,7 @@
 package com.atycoin.network.commands;
 
 import com.atycoin.database.BlocksDAO;
-import com.atycoin.network.Node;
-import com.atycoin.network.messages.GetBlocksMessage;
-import com.atycoin.network.messages.NetworkMessage;
-import com.atycoin.network.messages.NullMessage;
-import com.atycoin.network.messages.VersionMessage;
+import com.atycoin.network.messages.*;
 import com.google.gson.Gson;
 
 public class VersionCommandHandler extends NetworkCommand {
@@ -25,10 +21,11 @@ public class VersionCommandHandler extends NetworkCommand {
             responseMessage = new VersionMessage(version, nodeAddress);
         }
 
-        if (!Node.getKnownNodes().contains(remoteMessage.getSenderAddress())) {
-            Node.getKnownNodes().add(remoteMessage.getSenderAddress());
-        }
+        KnownNodes.add(remoteMessage.getSenderAddress());
 
         send(remoteMessage.getSenderAddress(), responseMessage);
+
+        NetworkMessage getKnownNodesMessage = new GetAddressesMessage(nodeAddress);
+        send(remoteMessage.getSenderAddress(), getKnownNodesMessage);
     }
 }

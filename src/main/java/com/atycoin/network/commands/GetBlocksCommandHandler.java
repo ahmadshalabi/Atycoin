@@ -15,7 +15,6 @@ public class GetBlocksCommandHandler extends NetworkCommand {
         int requiredHeight = remoteMessage.getRequiredHeight();
 
         List<String> blocks = BlocksDAO.getInstance().getBlockHashes(requiredHeight);
-
         NetworkMessage responseMessage = new InventoryMessage(nodeAddress, "block", blocks);
 
         send(remoteMessage.getSenderAddress(), responseMessage);

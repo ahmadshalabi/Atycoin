@@ -46,7 +46,6 @@ public class ConnectionHandler implements Runnable {
 
     private void stopConnection() {
         try {
-            input.close();
             receivingConnection.close();
         } catch (IOException e) {
             Thread.currentThread().interrupt();
