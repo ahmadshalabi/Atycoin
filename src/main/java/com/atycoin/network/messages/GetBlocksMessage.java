@@ -1,11 +1,10 @@
 package com.atycoin.network.messages;
 
 public class GetBlocksMessage extends NetworkMessage {
-    private final int senderAddress;
     private final int requiredHeight;
 
     public GetBlocksMessage(int senderAddress, int requiredHeight) {
-        this.senderAddress = senderAddress;
+        super(senderAddress);
         this.requiredHeight = requiredHeight;
     }
 
@@ -17,9 +16,5 @@ public class GetBlocksMessage extends NetworkMessage {
 
     public int getRequiredHeight() {
         return requiredHeight;
-    }
-
-    public int getSenderAddress() {
-        return senderAddress;
     }
 }

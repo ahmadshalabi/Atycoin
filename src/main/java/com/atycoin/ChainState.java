@@ -29,6 +29,10 @@ public class ChainState {
                     byte[] id = input.getReferenceTransaction();
                     List<TransactionOutput> outputs = chainStateDAO.getReferenceOutputs(id);
 
+                    if (outputs == null) {
+                        continue;
+                    }
+
                     int outputIndex = input.getOutputIndex();
                     outputs.remove(outputIndex);
 

@@ -12,16 +12,10 @@ import com.atycoin.network.messages.TransactionMessage;
 import com.atycoin.utility.Hash;
 import com.google.gson.Gson;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransactionCommandHandler implements NetworkCommand {
-    private BufferedWriter output;
+public class TransactionCommandHandler extends NetworkCommand {
 
     @Override
     public void execute(String message, int nodeAddress) {
@@ -36,6 +30,7 @@ public class TransactionCommandHandler implements NetworkCommand {
             Mempool.addItem(transaction);
         } else {
             System.out.println("Trying adding invalid transaction to mempool");
+            return;
         }
 
         List<Integer> knownNodes = Node.getKnownNodes();
@@ -45,14 +40,7 @@ public class TransactionCommandHandler implements NetworkCommand {
             for (int node : knownNodes) {
                 if (node != nodeAddress && node != remoteMessage.getSenderAddress()) {
                     NetworkMessage inventoryMessage = new InventoryMessage(nodeAddress, "tx", transactions);
-                    try (Socket sendingConnection = new Socket(InetAddress.getLocalHost(), node)) {
-                        getOutputStream(sendingConnection);
-
-                        output.write(inventoryMessage.makeRequest());
-                        output.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    send(node, inventoryMessage);
                 }
             }
         } else {
@@ -77,23 +65,11 @@ public class TransactionCommandHandler implements NetworkCommand {
                     for (int node : Node.getKnownNodes()) {
                         if (node != nodeAddress) {
                             NetworkMessage inventoryMessage = new InventoryMessage(nodeAddress, "block", blockHash);
-                            try (Socket sendingConnection = new Socket(InetAddress.getLocalHost(), node)) {
-                                getOutputStream(sendingConnection);
-
-                                output.write(inventoryMessage.makeRequest());
-                                output.close();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
+                            send(node, inventoryMessage);
                         }
                     }
                 }
             }
         }
-    }
-
-    private void getOutputStream(Socket connection) throws IOException {
-        output = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
-        output.flush();
     }
 }

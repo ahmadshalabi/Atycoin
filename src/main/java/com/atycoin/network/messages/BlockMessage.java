@@ -3,11 +3,10 @@ package com.atycoin.network.messages;
 import com.atycoin.Block;
 
 public class BlockMessage extends NetworkMessage {
-    private final int senderAddress;
     private final Block block;
 
     public BlockMessage(int senderAddress, Block block) {
-        this.senderAddress = senderAddress;
+        super(senderAddress);
         this.block = block;
     }
 
@@ -15,10 +14,6 @@ public class BlockMessage extends NetworkMessage {
     public String makeRequest() {
         String command = "block ";
         return serialize(command, this);
-    }
-
-    public int getSenderAddress() {
-        return senderAddress;
     }
 
     public Block getBlock() {

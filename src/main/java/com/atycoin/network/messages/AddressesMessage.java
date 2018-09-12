@@ -7,6 +7,10 @@ import java.util.List;
 public class AddressesMessage extends NetworkMessage {
     private List<Integer> addresses;
 
+    public AddressesMessage(int senderAddress) {
+        super(senderAddress);
+    }
+
     @Override
     public String makeRequest() {
         addresses = Node.getKnownNodes();

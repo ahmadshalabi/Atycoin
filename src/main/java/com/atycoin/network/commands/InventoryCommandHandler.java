@@ -8,16 +8,9 @@ import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.NullMessage;
 import com.google.gson.Gson;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.List;
 
-public class InventoryCommandHandler implements NetworkCommand {
-    private BufferedWriter output;
-
+public class InventoryCommandHandler extends NetworkCommand {
     @Override
     public void execute(String message, int nodeAddress) {
         InventoryMessage remoteMessage = new Gson().fromJson(message, InventoryMessage.class);
@@ -26,7 +19,7 @@ public class InventoryCommandHandler implements NetworkCommand {
 
         System.out.printf("Received inventory with %d %s%n", items.size(), type);
 
-        NetworkMessage responseMessage = new NullMessage();
+        NetworkMessage responseMessage = new NullMessage(nodeAddress);
         if (type.equals("block")) {
             //track downloaded blocks
             BlocksInTransit.addItems(items);
@@ -44,17 +37,6 @@ public class InventoryCommandHandler implements NetworkCommand {
             }
         }
 
-        try (Socket sendingConnection = new Socket(InetAddress.getLocalHost(), remoteMessage.getSenderAddress())) {
-            getOutputStream(sendingConnection);
-            output.write(responseMessage.makeRequest());
-            output.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void getOutputStream(Socket connection) throws IOException {
-        output = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
-        output.flush();
+        send(remoteMessage.getSenderAddress(), responseMessage);
     }
 }

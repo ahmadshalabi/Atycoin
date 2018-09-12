@@ -11,15 +11,7 @@ import com.atycoin.network.messages.NullMessage;
 import com.atycoin.utility.Hash;
 import com.google.gson.Gson;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-
-public class BlockCommandHandler implements NetworkCommand {
-    private BufferedWriter output;
-
+public class BlockCommandHandler extends NetworkCommand {
     @Override
     public void execute(String message, int nodeAddress) {
         BlockMessage remoteMessage = new Gson().fromJson(message, BlockMessage.class);
@@ -38,24 +30,13 @@ public class BlockCommandHandler implements NetworkCommand {
             System.out.printf("Block %s already exist%n", Hash.serialize(block.getHash()));
         }
 
-        NetworkMessage responseMessage = new NullMessage();
+        NetworkMessage responseMessage = new NullMessage(nodeAddress);
         if (BlocksInTransit.size() > 0) {
             String blockHash = BlocksInTransit.getItem(BlocksInTransit.size() - 1);
             responseMessage = new GetDataMessage(nodeAddress, "block", blockHash);
             BlocksInTransit.removeItem(BlocksInTransit.size() - 1);
         }
 
-        try (Socket sendingConnection = new Socket(InetAddress.getLocalHost(), remoteMessage.getSenderAddress())) {
-            getOutputStream(sendingConnection);
-            output.write(responseMessage.makeRequest());
-            output.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void getOutputStream(Socket connection) throws IOException {
-        output = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
-        output.flush();
+        send(remoteMessage.getSenderAddress(), responseMessage);
     }
 }
