@@ -3,7 +3,7 @@ package com.atycoin.network.messages;
 import com.google.gson.Gson;
 
 public abstract class NetworkMessage {
-    private final static Gson encoder = new Gson();
+    private transient final static Gson encoder = new Gson();
     private final int senderAddress;
 
     public NetworkMessage(int senderAddress) {
