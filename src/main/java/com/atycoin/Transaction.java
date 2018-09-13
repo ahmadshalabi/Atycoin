@@ -18,7 +18,7 @@ public class Transaction {
     private final long timestamp;
     private byte[] id;
 
-    public Transaction(List<TransactionInput> inputs, List<TransactionOutput> outputs) {
+    private Transaction(List<TransactionInput> inputs, List<TransactionOutput> outputs) {
         this.inputs = inputs;
         this.outputs = outputs;
         timestamp = System.currentTimeMillis() / 1000L; // Convert to Second
