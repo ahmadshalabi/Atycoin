@@ -127,6 +127,19 @@ public class Transaction {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Transaction that = (Transaction) o;
+        return Arrays.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(id);
+    }
+
+    @Override
     public String toString() {
         StringJoiner stringJoiner = new StringJoiner("\n", "", "\n");
         stringJoiner.add(String.format("--- Transaction %s:", Bytes.toHex(id)));

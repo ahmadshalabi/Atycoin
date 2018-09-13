@@ -1,13 +1,10 @@
 package com.atycoin.cli.commands;
 
 import com.atycoin.Block;
-import com.atycoin.Transaction;
 import com.atycoin.cli.Commander;
 import com.atycoin.database.BlocksDAO;
-import com.atycoin.utility.Bytes;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class PrintChainCommand implements Command {
     @Override
@@ -29,16 +26,7 @@ public class PrintChainCommand implements Command {
         if (args.length < 1) { //no parameters
             BlocksDAO blocksDAO = BlocksDAO.getInstance();
             for (Block block : blocksDAO) {
-                Commander.CommanderPrint(String.format(
-                        "============ Block %s ============", Bytes.toHex(block.getHash())));
-                Commander.CommanderPrint(String.format(
-                        "Prev. block: %s", Bytes.toHex(block.getHashPrevBlock())));
-                Commander.CommanderPrint(String.format(
-                        "Merkle Root: %s%n", Bytes.toHex(block.getMerkleRoot())));
-                List<Transaction> transactions = block.getTransactions();
-                for (Transaction transaction : transactions) {
-                    System.out.println(transaction);
-                }
+                System.out.println(block);
             }
             return;
         }

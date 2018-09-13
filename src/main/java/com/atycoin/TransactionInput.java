@@ -5,6 +5,8 @@ import com.atycoin.utility.Constant;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class TransactionInput {
@@ -54,6 +56,26 @@ public class TransactionInput {
 
     public void setRawPublicKey(byte[] rawPublicKey) {
         this.rawPublicKey = rawPublicKey;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TransactionInput input = (TransactionInput) o;
+        return outputIndex == input.outputIndex &&
+                Arrays.equals(referenceTransaction, input.referenceTransaction) &&
+                Arrays.equals(rawPublicKey, input.rawPublicKey) &&
+                Arrays.equals(signature, input.signature);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(outputIndex);
+        result = 31 * result + Arrays.hashCode(referenceTransaction);
+        result = 31 * result + Arrays.hashCode(rawPublicKey);
+        result = 31 * result + Arrays.hashCode(signature);
+        return result;
     }
 
     @Override

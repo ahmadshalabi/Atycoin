@@ -7,7 +7,9 @@ import com.atycoin.utility.Hash;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class Block {
     private transient static final int GENESIS_HEIGHT = 0;
@@ -15,7 +17,7 @@ public class Block {
     private final int version;
     private final byte[] hashPrevBlock;
     private final long timestamp;
-    private final int targetBits = 5; //TODO: Make it Adjusted to meet some requirements
+    private final int targetBits = 20; //TODO: Make it Adjusted to meet some requirements
     private final int height;
     private final List<Transaction> transactions;
 
@@ -118,5 +120,37 @@ public class Block {
         byte[] blockHeader = setBlockHeader(nonce);
         hash = Hash.doubleSHA256(blockHeader);
         System.out.println(Bytes.toHex(hash));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Block block = (Block) o;
+        return Arrays.equals(hash, block.hash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(hash);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner("\n");
+
+        stringJoiner.add(String.format("============ Block %s ============", Bytes.toHex(hash)))
+                .add(String.format("Prev. block: %s", Bytes.toHex(hashPrevBlock)))
+                .add(String.format("Time Stamp: %d", timestamp))
+                .add(String.format("Target Bits: %d", targetBits))
+                .add(String.format("Height: %d", height));
+
+        for (Transaction transaction : transactions) {
+            stringJoiner.add(transaction.toString());
+        }
+
+        return stringJoiner.add(String.format("Merkle root: %s", Bytes.toHex(merkleRoot)))
+                .add(String.format("Nonce: %d", nonce))
+                .toString();
     }
 }

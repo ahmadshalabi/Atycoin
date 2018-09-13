@@ -7,6 +7,7 @@ import com.atycoin.utility.Constant;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class TransactionOutput {
@@ -50,6 +51,22 @@ public class TransactionOutput {
 
     public byte[] getPublicKeyHashed() {
         return publicKeyHashed;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TransactionOutput that = (TransactionOutput) o;
+        return value == that.value &&
+                Arrays.equals(publicKeyHashed, that.publicKeyHashed);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(value);
+        result = 31 * result + Arrays.hashCode(publicKeyHashed);
+        return result;
     }
 
     @Override

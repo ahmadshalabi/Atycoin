@@ -10,6 +10,7 @@ import org.bouncycastle.math.ec.ECPoint;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.util.Arrays;
 
 // Wallet stores private and public keys
 public class Wallet {
@@ -64,5 +65,27 @@ public class Wallet {
 
     private ECPublicKey getPublicKey() {
         return Keys.getPublicKey(publicKeyEncoded);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Wallet wallet = (Wallet) o;
+        return Arrays.equals(privateKeyEncoded, wallet.privateKeyEncoded) &&
+                Arrays.equals(publicKeyEncoded, wallet.publicKeyEncoded);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(privateKeyEncoded);
+        result = 31 * result + Arrays.hashCode(publicKeyEncoded);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        String address = getAddress();
+        return String.format("Address : %s", address);
     }
 }
