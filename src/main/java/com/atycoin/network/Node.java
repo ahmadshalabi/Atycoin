@@ -1,7 +1,6 @@
 package com.atycoin.network;
 
 import com.atycoin.AtycoinStart;
-import com.atycoin.network.messages.KnownNodes;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.VersionMessage;
 

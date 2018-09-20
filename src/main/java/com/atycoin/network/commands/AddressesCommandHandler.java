@@ -1,7 +1,7 @@
 package com.atycoin.network.commands;
 
+import com.atycoin.network.KnownNodes;
 import com.atycoin.network.messages.AddressesMessage;
-import com.atycoin.network.messages.KnownNodes;
 import com.google.gson.Gson;
 
 import java.util.List;

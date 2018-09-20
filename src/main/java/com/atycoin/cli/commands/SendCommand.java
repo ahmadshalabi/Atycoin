@@ -2,7 +2,7 @@ package com.atycoin.cli.commands;
 
 import com.atycoin.*;
 import com.atycoin.cli.Commander;
-import com.atycoin.network.messages.KnownNodes;
+import com.atycoin.network.KnownNodes;
 import com.atycoin.network.messages.NetworkMessage;
 import com.atycoin.network.messages.TransactionMessage;
 import com.atycoin.utility.Address;

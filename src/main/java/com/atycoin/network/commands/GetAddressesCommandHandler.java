@@ -1,8 +1,8 @@
 package com.atycoin.network.commands;
 
+import com.atycoin.network.KnownNodes;
 import com.atycoin.network.messages.AddressesMessage;
 import com.atycoin.network.messages.GetAddressesMessage;
-import com.atycoin.network.messages.KnownNodes;
 import com.atycoin.network.messages.NetworkMessage;
 import com.google.gson.Gson;
 

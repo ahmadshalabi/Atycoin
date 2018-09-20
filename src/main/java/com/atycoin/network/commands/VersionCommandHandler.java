@@ -1,6 +1,7 @@
 package com.atycoin.network.commands;
 
 import com.atycoin.database.BlocksDAO;
+import com.atycoin.network.KnownNodes;
 import com.atycoin.network.messages.*;
 import com.google.gson.Gson;
 

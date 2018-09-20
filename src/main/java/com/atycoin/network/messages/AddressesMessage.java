@@ -1,5 +1,7 @@
 package com.atycoin.network.messages;
 
+import com.atycoin.network.KnownNodes;
+
 import java.util.List;
 
 public class AddressesMessage extends NetworkMessage {
