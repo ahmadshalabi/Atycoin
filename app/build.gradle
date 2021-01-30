@@ -23,7 +23,8 @@ dependencies {
 group = 'com.atycoin'
 version = '0.0.1-SNAPSHOT'
 description = 'Atycoin'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_11
+java.targetCompatibility = JavaVersion.VERSION_11
 
 application {
     mainClassName = 'com.atycoin.AtycoinStart'
