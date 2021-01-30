@@ -16,7 +16,8 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk15on:1.60'
     implementation 'com.redislabs:jedis:3.0.0-m1'
     implementation 'org.slf4j:slf4j-api:1.8.0-beta2'
-    testImplementation 'junit:junit:4.12'
+    testImplementation platform('org.junit:junit-bom:5.7.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
 group = 'com.atycoin'
@@ -31,4 +32,8 @@ application {
 run {
     standardInput(System.in)
     standardOutput(System.out)
+}
+
+test {
+    useJUnitPlatform()
 }
